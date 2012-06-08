@@ -1,13 +1,12 @@
 /**
+ * Aspic: a scripting language for C++ apps
  * @author Alexandre Bodelot <alexandre.bodelot@gmail.com>
- * @date 2011-04-15
  */
 
 /*
 TODO List:
 ----------
 
-- opérateurs binaries pour les float
 - remplacer Token::VARIABLE et Token::FUNCTION par Token::IDENTIFIER ??
 - fonctions à arguments variables?? (http://www.kallisti.net.nz/blog/2008/02/extension-to-the-shunting-yard-algorithm-to-allow-variable-numbers-of-arguments-to-functions/)
 - mot clefs

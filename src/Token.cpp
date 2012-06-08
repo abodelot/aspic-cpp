@@ -169,48 +169,6 @@ bool Token::is_right_associative_operator() const
 
 Token Token::apply_unary_operator(Token::OperatorType op)
 {
-	/*if (type_ == VARIABLE)
-	{
-		return data_.variable->to_token().apply_unary_operator(op);
-	}
-
-	switch (op)
-	{
-		case OP_UNARY_PLUS:
-			switch (type_)
-			{
-				case INT_LITERAL:
-				case BOOL_LITERAL:
-					return Token::create_int(+ int_value());
-				case FLOAT_LITERAL:
-					return Token::create_float(+ float_value());
-				default: break;
-			}
-			break;
-		case OP_UNARY_MINUS:
-			switch (type_)
-			{
-				case INT_LITERAL:
-				case BOOL_LITERAL:
-					return Token::create_int(- int_value());
-				case FLOAT_LITERAL:
-					return Token::create_float(- float_value());
-				default: break;
-			}
-			break;
-		case OP_NOT:
-			switch (type_)
-			{
-				case INT_LITERAL:
-				case BOOL_LITERAL:
-				case FLOAT_LITERAL:
-				case STRING_LITERAL:
-					return Token::create_bool(! bool_value());
-				default: break;
-
-			}
-	}*/
-
 	switch (type_)
 	{
 		case INT_LITERAL:
@@ -255,26 +213,34 @@ Token Token::apply_unary_operator(Token::OperatorType op)
 }
 
 
+
+
 Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 {
 	switch (type_)
 	{
 	case INT_LITERAL:
 	case BOOL_LITERAL: // false is equivalent to 0, true is equivalent to 1
+
+		if (operand.is_typed(FLOAT_LITERAL))
+		{
+			// if the other operand is float typed, the result will be also float typed
+			Token cast_to_float = Token::create_float(float_value());
+			return cast_to_float.apply_binary_operator(op, operand);
+		}
+
 		switch (op)
 		{
 			case OP_POW:
 				return Token::create_int(std::pow(int_value(), operand.int_value()));
 
 			case OP_MULTIPLICATION:
-				if (operand.is_typed(INT_LITERAL))
-					return Token::create_int(int_value() * operand.int_value());
-
-				else if (operand.is_typed(STRING_LITERAL))
-					// 2 * "hello" => "hellohello"
+				// 2 * "hello" => "hellohello"
+				if (operand.is_typed(STRING_LITERAL))
 					return operand.apply_binary_operator(op, *this);
 
-				break;
+				return Token::create_int(int_value() * operand.int_value());
+
 			case OP_DIVISION:
 			{
 				int denominator = operand.int_value();
@@ -285,11 +251,11 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 			}
 			case OP_MODULO:
 			{
-				int value = operand.int_value();
-				if (value == 0)
+				int denominator = operand.int_value();
+				if (denominator == 0)
 					throw Error::DivideByZero();
 
-				return Token::create_int(int_value() % value);
+				return Token::create_int(int_value() % denominator);
 			}
 			case OP_ADDITION:
 				return Token::create_int(int_value() + operand.int_value());
@@ -326,6 +292,62 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 		break;
 
 	case FLOAT_LITERAL:
+		switch (op)
+		{
+			case OP_POW:
+				return Token::create_float(std::pow(float_value(), operand.float_value()));
+
+			case OP_MULTIPLICATION:
+				return Token::create_float(float_value() * operand.float_value());
+
+			case OP_DIVISION:
+			{
+				float denominator = operand.float_value();
+				if (denominator == 0.f)
+					throw Error::DivideByZero();
+
+				return Token::create_float(float_value() / denominator);
+			}
+			case OP_MODULO:
+			{
+				double denominator = operand.float_value();
+				if (denominator == 0.f)
+					throw Error::DivideByZero();
+
+				return Token::create_float(fmod(float_value(), denominator));
+			}
+			case OP_ADDITION:
+				return Token::create_int(float_value() + operand.float_value());
+
+			case OP_SUBTRACTION:
+				return Token::create_int(float_value() - operand.float_value());
+
+			case OP_LESS_THAN:
+				return Token::create_bool(float_value() < operand.float_value());
+
+			case OP_LESS_THAN_OR_EQUAL:
+				return Token::create_bool(float_value() <= operand.float_value());
+
+			case OP_GREATER_THAN:
+				return Token::create_bool(float_value() > operand.float_value());
+
+			case OP_GREATER_THAN_OR_EQUAL:
+				return Token::create_bool(float_value() >= operand.float_value());
+
+			case OP_EQUAL:
+				return Token::create_bool(float_value() == operand.float_value());
+
+			case OP_NOT_EQUAL:
+				return Token::create_bool(float_value() != operand.float_value());
+
+			case OP_LOGICAL_AND:
+				return Token::create_bool(bool_value() && operand.bool_value());
+
+			case OP_LOGICAL_OR:
+				return Token::create_bool(bool_value() || operand.bool_value());
+
+			default: break;
+		}
 		break;
 
 	case STRING_LITERAL:
@@ -474,9 +496,6 @@ int Token::int_value() const
 	{
 		case INT_LITERAL:
 			return data_.int_value;
-		// allow implicit casting for float???
-		/*case FLOAT_LITERAL:
-			return (int) data_.float_value;*/
 		case BOOL_LITERAL:
 			return data_.bool_value ? 1 : 0;
 		case VARIABLE:
@@ -505,6 +524,7 @@ bool Token::bool_value() const
 			throw Error::SyntaxError("token must be a value");
 	}
 }
+
 
 // debug -----------------------------------------------------------------------
 
@@ -543,6 +563,11 @@ void Token::print(std::ostream& os) const
 		case ARG_SEPARATOR:
 			os << ", ";
 			break;
+		case KEYWORD:
+			os << "<not implemented>";
+			break;
 	}
 }
+
+
 
