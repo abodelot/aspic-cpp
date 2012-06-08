@@ -10,3 +10,7 @@
 *.lai
 *.la
 *.a
+
+# Code blocks optionnal files
+aspic.layout
+aspic.depend

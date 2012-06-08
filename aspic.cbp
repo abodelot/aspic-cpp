@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="aspic" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="aspic" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="aspic" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="src/Error.cpp" />
+		<Unit filename="src/Error.hpp" />
+		<Unit filename="src/FileParser.cpp" />
+		<Unit filename="src/FileParser.hpp" />
+		<Unit filename="src/Instruction.cpp" />
+		<Unit filename="src/Instruction.hpp" />
+		<Unit filename="src/Main.cpp" />
+		<Unit filename="src/OperatorManager.cpp" />
+		<Unit filename="src/OperatorManager.hpp" />
+		<Unit filename="src/SymbolTable.cpp" />
+		<Unit filename="src/SymbolTable.hpp" />
+		<Unit filename="src/Token.cpp" />
+		<Unit filename="src/Token.hpp" />
+		<Unit filename="src/Variable.cpp" />
+		<Unit filename="src/Variable.hpp" />
+		<Unit filename="src/functions/LibCore.cpp" />
+		<Unit filename="src/functions/LibCore.hpp" />
+		<Unit filename="src/functions/LibString.cpp" />
+		<Unit filename="src/functions/LibString.hpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
