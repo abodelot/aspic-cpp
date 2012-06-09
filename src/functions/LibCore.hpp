@@ -8,5 +8,6 @@ Token std_input(TokenStack& args);
 
 Token std_typeof(TokenStack& args);
 
+Token std_round(TokenStack& args);
 
 #endif // LIBCORE_HPP

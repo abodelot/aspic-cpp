@@ -1,0 +1,30 @@
+## math test
+
+pi = 3.14
+radius = 7
+print(pi * radius ** 2)
+
+a = 2
+b = (5 + 6) * 8 - (3 - -96)
+total = a + b
+a = "bonjour " * a
+b *= -1
+total -= b
+print(a)
+print(b)
+print(total)
+print("-----")
+print(round(-(pi) - -4, 4))
+print(round(-(pi) / 6 - -4, 4))
+print(round(-(pi) * 5 / 6 - (9.3) - -4, 4))
+print(round(-(pi) * 5 / 6 + (9.3 / 9) - -4, 4))
+print(round(-(pi / 5.3) * 5 / 6 - (9.3 / 9) - -4, 4))
+print(round(-(pi / 5.3) * 5 / 6 - (9.3 / 9 ** 6) - -4, 4))
+
+
+## string test
+
+nom = "lex"
+nom += "andre"
+nom = "A" + nom
+print("Vous vous appelez " + nom + ".")

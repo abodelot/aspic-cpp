@@ -17,6 +17,7 @@ SymbolTable::SymbolTable()
 	add("print", std_print);
 	add("input", std_input);
 	add("typeof", std_typeof);
+	add("round", std_round);
 
 	// load string library
 	add("str_len", str_len);

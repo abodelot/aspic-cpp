@@ -317,10 +317,10 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 				return Token::create_float(fmod(float_value(), denominator));
 			}
 			case OP_ADDITION:
-				return Token::create_int(float_value() + operand.float_value());
+				return Token::create_float(float_value() + operand.float_value());
 
 			case OP_SUBTRACTION:
-				return Token::create_int(float_value() - operand.float_value());
+				return Token::create_float(float_value() - operand.float_value());
 
 			case OP_LESS_THAN:
 				return Token::create_bool(float_value() < operand.float_value());
@@ -536,10 +536,10 @@ void Token::print(std::ostream& os) const
 			os << data_.int_value;
 			break;
 		case FLOAT_LITERAL:
-			os << data_.float_value << "f";
+			os << data_.float_value;
 			break;
 		case STRING_LITERAL:
-			os << '"' << str_ << '"';
+			os << str_;
 			break;
 		case BOOL_LITERAL:
 			os << (data_.bool_value ? "true" : "false");

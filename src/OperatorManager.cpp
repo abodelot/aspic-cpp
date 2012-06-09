@@ -98,11 +98,12 @@ OperatorManager::OperatorManager()
 	// init operators
 	operators_["!"] = Token::OP_NOT;
 
-	operators_["*"] = Token::OP_MULTIPLICATION;
-	operators_["/"] = Token::OP_DIVISION;
-	operators_["%"] = Token::OP_MODULO;
-	operators_["+"] = Token::OP_ADDITION; // see eval for OP_UNARY_PLUS
-	operators_["-"] = Token::OP_SUBTRACTION; // see eval for OP_UNARY_MINUS
+	operators_["**"] = Token::OP_POW;
+	operators_["*"]  = Token::OP_MULTIPLICATION;
+	operators_["/"]  = Token::OP_DIVISION;
+	operators_["%"]  = Token::OP_MODULO;
+	operators_["+"]  = Token::OP_ADDITION; // see eval for OP_UNARY_PLUS
+	operators_["-"]  = Token::OP_SUBTRACTION; // see eval for OP_UNARY_MINUS
 
 	operators_["<"]  = Token::OP_LESS_THAN;
 	operators_["<="] = Token::OP_LESS_THAN_OR_EQUAL;

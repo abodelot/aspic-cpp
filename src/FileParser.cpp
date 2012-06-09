@@ -26,8 +26,6 @@ bool FileParser::load_file(const char* filename)
 				parser.eval(line);
 			}
 		}
-		std::cout << "---------------------------------\n";
-		symbols_.debug();
 		file.close();
 		return true;
 	}
