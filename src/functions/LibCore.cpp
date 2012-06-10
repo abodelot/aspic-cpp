@@ -35,11 +35,10 @@ Token std_typeof(TokenStack& args)
 
 Token std_round(TokenStack& args)
 {
-	SymbolTable::check_args(args, 1);
+	SymbolTable::check_args(args, 2);
 	int x = args.top().int_value(); args.pop();
 	double num = args.top().float_value(); args.pop();
 
-
-	return Token::create_float(ceil( ( num * pow( 10,x ) ) - 0.49 ) / pow( 10,x ));
+	return Token::create_float(ceil( ( num * pow( 10, x ) ) - 0.49 ) / pow( 10, x ));
 }
 

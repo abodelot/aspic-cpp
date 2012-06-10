@@ -153,6 +153,7 @@ bool Token::is_right_associative_operator() const
 	// switch on remaining right associative operators
 	switch (data_.op_type)
 	{
+		case OP_POW:
 		case OP_ASSIGNMENT:
 		case OP_MULTIPLY_AND_ASSIGN:
 		case OP_DIVIDE_AND_ASSIGN:

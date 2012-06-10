@@ -143,17 +143,13 @@ public:
 	Parser()
 	{
 		start_ = NULL;
-
 	}
 
 	void parse(const std::string& filename)
 	{
-
-
 		std::ifstream file(filename.c_str());
 		if (file)
 		{
-
 			std::stack<Statement*> stack;
 			Statement* previous = NULL;
 			Statement* current = NULL;
@@ -211,8 +207,6 @@ public:
 					current = new Statement(Statement::EXPRESSION, line);
 				}
 
-
-
 				if (start_ == NULL)
 					start_ = current;
 
@@ -222,7 +216,6 @@ public:
 				printf("current = %s, (end of scope = %d)\n", current->get_instruction().c_str(), (int) end_of_scope);
 				if (end_of_scope)
 				{
-				puts("!!!!!");
 					assert(temp != NULL);
 					printf("* end of scope, temp is : %s\n", temp->get_instruction().c_str());
 					temp->set_next_on_failure(current);
@@ -231,10 +224,7 @@ public:
 					temp = NULL;
 					end_of_scope = false;
 				}
-
 				previous = current;
-
-
 			}
 			if (temp != NULL)
 			{
@@ -243,8 +233,6 @@ public:
 				if (temp->get_type() == Statement::WHILE)
 					previous->set_next(temp);
 			}
-
-
 		}
 	}
 
