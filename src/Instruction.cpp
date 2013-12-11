@@ -20,13 +20,13 @@ Instruction::Instruction(SymbolTable& symbols) :
 
 Token Instruction::eval(const std::string& expression)
 {
-	// 1. transform string into token list
+	// 1. Split string into a token list
 	tokenization(expression);
 
-	// 2. convert tokens from infix notation to postfix notation
+	// 2. Convert tokens from infix notation to postfix notation
 	infix_to_postfix();
 
-	// 3. eval postfixed expression
+	// 3. Eval postfixed expression
 	return eval_postfix();
 }
 
@@ -61,7 +61,7 @@ void Instruction::tokenization(const std::string& expression)
 {
 	// tokenization: transform an expression string into a token vector
 	tokens_.clear();
-	std::string buffer = ""; // buffer will contain the current parsed token
+	std::string buffer = ""; // buffer is the string representation of the currently parsed token
 	int previous_index = -1;
 	for (size_t i = 0; i < expression.size(); ++i)
 	{
@@ -102,7 +102,7 @@ void Instruction::tokenization(const std::string& expression)
 		{
 			tokens_.push_back(Token(Token::ARG_SEPARATOR));
 		}
-		// int or float literal?
+		// Scanning int or float literal
 		else if (is_digit(current) || current == '.')
 		{
 			bool dot_found = current == '.';
@@ -120,16 +120,57 @@ void Instruction::tokenization(const std::string& expression)
 				Token::create_int(atoi(buffer.c_str()));
             tokens_.push_back(t);
 		}
-		// string literal
-		else if (current == '"')
+		// Scanning string literal
+		else if (current == '"' || current == '\'')
 		{
-			for (++i; i < expression.size() && expression[i] != '"'; ++i)
+			char closure_char = current; // "...", '...'
+			bool escape_next_char = false;
+			for (++i; i < expression.size(); ++i)
 			{
-				buffer += expression[i];
+				if (!escape_next_char)
+				{
+					if (expression[i] == closure_char)
+						break;
+
+					if (expression[i] == '\\')
+						escape_next_char = true;
+					else
+						buffer += expression[i];
+				}
+				else if (escape_next_char)
+				{
+					switch (expression[i])
+					{
+						case '\\': buffer += '\\'; break; // Backslash (\)
+						case '\'': buffer += '\''; break; // Single quote (')
+						case '\"': buffer += '\"'; break; // Double quote (")
+						case 'a':  buffer += '\a'; break; // ASCII Bell (BEL)
+						case 'b':  buffer += '\b'; break; // ASCII Backspace (BS)
+						case 'f':  buffer += '\f'; break; // ASCII Formfeed (FF)
+						case 'n':  buffer += '\n'; break; // ASCII Linefeed (LF)
+						case 'r':  buffer += '\r'; break; // ASCII Carriage Return (CR)
+						case 't':  buffer += '\t'; break; // ASCII Horizontal Tab (TAB)
+						case 'v':  buffer += '\v'; break; // ASCII Vertical Tab (VT)
+						default:
+							// Not a special character, the prevous backslash is kept
+							buffer += '\\';
+							buffer += expression[i];
+							break;
+					}
+					escape_next_char = false;
+				}
 			}
+
+			// Ensure string is correctly enclosed
+			if (i == expression.size())
+			{
+				throw Error::SyntaxError("EOL while scanning string literal");
+			}
+
 			tokens_.push_back(Token::create_string(buffer));
 		}
-		// identifier? (we already know that current char is not a digit)
+		// Scanning identifier
+		// (we already know that current char is not a digit, so no need to check that)
 		else if (is_valid_identifier_symbol(current))
 		{
 			// on lit tous les caractères jusqu'à recomposer l'identifiant

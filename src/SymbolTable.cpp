@@ -38,8 +38,6 @@ SymbolTable::~SymbolTable()
 }
 
 
-// variables
-
 bool SymbolTable::is_variable(const std::string& name) const
 {
 	VarMap::const_iterator it = variables_.find(name);
@@ -71,7 +69,6 @@ void SymbolTable::add(const std::string& name, Variable* variable)
 	variables_[name] = variable;
 }
 
-// functions
 
 void SymbolTable::add(const std::string& name, Function function)
 {
