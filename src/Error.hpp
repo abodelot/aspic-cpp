@@ -13,7 +13,7 @@ class Error: public std::exception
 {
 public:
 
-	static Error SyntaxError(const std::string& str = "");
+	static Error SyntaxError(const std::string& str);
 	static Error NameError(const std::string& str);
 	static Error DivideByZero();
 	static Error MissingLeftBracket();
@@ -28,7 +28,7 @@ public:
 	const char* what() const throw();
 
 private:
-	Error(const std::string& message);
+	Error(const std::string& message = "");
 	std::string message_;
 };
 

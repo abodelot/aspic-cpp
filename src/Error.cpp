@@ -7,7 +7,7 @@
 
 Error Error::SyntaxError(const std::string& str)
 {
-	return Error(str.size() == 0 ? "invalid syntax" : str);
+	return Error(str);
 }
 
 Error Error::NameError(const std::string& str)
@@ -32,7 +32,7 @@ Error Error::MissingRightBracket()
 
 Error Error::InvalidToken(char token)
 {
-	Error e("");
+	Error e;
 	e.message_ += "token '";
 	e.message_ += token;
 	e.message_ += "' is invalid";
@@ -41,15 +41,12 @@ Error Error::InvalidToken(char token)
 
 Error Error::UnknownOperator(const std::string& str)
 {
-	Error e("");
-	e.message_ += "operator '" + str + "' does not exist";
-	return e;
+	return Error("operator '" + str + "' does not exist");
 }
-
 
 Error Error::UnsupportedOperator(Token::Type operand, Token::OperatorType op)
 {
-	Error e("");
+	Error e;
 	e.message_ += "type '";
 	e.message_ += Token::to_str(operand);
 	e.message_ += "' doesn't support operator '";
@@ -58,10 +55,9 @@ Error Error::UnsupportedOperator(Token::Type operand, Token::OperatorType op)
 	return e;
 }
 
-
 Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::OperatorType op)
 {
-	Error e("");
+	Error e;
 	e.message_ += "unsupported binary operator '";
 	e.message_ += OperatorManager::to_str(op);
 	e.message_ += "' for operands '";
@@ -72,9 +68,10 @@ Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::Oper
 	return e;
 }
 
+
 Error::Error(const std::string& message)
 {
-	message_ = "[Error] " + message;
+	message_ = message;
 }
 
 

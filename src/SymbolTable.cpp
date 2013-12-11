@@ -81,7 +81,7 @@ void SymbolTable::add(const std::string& name, Function function)
 
 void SymbolTable::check_args(TokenStack& args, int count)
 {
-	if ((int) args.size() != count)
+	if ((int) args.size() < count)
 	{
 		// "function takes [exactaly N|no] argument[s] (Z given)"
 		std::ostringstream oss;

@@ -75,7 +75,7 @@ void FileParser::shell_mode()
 			}
 			catch (Error& e)
 			{
-				std::cout << e.what() << std::endl;
+				std::cout << "[Error] " << e.what() << std::endl;
 			}
 		}
 	} while (running);

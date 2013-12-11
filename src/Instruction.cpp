@@ -361,7 +361,7 @@ Token Instruction::eval_postfix()
     }
 	else if (temp.size() > 1)
 	{
-		throw Error::SyntaxError("invalid syntax is invalid (too many tokens)");
+		throw Error::SyntaxError("invalid syntax");
 	}
     return temp.top();
 }
