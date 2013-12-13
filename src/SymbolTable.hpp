@@ -51,6 +51,11 @@ public:
 	 */
 	static void check_args(TokenStack& args, int count);
 
+	// Debug -------------------------------------------------------------------
+
+	static std::string find_variable_name(const Variable* var);
+	static std::string find_function_name(const Function* func);
+
 private:
 	SymbolTable();
 

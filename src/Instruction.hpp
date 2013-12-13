@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "Token.hpp"
-
+#include "Variable.hpp"
 
 class OperatorManager;
 
@@ -45,11 +45,6 @@ private:
 	Token eval_postfix();
 
 	/**
-	 * @return true si c est un chiffre
-	 */
-	bool is_digit(char c) const;
-
-	/**
 	 * @return true si 'c' est un composant valide d'un identifiant
 	 */
 	bool is_valid_identifier_symbol(char c) const;
@@ -60,6 +55,7 @@ private:
 
 	TokenList postfix_;
 	TokenList tokens_;
+	TokenStack stack_;
 	OperatorManager& operators_;
 };
 

@@ -6,7 +6,7 @@
 
 #include <stack>
 #include <iostream>
-#include <cassert>
+#include <cctype>
 #include <cstring>
 #include <cstdlib>
 
@@ -49,8 +49,8 @@ void Instruction::print_tokens(const TokenList& t) const
 
     for (TokenList::const_iterator it = t.begin(); it != t.end(); ++it)
     {
-		it->print(std::cout);
-		std::cout << "  ";
+		it->debug(std::cout);
+		std::cout << " ";
     }
 	std::cout << std::endl;
 }
@@ -103,12 +103,12 @@ void Instruction::tokenization(const std::string& expression)
 			tokens_.push_back(Token(Token::ARG_SEPARATOR));
 		}
 		// Scanning int or float literal
-		else if (is_digit(current) || current == '.')
+		else if (isdigit(current) || current == '.')
 		{
 			bool dot_found = current == '.';
 			buffer += current;
 			// tant que c est un chiffre ou un un seul et unique point
-			for (++i; i < expression.size() && (is_digit(expression[i]) || (!dot_found && expression[i] == '.')); ++i)
+			for (++i; i < expression.size() && (isdigit(expression[i]) || (!dot_found && expression[i] == '.')); ++i)
 			{
 				dot_found |= expression[i] == '.';
 				buffer += expression[i];
@@ -208,7 +208,8 @@ void Instruction::tokenization(const std::string& expression)
 void Instruction::infix_to_postfix()
 {
 	postfix_.clear();
-	std::stack<Token> stack;
+	while (!stack_.empty())
+		stack_.pop();
 
 	// transform infix to postfix notation, using shunting-yard algorithm
 	for (size_t i = 0; i < tokens_.size(); ++i)
@@ -223,19 +224,19 @@ void Instruction::infix_to_postfix()
 				either current is left-associative and its precedence is less than or equal to that of 'op'
 				or current is right-associative and its precedence is less than that of 'op'
 			*/
-			while (!stack.empty() && stack.top().is_operator() &&
-				((!current.is_right_associative_operator() && operators_.compare(current, stack.top()) <= 0)
-				 || (current.is_right_associative_operator() && operators_.compare(current, stack.top()) < 0)))
+			while (!stack_.empty() && stack_.top().is_operator() &&
+				((!current.is_right_associative_operator() && operators_.compare(current, stack_.top()) <= 0)
+				 || (current.is_right_associative_operator() && operators_.compare(current, stack_.top()) < 0)))
 			{
-				Token& op = stack.top();
-				stack.pop();
+				Token& op = stack_.top();
+				stack_.pop();
 				postfix_.push_back(op);
 			}
-			stack.push(current);
+			stack_.push(current);
 			break;
 
 		case Token::LEFT_BRACKET:
-			stack.push(current);
+			stack_.push(current);
 			break;
 
 		case Token::RIGHT_BRACKET:
@@ -243,18 +244,18 @@ void Instruction::infix_to_postfix()
 			bool bracket_found = false;
 			// Until the token at the top of the stack is a left parenthesis,
 			// pop operators off the stack onto the output queue
-			while (!stack.empty())
+			while (!stack_.empty())
 			{
-				if (stack.top().get_type() == Token::LEFT_BRACKET)
+				if (stack_.top().get_type() == Token::LEFT_BRACKET)
 				{
 					bracket_found = true;
 					break;
 				}
 				else
 				{
-					Token& t = stack.top();
+					Token& t = stack_.top();
 					postfix_.push_back(t);
-					stack.pop();
+					stack_.pop();
 				}
 			}
 			// If the stack runs out without finding a left parenthesis, then there are mismatched parentheses.
@@ -263,16 +264,16 @@ void Instruction::infix_to_postfix()
 				throw Error::MissingLeftBracket();
 			}
 			// Pop the left parenthesis from the stack, but not onto the output queue.
-			stack.pop();
+			stack_.pop();
 			// If the token at the top of the stack is a function token, pop it onto the output queue.
-			if (!stack.empty() && stack.top().get_type() == Token::FUNCTION)
+			if (!stack_.empty() && stack_.top().get_type() == Token::FUNCTION)
 			{
-				Token& t = stack.top();
+				Token& t = stack_.top();
 				postfix_.push_back(t);
-				stack.pop();
+				stack_.pop();
 			}
-		}
 			break;
+		}
 
 		case Token::INT_LITERAL:
 		case Token::FLOAT_LITERAL:
@@ -283,7 +284,7 @@ void Instruction::infix_to_postfix()
 			break;
 
 		case Token::FUNCTION:
-			stack.push(current);
+			stack_.push(current);
 			break;
 
         case Token::ARG_SEPARATOR:
@@ -291,18 +292,18 @@ void Instruction::infix_to_postfix()
 			bool bracket_found = false;
 			// Until the token at the top of the stack is a left parenthesis,
 			// pop operators off the stack onto the output queue
-			while (!stack.empty())
+			while (!stack_.empty())
 			{
-				if (stack.top().get_type() == Token::LEFT_BRACKET)
+				if (stack_.top().get_type() == Token::LEFT_BRACKET)
 				{
 					bracket_found = true;
 					break;
 				}
 				else
 				{
-					Token& t = stack.top();
+					Token& t = stack_.top();
 					postfix_.push_back(t);
-					stack.pop();
+					stack_.pop();
 				}
 			}
 			// If no left parentheses are encountered, either the separator
@@ -311,15 +312,17 @@ void Instruction::infix_to_postfix()
 			{
 				throw Error::MissingLeftBracket();
 			}
+			break;
 		}
+		default:
 			break;
 		}
 	}
 
-	while (!stack.empty())
+	while (!stack_.empty())
 	{
 		// la pile ne doit contenir plus que des opérateurs
-		Token& t = stack.top();
+		Token& t = stack_.top();
 		if (t.is_operator())
 		{
 			postfix_.push_back(t);
@@ -328,84 +331,72 @@ void Instruction::infix_to_postfix()
 		{
 			throw Error::MissingRightBracket();
 		}
-		stack.pop();
+		stack_.pop();
 	}
 }
 
 
 Token Instruction::eval_postfix()
 {
-	std::stack<Token> temp;
-    for (TokenList::const_iterator it = postfix_.begin(); it != postfix_.end(); ++it)
-    {
-    	const Token& t = *it;
-    	switch (t.get_type())
-    	{
-    		case Token::INT_LITERAL:
+	while (!stack_.empty())
+		stack_.pop();
+
+	for (TokenList::const_iterator it = postfix_.begin(); it != postfix_.end(); ++it)
+	{
+		const Token& tok = *it;
+		switch (tok.get_type())
+		{
+			case Token::INT_LITERAL:
 			case Token::FLOAT_LITERAL:
-    		case Token::STRING_LITERAL:
-    		case Token::VARIABLE:
-				temp.push(t);
+			case Token::STRING_LITERAL:
+			case Token::VARIABLE:
+				stack_.push(tok);
 				break;
 
 			case Token::OPERATOR:
-				if (t.is_binary_operator())
+				if (tok.is_binary_operator())
 				{
 					// binary operator -> 2 operands
-					if (temp.size() < 2)
+					if (stack_.size() < 2)
 					{
 						throw Error::SyntaxError("binary operator needs two operands");
 					}
-					Token operand2 = temp.top(); temp.pop();
-					Token operand1 = temp.top(); temp.pop();
+					Token operand2 = stack_.top(); stack_.pop();
+					Token operand1 = stack_.top(); stack_.pop();
 					// on applique l'opérateur binaire sur les deux opérandes et on rempile le résultat
-					temp.push(operand1.apply_binary_operator(t.get_operator_type(), operand2));
+					stack_.push(operand1.apply_binary_operator(tok.get_operator_type(), operand2));
 				}
 				else
 				{
 					// unary operator -> 1 operand
-					if (temp.size() < 1)
+					if (stack_.size() < 1)
 					{
 						throw Error::SyntaxError("unary operator needs one operand");
 					}
-					Token operand = temp.top(); temp.pop();
+					Token operand = stack_.top(); stack_.pop();
 					// on applique l'opérateur unaire sur l'opérande et on rempile le résultat
-					temp.push(operand.apply_unary_operator(t.get_operator_type()));
+					stack_.push(operand.apply_unary_operator(tok.get_operator_type()));
 				}
 				break;
 
 			case Token::FUNCTION:
-				temp.push(t.exec_function(temp));
+				stack_.push(tok.exec_function(stack_));
 				break;
 
 			default:
-				throw Error::SyntaxError("unexpected token");
+				throw Error::InternalError("illegal token in postfix expression");
 				break;
-    	}
-    }
-    if (temp.empty())
-    {
-    	throw Error::SyntaxError("empty expression");
-    }
-	else if (temp.size() > 1)
-	{
-		throw Error::SyntaxError("invalid syntax");
+		}
 	}
-    return temp.top();
-}
-
-
-bool Instruction::is_digit(char c) const
-{
-    const char* DIGITS = "0123456789";
-    for (size_t i = 0; i < strlen(DIGITS); ++i)
-    {
-        if (c == DIGITS[i])
-        {
-            return true;
-        }
-    }
-    return false;
+	if (stack_.empty())
+	{
+		throw Error::InternalError("postfixed expression didn't yield any result");
+	}
+	else if (stack_.size() > 1)
+	{
+		throw Error::SyntaxError("too many arguments or operands");
+	}
+	return stack_.top();
 }
 
 
@@ -413,6 +404,3 @@ bool Instruction::is_valid_identifier_symbol(char c) const
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
 }
-
-
-

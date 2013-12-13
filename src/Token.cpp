@@ -6,6 +6,7 @@
 #include "Variable.hpp"
 #include "Error.hpp"
 #include "OperatorManager.hpp"
+#include "SymbolTable.hpp"
 
 // helpers ---------------------------------------------------------------------
 
@@ -220,8 +221,6 @@ Token Token::apply_unary_operator(Token::OperatorType op)
 }
 
 
-
-
 Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 {
 	switch (type_)
@@ -428,39 +427,24 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 				Token& rvalue = data_.variable->get();
 				rvalue = rvalue.apply_binary_operator(OP_DIVISION, operand);
 				return rvalue;
-				/*Token result = data_.variable->value().apply_binary_operator(OP_DIVISION, operand);
-				data_.variable->set(result);
-				return result;*/
 			}
 			case OP_MODULO_AND_ASSIGN:
 			{
 				Token& rvalue = data_.variable->get();
 				rvalue = rvalue.apply_binary_operator(OP_MODULO, operand);
 				return rvalue;
-/*
-				Token result = data_.variable->value().apply_binary_operator(OP_MODULO, operand);
-				data_.variable->set(result);
-				return result;*/
 			}
 			case OP_ADD_AND_ASSIGN:
 			{
 				Token& rvalue = data_.variable->get();
 				rvalue = rvalue.apply_binary_operator(OP_ADDITION, operand);
 				return rvalue;
-
-		/*		Token result = data_.variable->value().apply_binary_operator(OP_ADDITION, operand);
-				data_.variable->set(result);
-				return result;*/
 			}
 			case OP_SUBTRACT_AND_ASSIGN:
 			{
 				Token& rvalue = data_.variable->get();
 				rvalue = rvalue.apply_binary_operator(OP_SUBTRACTION, operand);
 				return rvalue;
-				/*
-				Token result = data_.variable->value().apply_binary_operator(OP_SUBTRACTION, operand);
-				data_.variable->set(result);
-				return result;*/
 			}
 			default:
 				// Variable is not modified, extract value and apply operator on it
@@ -555,21 +539,7 @@ bool Token::as_bool() const
 }
 
 
-// debug -----------------------------------------------------------------------
-
-void Token::print(std::ostream& os) const // __repr__()
-{
-	if (type_ == VARIABLE)
-	{
-		os << "$" << str_; // for debug purpose only...
-	}
-	else
-	{
-		print_value(os);
-	}
-
-}
-void Token::print_value(std::ostream& os) const // __str__()
+void Token::print_value(std::ostream& os) const
 {
 	switch (type_)
 	{
@@ -589,9 +559,6 @@ void Token::print_value(std::ostream& os) const // __str__()
 			// print encapsulated token
 			data_.variable->get().print_value(std::cout);
 			break;
-		case FUNCTION:
-			os << "function()"; // TODO: fetch the function name in the SymbolTable from pointer value?
-			break;
 		case OPERATOR:
 			os << OperatorManager::to_str(data_.op_type);
 			break;
@@ -604,11 +571,27 @@ void Token::print_value(std::ostream& os) const // __str__()
 		case ARG_SEPARATOR:
 			os << ", ";
 			break;
+		case FUNCTION:
 		case KEYWORD:
 			os << "<not implemented>";
 			break;
 	}
 }
 
+// debug -----------------------------------------------------------------------
 
-
+void Token::debug(std::ostream& os) const
+{
+	if (type_ == VARIABLE)
+	{
+		os << SymbolTable::find_variable_name(data_.variable);
+	}
+	else if (type_ == FUNCTION)
+	{
+		os << SymbolTable::find_function_name(data_.function);
+	}
+	else
+	{
+		print_value(os);
+	}
+}

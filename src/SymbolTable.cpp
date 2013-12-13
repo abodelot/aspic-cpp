@@ -85,6 +85,28 @@ void SymbolTable::debug()
 		}
 		std::cout << "\n";
 	}
-	std::cout << "****** total:" << variables_.size() << "******" << std::endl;
+	std::cout << "****** total: " << variables_.size() << " ******" << std::endl;
 }
 
+// Debug -----------------------------------------------------------------------
+
+std::string SymbolTable::find_variable_name(const Variable* var)
+{
+	for (VariableMap::const_iterator it = variables_.begin(); it != variables_.end(); ++it)
+	{
+		if (&it->second == var)
+			return it->first;
+	}
+	return "<unknown variable>";
+}
+
+
+std::string SymbolTable::find_function_name(const Function* func)
+{
+	for (FunctionMap::const_iterator it = functions_.begin(); it != functions_.end(); ++it)
+	{
+		if (&it->second == func)
+			return it->first;
+	}
+	return "<unknown function>";
+}

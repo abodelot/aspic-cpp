@@ -115,7 +115,7 @@ public:
     /**
      * Print string representation
      */
-	void print(std::ostream& os) const;
+	void debug(std::ostream& os) const;
 	void print_value(std::ostream& os) const;
 
 	/**
