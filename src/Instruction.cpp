@@ -1,14 +1,13 @@
+#include <iostream>
+#include <cctype>
+#include <cstring>
+#include <cstdlib>
+
 #include "Instruction.hpp"
 #include "SymbolTable.hpp"
 #include "Error.hpp"
 #include "SymbolTable.hpp"
 #include "OperatorManager.hpp"
-
-#include <stack>
-#include <iostream>
-#include <cctype>
-#include <cstring>
-#include <cstdlib>
 
 
 Instruction::Instruction() :
@@ -42,10 +41,10 @@ void Instruction::tokenization(const std::string& expression)
 		char current = expression[i];
 
 		// operator?
-		if (operators_.in_alphabet(current))
+		if (is_valid_operator_char(current))
 		{
 			buffer += current;
-			for (++i; i < expression.size() && operators_.in_alphabet(expression[i]); ++i)
+			for (++i; i < expression.size() && is_valid_operator_char(expression[i]); ++i)
 			{
 				buffer += expression[i];
 			}
@@ -234,7 +233,7 @@ void Instruction::infix_to_postfix()
 			// If the stack runs out without finding a left parenthesis, then there are mismatched parentheses.
 			if (!bracket_found)
 			{
-				throw Error::MissingLeftBracket();
+				throw Error::SyntaxError("a left bracket is missing");
 			}
 			// Pop the left parenthesis from the stack, but not onto the output queue.
 			stack_.pop();
@@ -283,7 +282,7 @@ void Instruction::infix_to_postfix()
 			// was misplaced or parentheses were mismatched.
 			if (!bracket_found)
 			{
-				throw Error::MissingLeftBracket();
+				throw Error::SyntaxError("a left bracket is missing");
 			}
 			break;
 		}
@@ -302,7 +301,7 @@ void Instruction::infix_to_postfix()
 		}
 		else
 		{
-			throw Error::MissingRightBracket();
+			throw Error::SyntaxError("a right bracket is missing");
 		}
 		stack_.pop();
 	}
@@ -376,6 +375,17 @@ Token Instruction::eval_postfix()
 bool Instruction::is_valid_identifier_symbol(char c) const
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
+}
+
+
+bool Instruction::is_valid_operator_char(char c) const
+{
+	const char* ALPHABET = "+-*/%=!<>|&";
+	for (const char* p = ALPHABET; *p != '\0'; ++p)
+		if (*p == c)
+			return true;
+
+	return false;
 }
 
 

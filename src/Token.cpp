@@ -461,7 +461,7 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 
 bool Token::is_literal() const
 {
-	return type_ == STRING_LITERAL || type_ == INT_LITERAL || type_ || FLOAT_LITERAL || type_ == BOOL_LITERAL;
+	return type_ == STRING_LITERAL || type_ == INT_LITERAL || type_ == FLOAT_LITERAL || type_ == BOOL_LITERAL;
 }
 
 bool Token::is_typed(Type type) const

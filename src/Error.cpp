@@ -6,47 +6,27 @@
 
 Error Error::SyntaxError(const std::string& str)
 {
-	return Error(str);
-}
-
-Error Error::NameError(const std::string& str)
-{
-	return Error(str);
-}
-
-Error Error::TypeError(const std::string& str)
-{
-	return Error(str);
-}
-
-Error Error::InternalError(const std::string& str)
-{
-	return Error(str);
-}
-
-Error Error::DivideByZero()
-{
-	return Error("division or modulo by 0");
-}
-
-Error Error::MissingLeftBracket()
-{
-	return Error("a left bracket is missing");
-}
-
-Error Error::MissingRightBracket()
-{
-	return Error("a right bracket is missing");
+	return Error(Syntax, str);
 }
 
 Error Error::UnknownOperator(const std::string& str)
 {
-	return Error("operator '" + str + "' does not exist");
+	return Error(Syntax, "operator '" + str + "' does not exist");
+}
+
+Error Error::NameError(const std::string& var_name)
+{
+	return Error(Name, "referencing variable <" + var_name + "> before assignment");
+}
+
+Error Error::TypeError(const std::string& str)
+{
+	return Error(Type, str);
 }
 
 Error Error::UnsupportedOperator(Token::Type operand, Token::OperatorType op)
 {
-	Error e;
+	Error e(Type);
 	e.message_ += "type '";
 	e.message_ += Token::type_to_str(operand);
 	e.message_ += "' doesn't support operator '";
@@ -57,7 +37,7 @@ Error Error::UnsupportedOperator(Token::Type operand, Token::OperatorType op)
 
 Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::OperatorType op)
 {
-	Error e;
+	Error e(Type);
 	e.message_ += "unsupported binary operator '";
 	e.message_ += OperatorManager::to_str(op);
 	e.message_ += "' for operands '";
@@ -68,17 +48,32 @@ Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::Oper
 	return e;
 }
 
-
-Error::Error(const std::string& message)
+Error Error::InternalError(const std::string& str)
 {
-	message_ = message;
+	return Error(Internal, str);
 }
 
+Error Error::DivideByZero()
+{
+	return Error(Runtime, "division or modulo by 0");
+}
+
+Error::Error(ID id, const std::string& message)
+{
+	switch (id)
+	{
+		case Syntax:   message_ = "[SyntaxError] ";   break;
+		case Name:     message_ = "[NameError] ";     break;
+		case Type:     message_ = "[TypeError] ";     break;
+		case Internal: message_ = "[InternalError] "; break;
+		case Runtime:  message_ = "[RuntimeError] ";  break;
+	}
+	message_ += message;
+}
 
 Error::~Error() throw()
 {
 }
-
 
 const char* Error::what() const throw()
 {

@@ -12,23 +12,34 @@
 class Error: public std::exception
 {
 public:
+	enum ID
+	{
+		Syntax,
+		Name,
+		Type,
+		Internal,
+		Runtime
+	};
+	// Syntax
 	static Error SyntaxError(const std::string& str);
-	static Error NameError(const std::string& str);
-	static Error TypeError(const std::string& str);
-	static Error InternalError(const std::string& str);
-	static Error DivideByZero();
-	static Error MissingLeftBracket();
-	static Error MissingRightBracket();
 	static Error UnknownOperator(const std::string& str);
+	// Name
+	static Error NameError(const std::string& var_name);
+	// Type
+	static Error TypeError(const std::string& str);
 	static Error UnsupportedOperator(Token::Type operand, Token::OperatorType op);
 	static Error UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::OperatorType op);
+	// Internal
+	static Error InternalError(const std::string& str);
+	// Runtime
+	static Error DivideByZero();
 
 	~Error() throw();
 
 	const char* what() const throw();
 
 private:
-	Error(const std::string& message = "");
+	Error(ID id, const std::string& message = "");
 	std::string message_;
 };
 

@@ -44,9 +44,14 @@ private:
 	Token eval_postfix();
 
 	/**
-	 * @return true si 'c' est un composant valide d'un identifiant
+	 * Test if a character is a valid part of an identifier
 	 */
 	bool is_valid_identifier_symbol(char c) const;
+
+	/**
+	 * Test if a character is a valid part of an operator
+	 */
+	bool is_valid_operator_char(char c) const;
 
 	typedef std::vector<Token> TokenList;
 

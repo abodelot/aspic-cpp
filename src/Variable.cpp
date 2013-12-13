@@ -1,5 +1,6 @@
 #include "Variable.hpp"
 #include "Error.hpp"
+#include "SymbolTable.hpp"
 
 
 Variable::Variable():
@@ -24,7 +25,7 @@ Token& Variable::get()
 {
 	if (unset_)
 	{
-		throw Error::NameError("referencing a variable before assignment");
+		throw Error::NameError(SymbolTable::find_variable_name(this));
 	}
 	return literal_;
 }

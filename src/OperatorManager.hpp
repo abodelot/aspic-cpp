@@ -23,17 +23,6 @@ public:
      */
     bool eval(const std::string& str, Token::OperatorType& op_type, const Token* previous) const;
 
-    /**
-     * Alphabet whose operators are made
-     * @return string containing all characters which compose operators
-     */
-    static const char* alphabet();
-
-	/**
-	 * Test if a character belongs to operator's alphabet
-	 */
-    static bool in_alphabet(char c);
-
 	/**
 	 * Compare priority of two operators
 	 * @return < 0 if op1 < op2, 0 if op1 == op2, > 0 if op1 > op2
@@ -44,7 +33,6 @@ public:
 
 private:
     OperatorManager();
-
 
     /**
      * Convert a binary operator to its unary version
@@ -57,9 +45,6 @@ private:
     OperatorMap operators_;
 
     int precedences_[Token::OPERATOR_COUNT];
-
-    typedef std::map<std::string, Token::Keyword> KeywordMap;
-    KeywordMap keywords_;
 };
 
 #endif // OPERATORMANAGER_HPP

@@ -1,12 +1,8 @@
 #ifndef VARIABLE_HPP
 #define VARIABLE_HPP
 
-#include <vector>
-#include <stack>
 #include "Token.hpp"
-
 #include "TokenStack.hpp"
-//typedef std::stack<Token, std::vector<Token> > TokenStack;
 
 /**
  * Define the Function type

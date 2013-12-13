@@ -181,25 +181,6 @@ bool OperatorManager::eval(const std::string& str, Token::OperatorType& op_type,
 }
 
 
-const char* OperatorManager::alphabet()
-{
-    return "+-*/%=!<>|&";
-}
-
-
-bool OperatorManager::in_alphabet(char c)
-{
-    for (const char* alpha = alphabet(); *alpha != '\0'; ++alpha)
-    {
-        if (*alpha == c)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-
 int OperatorManager::compare(const Token& op1, const Token& op2)
 {
 	int a = op1.get_operator_type();
