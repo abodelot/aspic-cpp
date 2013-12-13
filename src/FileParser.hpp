@@ -2,9 +2,6 @@
 #define FILEPARSER_HPP
 
 
-#include "SymbolTable.hpp"
-#include "Error.hpp"
-
 class FileParser
 {
 public:
@@ -17,7 +14,6 @@ public:
 private:
 	void clear_line(std::string& line);
 
-	SymbolTable symbols_;
 };
 
 #endif // FILEPARSER_HPP

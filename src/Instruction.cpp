@@ -1,7 +1,7 @@
 #include "Instruction.hpp"
 #include "SymbolTable.hpp"
 #include "Error.hpp"
-#include "Variable.hpp"
+#include "SymbolTable.hpp"
 #include "OperatorManager.hpp"
 
 #include <stack>
@@ -11,8 +11,7 @@
 #include <cstdlib>
 
 
-Instruction::Instruction(SymbolTable& symbols) :
-	symbols_(symbols),
+Instruction::Instruction() :
 	operators_(OperatorManager::get_instance())
 {
 }
@@ -61,10 +60,11 @@ void Instruction::tokenization(const std::string& expression)
 {
 	// tokenization: transform an expression string into a token vector
 	tokens_.clear();
-	std::string buffer = ""; // buffer is the string representation of the currently parsed token
+	static std::string buffer; // buffer is the string representation of the currently parsed token
 	int previous_index = -1;
 	for (size_t i = 0; i < expression.size(); ++i)
 	{
+		buffer.clear();
 		char current = expression[i];
 
 		// operator?
@@ -169,8 +169,8 @@ void Instruction::tokenization(const std::string& expression)
 
 			tokens_.push_back(Token::create_string(buffer));
 		}
-		// Scanning identifier
-		// (we already know that current char is not a digit, so no need to check that)
+		// Scanning identifier (function or variable)
+		// We already know that current char is not a digit, so no need to check that
 		else if (is_valid_identifier_symbol(current))
 		{
 			// on lit tous les caractères jusqu'à recomposer l'identifiant
@@ -180,40 +180,27 @@ void Instruction::tokenization(const std::string& expression)
 				buffer += expression[i];
 			}
 			--i;
-			// check for function, then for variable
-			SymbolTable::Function func = symbols_.get_function(buffer);
+
+			// TODO: allow variables to shadow function defintions?
+			const Function* func = SymbolTable::get_function(buffer);
 			if (func != NULL)
 			{
-				Token t = Token::create_function(func);
-				tokens_.push_back(t);
+				tokens_.push_back(Token::create_function(func));
 			}
 			else
 			{
-				Variable* var = NULL;
-				if (symbols_.is_variable(buffer))
-				{
-					var = symbols_.get(buffer);
-				}
-				else
-				{
-					var = new Variable();
-					symbols_.add(buffer, var);
-				}
+				// If a variable named after the buffer value doesn't exist, SymbolTable will create it
+				Variable* var = SymbolTable::get_variable(buffer);
 				tokens_.push_back(Token::create_variable(var));
 			}
         }
-        // whitespace?
-        else if (current == ' ' || current == '\t')
+        // Ignore whitespaces
+        else if (current != ' ' && current != '\t')
         {
-        	// nothing to do
-        }
-        else
-        {
-        	throw Error::InvalidToken(current);
+        	throw Error::SyntaxError(std::string("illegal character encountered: ") + current);
         }
 
 		previous_index = tokens_.size() - 1;
-		buffer.clear();
 	}
 }
 

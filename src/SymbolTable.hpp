@@ -3,12 +3,10 @@
 
 #include <string>
 #include <map>
-#include <stack>
 
+#include "Token.hpp"
+#include "Variable.hpp"
 
-class Variable;
-class Token;
-typedef std::stack<Token> TokenStack;
 
 /**
  * Interpreter symbol table
@@ -18,50 +16,33 @@ class SymbolTable
 {
 public:
 	/**
-	 * Define functions signature
-	 * the token stack holds all function arguments
+	 * Initialize the symbol table with the function from the standard library
 	 */
-	typedef Token (*Function)(TokenStack&);
-
-	SymbolTable();
-	~SymbolTable();
-
-	/**
-	 * Test if an indentifier already exists
-	 */
-	bool is_variable(const std::string& name) const;
-	bool is_function(const std::string& name) const;
-
-	/**
-	 * Retrieve a variable content
-	 * @param name: variable identifier
-	 */
-	Variable* get(const std::string& name);
+	static void register_stdlib();
 
 	/**
 	 * Retrieve a function definition
 	 * @param name: function identifier
 	 */
-	Function get_function(const std::string& name) const;
+	static const Function* get_function(const std::string& name);
 
 	/**
-	 * Declare a new variable
+	 * Get a variable or declare it doesn't already exist
 	 * @param name: variable identifier
-	 * @param variable: pointer to variable to store
 	 */
-	void add(const std::string& name, Variable* variable);
+	static Variable* get_variable(const std::string& name);
 
 	/**
 	 * Declare a C++ function
 	 * @param name: function identifier
 	 * @param function: pointer to C++ function to store
 	 */
-	void add(const std::string& name, Function function);
+	static void add(const std::string& name, Function::Ptr function);
 
 	/**
 	 * Print symbol table content
 	 */
-	void debug() const;
+	static void debug();
 
 	/**
 	 * Raises an exception if arguments count is insufficient
@@ -71,11 +52,13 @@ public:
 	static void check_args(TokenStack& args, int count);
 
 private:
-	typedef std::map<std::string, Variable*> VarMap;
-	VarMap variables_;
+	SymbolTable();
+
+	typedef std::map<std::string, Variable> VariableMap;
+	static VariableMap variables_;
 
 	typedef std::map<std::string, Function> FunctionMap;
-	FunctionMap functions_;
+	static FunctionMap functions_;
 
 
 };

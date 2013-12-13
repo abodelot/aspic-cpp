@@ -1,7 +1,9 @@
 #include <fstream>
 #include <iostream>
+#include "Error.hpp"
 #include "FileParser.hpp"
 #include "Instruction.hpp"
+#include "SymbolTable.hpp"
 
 #define COMMENT_SYMBOL '#'
 
@@ -16,7 +18,7 @@ bool FileParser::load_file(const char* filename)
 
 	if (file)
 	{
-		Instruction parser(symbols_);
+		Instruction parser;
 		std::string line;
 		while (std::getline(file, line))
 		{
@@ -35,7 +37,7 @@ bool FileParser::load_file(const char* filename)
 
 void FileParser::shell_mode()
 {
-	Instruction parser(symbols_);
+	Instruction parser;
 	std::string input;
 	puts("Saisir une instruction, ou :\n"
 	     " 'exit': quitter\n"
@@ -56,7 +58,7 @@ void FileParser::shell_mode()
 		}
 		else if (input == "vars")
 		{
-			symbols_.debug();
+			SymbolTable::debug();
 		}
 		else if (input == "tokens")
 		{
@@ -70,7 +72,7 @@ void FileParser::shell_mode()
 		{
 			try
 			{
-				parser.eval(input).print(std::cout);
+				parser.eval(input).print_value(std::cout);
 				std::cout << std::endl;
 			}
 			catch (Error& e)

@@ -12,9 +12,10 @@
 class Error: public std::exception
 {
 public:
-
 	static Error SyntaxError(const std::string& str);
 	static Error NameError(const std::string& str);
+	static Error TypeError(const std::string& str);
+	static Error InternalError(const std::string& str);
 	static Error DivideByZero();
 	static Error MissingLeftBracket();
 	static Error MissingRightBracket();

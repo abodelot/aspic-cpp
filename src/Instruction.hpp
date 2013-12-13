@@ -6,7 +6,7 @@
 
 #include "Token.hpp"
 
-class SymbolTable;
+
 class OperatorManager;
 
 /**
@@ -15,7 +15,7 @@ class OperatorManager;
 class Instruction
 {
 public:
-	Instruction(SymbolTable& symbols);
+	Instruction();
 
 	/**
 	 * Évaluer une expression
@@ -60,7 +60,6 @@ private:
 
 	TokenList postfix_;
 	TokenList tokens_;
-	SymbolTable& symbols_;;
 	OperatorManager& operators_;
 };
 

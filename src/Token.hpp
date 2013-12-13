@@ -2,9 +2,11 @@
 #define TOKEN_HPP
 
 #include <string>
-#include "SymbolTable.hpp"
+#include <stack>
+
 
 class Variable;
+class Function;
 
 /**
  * Token: holds an atomic element in an expression
@@ -26,6 +28,8 @@ public:
 		RIGHT_BRACKET,
 		KEYWORD
 	};
+
+	static const char* type_to_str(Type type);
 
 	/**
 	 * Types d'opérateur (token de type OPERATOR uniquement)
@@ -61,6 +65,8 @@ public:
 		OP_SUBTRACT_AND_ASSIGN  // -=
 	};
 
+	static const int OPERATOR_COUNT = 23;
+
 	enum Keyword
 	{
 		KW_IF,
@@ -69,8 +75,6 @@ public:
 		KW_WHILE,
 		KW_END
 	};
-
-	static const int OPERATOR_COUNT = 23;
 
     Token(Type);
 
@@ -90,8 +94,8 @@ public:
 	/**
 	 * Create a token bound to a symbol
 	 */
-	static Token create_variable(Variable* var);
-	static Token create_function(SymbolTable::Function func);
+	static Token create_variable(Variable* value);
+	static Token create_function(const Function* func);
 
 
 	/**
@@ -99,16 +103,12 @@ public:
 	 * @param args: arguments la fonction, sous forme de tokens
 	 * @return résultat de la fonction, sous forme de token
 	 */
-	Token exec_function(std::stack<Token>& args) const
-	{
-		return (data_.function)(args);
-	}
+	Token exec_function(std::stack<Token>& args) const;
 
 	/**
 	 * Get token type and string representation
 	 */
 	Type get_type() const;
-	static const char* to_str(Type type);
 	OperatorType get_operator_type() const;
 
 
@@ -116,6 +116,7 @@ public:
      * Print string representation
      */
 	void print(std::ostream& os) const;
+	void print_value(std::ostream& os) const;
 
 	/**
 	 * Operator helpers
@@ -141,32 +142,33 @@ public:
 	bool is_typed(Type type) const;
 
 	/**
-	 * Operand cast
+	 * Get literal value from an operand token, value is casted if necesary
+	 * If token cannot be represented as the requested type, TypeError is raised
 	 */
-	std::string string_value() const;
-	int         int_value() const;
-	double      float_value() const;
-	bool        bool_value() const;
+	const std::string& as_string() const;
+	int                as_int() const;
+	double             as_float() const;
+	bool               as_bool() const;
 
 private:
 	/**
-	 * Holds token value, according to its type
+	 * Holds the token value, according to Token::Type
 	 */
 	union TokenData
 	{
-		OperatorType          op_type;     // OPERATOR
-		int                   int_value;   // INT_LITERAL
-		bool                  bool_value;  // BOOL_LITERAL
-		double                float_value; // FOAT_LITERAL
-		Variable*             variable;    // VARIABLE
-		SymbolTable::Function function;    // FUNCTION
-		Keyword               keyword;     // KEYWORD
+		OperatorType    op_type;     // OPERATOR
+		int             int_value;   // INT_LITERAL
+		bool            bool_value;  // BOOL_LITERAL
+		double          float_value; // FOAT_LITERAL
+		Variable*       variable;    // VARIABLE
+		const Function* function;    // FUNCTION
+		Keyword         keyword;     // KEYWORD
 	};
-	// STRING_LITERAL
-	std::string str_; // HACK: cannot store it into TokenData union because std::string is an object
+	// Cannot store it into TokenData union because std::string is an object
+	std::string str_;              // STRING_LITERAL
 
-	TokenData data_;
-	Type type_;
+	TokenData  data_;
+	Type       type_;
 };
 
 #endif // TOKEN_HPP

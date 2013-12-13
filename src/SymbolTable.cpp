@@ -1,25 +1,24 @@
-#include <cassert>
 #include <iostream>
 #include <sstream>
 
 #include "SymbolTable.hpp"
-#include "Token.hpp"
-#include "Variable.hpp"
 #include "Error.hpp"
-
 #include "functions/LibCore.hpp"
 #include "functions/LibString.hpp"
 
+SymbolTable::VariableMap SymbolTable::variables_;
+SymbolTable::FunctionMap SymbolTable::functions_;
 
-SymbolTable::SymbolTable()
+
+void SymbolTable::register_stdlib()
 {
-	// load core library
+	// Load core library (no prefix)
 	add("print", std_print);
 	add("input", std_input);
 	add("typeof", std_typeof);
 	add("round", std_round);
 
-	// load string library
+	// Load string library
 	add("str_len", str_len);
 	add("str_count", str_count);
 	add("str_replace", str_replace);
@@ -30,49 +29,22 @@ SymbolTable::SymbolTable()
 }
 
 
-SymbolTable::~SymbolTable()
-{
-	for (VarMap::iterator it = variables_.begin(); it != variables_.end(); ++it) {
-		delete it->second;
-	}
-}
-
-
-bool SymbolTable::is_variable(const std::string& name) const
-{
-	VarMap::const_iterator it = variables_.find(name);
-	return it != variables_.end();
-}
-
-
-bool SymbolTable::is_function(const std::string& name) const
+const Function* SymbolTable::get_function(const std::string& name)
 {
 	FunctionMap::const_iterator it = functions_.find(name);
-	return it != functions_.end();
-}
-
-Variable* SymbolTable::get(const std::string& name)
-{
-	return variables_[name];
-}
-
-SymbolTable::Function SymbolTable::get_function(const std::string& name) const
-{
-	FunctionMap::const_iterator it = functions_.find(name);
-	return it != functions_.end() ? it->second : NULL;
+	return it != functions_.end() ? &it->second : NULL;
 }
 
 
-void SymbolTable::add(const std::string& name, Variable* variable)
+Variable* SymbolTable::get_variable(const std::string& name)
 {
-	assert(!is_variable(name));
-	variables_[name] = variable;
+	return &variables_[name];
 }
 
 
-void SymbolTable::add(const std::string& name, Function function)
+void SymbolTable::add(const std::string& name, Function::Ptr function)
 {
-	functions_[name] = function;
+	functions_[name] = Function(function);
 }
 
 
@@ -98,17 +70,21 @@ void SymbolTable::check_args(TokenStack& args, int count)
 }
 
 
-void SymbolTable::debug() const
+void SymbolTable::debug()
 {
-	for (VarMap::const_iterator it = variables_.begin(); it != variables_.end(); ++it)
+	for (VariableMap::iterator it = variables_.begin(); it != variables_.end(); ++it)
 	{
 		std::cout << it->first.c_str() << ": ";
-		Variable* var = it->second;
-		if (var->is_null())
-			std::cout << "nil!";
-		else
-			var->value().print(std::cout);
+		try
+		{
+			it->second.get().print_value(std::cout);
+		}
+		catch (Error& error) // TODO: NameError
+		{
+			std::cout << "[not initialized yet]";
+		}
 		std::cout << "\n";
 	}
+	std::cout << "****** total:" << variables_.size() << "******" << std::endl;
 }
 

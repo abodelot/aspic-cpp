@@ -3,17 +3,35 @@
 #include <cmath>
 
 #include "Token.hpp"
+#include "Variable.hpp"
 #include "Error.hpp"
 #include "OperatorManager.hpp"
-#include "Variable.hpp"
+
+// helpers ---------------------------------------------------------------------
+
+const char* Token::type_to_str(Type type)
+{
+	switch (type)
+	{
+		case INT_LITERAL:
+			return "int";
+		case FLOAT_LITERAL:
+			return "float";
+		case BOOL_LITERAL:
+			return "bool";
+		case STRING_LITERAL:
+			return "string";
+		default: break;
+	}
+	return "";
+}
 
 // constructors ----------------------------------------------------------------
 
-Token::Token(Type type)
+Token::Token(Type type):
+	type_(type)
 {
-	type_ = type;
 }
-
 
 Token Token::create_int(int value)
 {
@@ -63,7 +81,7 @@ Token Token::create_variable(Variable* variable)
 }
 
 
-Token Token::create_function(SymbolTable::Function func)
+Token Token::create_function(const Function* func)
 {
 	Token self(FUNCTION);
 	self.data_.function = func;
@@ -86,21 +104,9 @@ Token::OperatorType Token::get_operator_type() const
 }
 
 
-const char* Token::to_str(Type type)
+Token Token::exec_function(std::stack<Token>& args) const
 {
-	switch (type)
-	{
-		case INT_LITERAL:
-			return "int";
-		case FLOAT_LITERAL:
-			return "float";
-		case BOOL_LITERAL:
-			return "bool";
-		case STRING_LITERAL:
-			return "string";
-		default: break;
-	}
-	return "";
+	return (data_.function->ptr)(args);
 }
 
 
@@ -177,11 +183,11 @@ Token Token::apply_unary_operator(Token::OperatorType op)
 			switch (op)
 			{
 				case OP_UNARY_PLUS:
-					return Token::create_int(+ int_value());
+					return Token::create_int(+ as_int());
 				case OP_UNARY_MINUS:
-					return Token::create_int(- int_value());
+					return Token::create_int(- as_int());
 				case OP_NOT:
-					return Token::create_bool(! bool_value());
+					return Token::create_bool(! as_bool());
 				default: break;
 			}
 			break;
@@ -189,11 +195,11 @@ Token Token::apply_unary_operator(Token::OperatorType op)
 			switch (op)
 			{
 				case OP_UNARY_PLUS:
-					return Token::create_float(+ float_value());
+					return Token::create_float(+ as_float());
 				case OP_UNARY_MINUS:
-					return Token::create_float(- float_value());
+					return Token::create_float(- as_float());
 				case OP_NOT:
-					return Token::create_bool(! bool_value());
+					return Token::create_bool(! as_bool());
 				default: break;
 
 			}
@@ -201,11 +207,11 @@ Token Token::apply_unary_operator(Token::OperatorType op)
 		case STRING_LITERAL:
 			if (op == OP_NOT)
 			{
-				return Token::create_bool(! bool_value());
+				return Token::create_bool(! as_bool());
 			}
 			break;
 		case VARIABLE:
-			return data_.variable->value().apply_unary_operator(op);
+			return data_.variable->get().apply_unary_operator(op);
 		default:
 			break;
 
@@ -226,67 +232,67 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 		if (operand.is_typed(FLOAT_LITERAL))
 		{
 			// if the other operand is float typed, the result will be also float typed
-			Token cast_to_float = Token::create_float(float_value());
+			Token cast_to_float = Token::create_float(as_float());
 			return cast_to_float.apply_binary_operator(op, operand);
 		}
 
 		switch (op)
 		{
 			case OP_POW:
-				return Token::create_int(std::pow(int_value(), operand.int_value()));
+				return Token::create_int(std::pow(as_int(), operand.as_int()));
 
 			case OP_MULTIPLICATION:
 				// 2 * "hello" => "hellohello"
 				if (operand.is_typed(STRING_LITERAL))
 					return operand.apply_binary_operator(op, *this);
 
-				return Token::create_int(int_value() * operand.int_value());
+				return Token::create_int(as_int() * operand.as_int());
 
 			case OP_DIVISION:
 			{
-				int denominator = operand.int_value();
+				int denominator = operand.as_int();
 				if (denominator == 0)
 					throw Error::DivideByZero();
 
-				return Token::create_int(int_value() / denominator);
+				return Token::create_int(as_int() / denominator);
 			}
 			case OP_MODULO:
 			{
-				int denominator = operand.int_value();
+				int denominator = operand.as_int();
 				if (denominator == 0)
 					throw Error::DivideByZero();
 
-				return Token::create_int(int_value() % denominator);
+				return Token::create_int(as_int() % denominator);
 			}
 			case OP_ADDITION:
-				return Token::create_int(int_value() + operand.int_value());
+				return Token::create_int(as_int() + operand.as_int());
 
 			case OP_SUBTRACTION:
-				return Token::create_int(int_value() - operand.int_value());
+				return Token::create_int(as_int() - operand.as_int());
 
 			case OP_LESS_THAN:
-				return Token::create_bool(int_value() < operand.int_value());
+				return Token::create_bool(as_int() < operand.as_int());
 
 			case OP_LESS_THAN_OR_EQUAL:
-				return Token::create_bool(int_value() <= operand.int_value());
+				return Token::create_bool(as_int() <= operand.as_int());
 
 			case OP_GREATER_THAN:
-				return Token::create_bool(int_value() > operand.int_value());
+				return Token::create_bool(as_int() > operand.as_int());
 
 			case OP_GREATER_THAN_OR_EQUAL:
-				return Token::create_bool(int_value() >= operand.int_value());
+				return Token::create_bool(as_int() >= operand.as_int());
 
 			case OP_EQUAL:
-				return Token::create_bool(int_value() == operand.int_value());
+				return Token::create_bool(as_int() == operand.as_int());
 
 			case OP_NOT_EQUAL:
-				return Token::create_bool(int_value() != operand.int_value());
+				return Token::create_bool(as_int() != operand.as_int());
 
 			case OP_LOGICAL_AND:
-				return Token::create_bool(bool_value() && operand.bool_value());
+				return Token::create_bool(as_bool() && operand.as_bool());
 
 			case OP_LOGICAL_OR:
-				return Token::create_bool(bool_value() || operand.bool_value());
+				return Token::create_bool(as_bool() || operand.as_bool());
 
 			default: break;
 		}
@@ -296,56 +302,56 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 		switch (op)
 		{
 			case OP_POW:
-				return Token::create_float(std::pow(float_value(), operand.float_value()));
+				return Token::create_float(std::pow(as_float(), operand.as_float()));
 
 			case OP_MULTIPLICATION:
-				return Token::create_float(float_value() * operand.float_value());
+				return Token::create_float(as_float() * operand.as_float());
 
 			case OP_DIVISION:
 			{
-				float denominator = operand.float_value();
+				float denominator = operand.as_float();
 				if (denominator == 0.f)
 					throw Error::DivideByZero();
 
-				return Token::create_float(float_value() / denominator);
+				return Token::create_float(as_float() / denominator);
 			}
 			case OP_MODULO:
 			{
-				double denominator = operand.float_value();
+				double denominator = operand.as_float();
 				if (denominator == 0.f)
 					throw Error::DivideByZero();
 
-				return Token::create_float(fmod(float_value(), denominator));
+				return Token::create_float(fmod(as_float(), denominator));
 			}
 			case OP_ADDITION:
-				return Token::create_float(float_value() + operand.float_value());
+				return Token::create_float(as_float() + operand.as_float());
 
 			case OP_SUBTRACTION:
-				return Token::create_float(float_value() - operand.float_value());
+				return Token::create_float(as_float() - operand.as_float());
 
 			case OP_LESS_THAN:
-				return Token::create_bool(float_value() < operand.float_value());
+				return Token::create_bool(as_float() < operand.as_float());
 
 			case OP_LESS_THAN_OR_EQUAL:
-				return Token::create_bool(float_value() <= operand.float_value());
+				return Token::create_bool(as_float() <= operand.as_float());
 
 			case OP_GREATER_THAN:
-				return Token::create_bool(float_value() > operand.float_value());
+				return Token::create_bool(as_float() > operand.as_float());
 
 			case OP_GREATER_THAN_OR_EQUAL:
-				return Token::create_bool(float_value() >= operand.float_value());
+				return Token::create_bool(as_float() >= operand.as_float());
 
 			case OP_EQUAL:
-				return Token::create_bool(float_value() == operand.float_value());
+				return Token::create_bool(as_float() == operand.as_float());
 
 			case OP_NOT_EQUAL:
-				return Token::create_bool(float_value() != operand.float_value());
+				return Token::create_bool(as_float() != operand.as_float());
 
 			case OP_LOGICAL_AND:
-				return Token::create_bool(bool_value() && operand.bool_value());
+				return Token::create_bool(as_bool() && operand.as_bool());
 
 			case OP_LOGICAL_OR:
-				return Token::create_bool(bool_value() || operand.bool_value());
+				return Token::create_bool(as_bool() || operand.as_bool());
 
 			default: break;
 		}
@@ -355,12 +361,12 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 		switch (op)
 		{
 			case OP_ADDITION:
-				return Token::create_string(str_ + operand.string_value());
+				return Token::create_string(str_ + operand.as_string());
 
 			case OP_MULTIPLICATION:
 			{
 				std::string result;
-				int count = operand.int_value();
+				int count = operand.as_int();
 				for (int i = 0; i < count; ++i)
 				{
 					result += str_;
@@ -369,28 +375,28 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 			}
 
 			case OP_LESS_THAN:
-				return Token::create_bool(str_ < operand.string_value());
+				return Token::create_bool(str_ < operand.as_string());
 
 			case OP_LESS_THAN_OR_EQUAL:
-				return Token::create_bool(str_ <= operand.string_value());
+				return Token::create_bool(str_ <= operand.as_string());
 
 			case OP_GREATER_THAN:
-				return Token::create_bool(str_ > operand.string_value());
+				return Token::create_bool(str_ > operand.as_string());
 
 			case OP_GREATER_THAN_OR_EQUAL:
-				return Token::create_bool(str_ >= operand.string_value());
+				return Token::create_bool(str_ >= operand.as_string());
 
 			case OP_EQUAL:
-				return Token::create_bool(str_ == operand.string_value());
+				return Token::create_bool(str_ == operand.as_string());
 
 			case OP_NOT_EQUAL:
-				return Token::create_bool(str_ != operand.string_value());
+				return Token::create_bool(str_ != operand.as_string());
 
 			case OP_LOGICAL_AND:
-				return Token::create_bool(bool_value() && operand.bool_value());
+				return Token::create_bool(as_bool() && operand.as_bool());
 
 			case OP_LOGICAL_OR:
-				return Token::create_bool(bool_value() || operand.bool_value());
+				return Token::create_bool(as_bool() || operand.as_bool());
 			default: break;
 		}
 		break;
@@ -398,49 +404,67 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 	case VARIABLE:
 		switch (op)
 		{
-			// handles operators which update the variable value
+			// Handle operators which update the variable value, operand is the assigned lvalue
 			case OP_ASSIGNMENT:
 			{
-				// do NOT put a variable token in a variable token :)
+				// Always copy by value, otherwise copying the operand name will create a reference
 				if (operand.type_ == VARIABLE)
-					data_.variable->set(operand.data_.variable->value());
-				else
-					data_.variable->set(operand);
+				{
+					Token& lvalue = operand.data_.variable->get();
+					data_.variable->set(lvalue);
+					return lvalue;
+				}
+				data_.variable->set(operand);
 				return operand;
 			}
 			case OP_MULTIPLY_AND_ASSIGN:
 			{
-				Token result = data_.variable->value().apply_binary_operator(OP_MULTIPLICATION, operand);
-				data_.variable->set(result);
-				return result;
+				Token& rvalue = data_.variable->get();
+				rvalue = rvalue.apply_binary_operator(OP_MULTIPLICATION, operand);
+				return rvalue;
 			}
 			case OP_DIVIDE_AND_ASSIGN:
 			{
-				Token result = data_.variable->value().apply_binary_operator(OP_DIVISION, operand);
+				Token& rvalue = data_.variable->get();
+				rvalue = rvalue.apply_binary_operator(OP_DIVISION, operand);
+				return rvalue;
+				/*Token result = data_.variable->value().apply_binary_operator(OP_DIVISION, operand);
 				data_.variable->set(result);
-				return result;
+				return result;*/
 			}
 			case OP_MODULO_AND_ASSIGN:
 			{
+				Token& rvalue = data_.variable->get();
+				rvalue = rvalue.apply_binary_operator(OP_MODULO, operand);
+				return rvalue;
+/*
 				Token result = data_.variable->value().apply_binary_operator(OP_MODULO, operand);
 				data_.variable->set(result);
-				return result;
+				return result;*/
 			}
 			case OP_ADD_AND_ASSIGN:
 			{
-				Token result = data_.variable->value().apply_binary_operator(OP_ADDITION, operand);
+				Token& rvalue = data_.variable->get();
+				rvalue = rvalue.apply_binary_operator(OP_ADDITION, operand);
+				return rvalue;
+
+		/*		Token result = data_.variable->value().apply_binary_operator(OP_ADDITION, operand);
 				data_.variable->set(result);
-				return result;
+				return result;*/
 			}
 			case OP_SUBTRACT_AND_ASSIGN:
 			{
+				Token& rvalue = data_.variable->get();
+				rvalue = rvalue.apply_binary_operator(OP_SUBTRACTION, operand);
+				return rvalue;
+				/*
 				Token result = data_.variable->value().apply_binary_operator(OP_SUBTRACTION, operand);
 				data_.variable->set(result);
-				return result;
+				return result;*/
 			}
 			default:
-				// variable is not modified, extract value and apply operator on it
-				return data_.variable->value().apply_binary_operator(op, operand);
+				// Variable is not modified, extract value and apply operator on it
+				return data_.variable->get().apply_binary_operator(op, operand);
 		}
 		break;
 	default:
@@ -458,40 +482,44 @@ bool Token::is_literal() const
 
 bool Token::is_typed(Type type) const
 {
-	return type_ == type || (type_ == VARIABLE && data_.variable->value().get_type() == type);
+	return type_ == type || (type_ == VARIABLE && data_.variable->get().get_type() == type);
 }
 
 
 // cast ------------------------------------------------------------------------
 
-std::string Token::string_value() const
+const std::string& Token::as_string() const
 {
 	if (type_ == STRING_LITERAL)
 		return str_;
 
 	if (type_ == VARIABLE)
-		return data_.variable->value().string_value();
+		return data_.variable->get().as_string();
 
-	throw Error::SyntaxError("expected string token");
+	throw Error::TypeError("a string is required");
 }
 
 
 
-double Token::float_value() const
+double Token::as_float() const
 {
 	switch (type_)
 	{
 		case FLOAT_LITERAL:
 			return data_.float_value;
+		case INT_LITERAL:
+			return (double) data_.int_value;
+		case BOOL_LITERAL:
+			return (double) data_.bool_value;
 		case VARIABLE:
-			return data_.variable->value().float_value();
+			return data_.variable->get().as_float();
 		default:
-			return (double) int_value();
+			throw Error::TypeError("a float is required");
 	}
 }
 
 
-int Token::int_value() const
+int Token::as_int() const
 {
 	switch (type_)
 	{
@@ -500,14 +528,14 @@ int Token::int_value() const
 		case BOOL_LITERAL:
 			return data_.bool_value ? 1 : 0;
 		case VARIABLE:
-			return data_.variable->value().int_value();
+			return data_.variable->get().as_int();
 		default:
-			throw Error::SyntaxError("expected int token");
+			throw Error::TypeError("an integer is required");
 	}
 }
 
 
-bool Token::bool_value() const
+bool Token::as_bool() const
 {
 	switch (type_)
 	{
@@ -520,16 +548,28 @@ bool Token::bool_value() const
 		case BOOL_LITERAL:
 			return data_.bool_value;
 		case VARIABLE:
-			return data_.variable->value().bool_value();
+			return data_.variable->get().as_bool();
 		default:
-			throw Error::SyntaxError("token must be a value");
+			throw Error::TypeError("a boolean is required");
 	}
 }
 
 
 // debug -----------------------------------------------------------------------
 
-void Token::print(std::ostream& os) const
+void Token::print(std::ostream& os) const // __repr__()
+{
+	if (type_ == VARIABLE)
+	{
+		os << "$" << str_; // for debug purpose only...
+	}
+	else
+	{
+		print_value(os);
+	}
+
+}
+void Token::print_value(std::ostream& os) const // __str__()
 {
 	switch (type_)
 	{
@@ -547,10 +587,10 @@ void Token::print(std::ostream& os) const
 			break;
 		case VARIABLE:
 			// print encapsulated token
-			data_.variable->value().print(os);
+			data_.variable->get().print_value(std::cout);
 			break;
 		case FUNCTION:
-			os << str_ << "()";
+			os << "function()"; // TODO: fetch the function name in the SymbolTable from pointer value?
 			break;
 		case OPERATOR:
 			os << OperatorManager::to_str(data_.op_type);

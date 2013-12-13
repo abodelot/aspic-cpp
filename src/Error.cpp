@@ -4,13 +4,22 @@
 #include "OperatorManager.hpp"
 
 
-
 Error Error::SyntaxError(const std::string& str)
 {
 	return Error(str);
 }
 
 Error Error::NameError(const std::string& str)
+{
+	return Error(str);
+}
+
+Error Error::TypeError(const std::string& str)
+{
+	return Error(str);
+}
+
+Error Error::InternalError(const std::string& str)
 {
 	return Error(str);
 }
@@ -48,7 +57,7 @@ Error Error::UnsupportedOperator(Token::Type operand, Token::OperatorType op)
 {
 	Error e;
 	e.message_ += "type '";
-	e.message_ += Token::to_str(operand);
+	e.message_ += Token::type_to_str(operand);
 	e.message_ += "' doesn't support operator '";
 	e.message_ += OperatorManager::to_str(op);
 	e.message_ += "'";
@@ -61,9 +70,9 @@ Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::Oper
 	e.message_ += "unsupported binary operator '";
 	e.message_ += OperatorManager::to_str(op);
 	e.message_ += "' for operands '";
-	e.message_ += Token::to_str(a);
+	e.message_ += Token::type_to_str(a);
 	e.message_ += "' and '";
-	e.message_ += Token::to_str(b);
+	e.message_ += Token::type_to_str(b);
 	e.message_ += "'";
 	return e;
 }

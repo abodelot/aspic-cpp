@@ -1,39 +1,30 @@
-#include <iostream>
-#include <cassert>
-
 #include "Variable.hpp"
 #include "Error.hpp"
 
-Variable::Variable() :
-	token_(Token::create_int(0))
+
+Variable::Variable():
+	literal_(Token::create_int(0)),
+	unset_(true)
 {
-	unset_ = true;
 }
 
 
-void Variable::set(const Token& token)
+void Variable::set(const Token& literal)
 {
-	if (!token.is_literal())
+	if (!literal.is_literal())
 	{
-		throw Error::SyntaxError("invalid right-value");
+		throw Error::InternalError("invalid right-value for variable");
 	}
-	token_ = token;
 	unset_ = false;
+	literal_ = literal;
 }
 
 
-bool Variable::is_null() const
-{
-	return unset_;
-}
-
-
-Token& Variable::value()
+Token& Variable::get()
 {
 	if (unset_)
 	{
 		throw Error::NameError("referencing a variable before assignment");
 	}
-	return token_;
+	return literal_;
 }
-
