@@ -39,11 +39,10 @@ void FileParser::shell_mode()
 {
 	Instruction parser;
 	std::string input;
-	puts("Saisir une instruction, ou :\n"
-	     " 'exit': quitter\n"
-	     " 'vars': afficher les variables en mémoire\n"
-	     " 'tokens': afficher les tokens de l'expression infixe\n"
-	     " 'postfix': afficher la notation postfixe de la derniere ligne\n");
+	puts("Saisir une expression, ou :\n"
+	     " * exit  : quitter l'interpréteur\n"
+	     " * pool  : afficher les variables dans la table des symboles\n"
+	     " * debug : afficher la dernière expression en forme infixe et postfixe\n");
 
 	bool running = true;
 	do
@@ -56,17 +55,13 @@ void FileParser::shell_mode()
 		{
 			running = false;
 		}
-		else if (input == "vars")
+		else if (input == "pool")
 		{
 			SymbolTable::debug();
 		}
-		else if (input == "tokens")
+		else if (input == "debug")
 		{
-			parser.debug_tokens();
-		}
-		else if (input == "postfix")
-		{
-			parser.debug_postfix();
+			parser.debug();
 		}
 		else if (input.size() > 0)
 		{
@@ -86,6 +81,7 @@ void FileParser::shell_mode()
 
 void FileParser::clear_line(std::string& line)
 {
+	// Trim whitespaces
 	const char* WHITESPACES = " \t\n\r\0xb";
 	size_t first = line.find_first_not_of(WHITESPACES);
 	if (first != std::string::npos)
@@ -93,6 +89,7 @@ void FileParser::clear_line(std::string& line)
 		size_t last = line.find_last_not_of(WHITESPACES);
 		line = line.substr(first, last - first + 1);
 	}
+	// Erase from first comment symbol
 	first = line.find(COMMENT_SYMBOL);
 	if (first != std::string::npos)
 	{

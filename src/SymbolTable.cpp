@@ -1,5 +1,4 @@
 #include <iostream>
-#include <sstream>
 
 #include "SymbolTable.hpp"
 #include "Error.hpp"
@@ -13,10 +12,12 @@ SymbolTable::FunctionMap SymbolTable::functions_;
 void SymbolTable::register_stdlib()
 {
 	// Load core library (no prefix)
-	add("print", std_print);
-	add("input", std_input);
-	add("typeof", std_typeof);
-	add("round", std_round);
+	add("print", core_print);
+	add("input", core_input);
+	add("typeof", core_typeof);
+	add("round", core_round);
+	add("min", core_min);
+	add("max", core_max);
 
 	// Load string library
 	add("str_len", str_len);
@@ -45,28 +46,6 @@ Variable* SymbolTable::get_variable(const std::string& name)
 void SymbolTable::add(const std::string& name, Function::Ptr function)
 {
 	functions_[name] = Function(function);
-}
-
-
-void SymbolTable::check_args(TokenStack& args, int count)
-{
-	if ((int) args.size() < count)
-	{
-		// "function takes [exactaly N|no] argument[s] (Z given)"
-		std::ostringstream oss;
-		oss << "function takes ";
-		if (count == 0)
-			oss << "no";
-		else
-			oss << "exactly " << count;
-
-		oss << " argument";
-		if (count != 1)
-			oss << "s";
-
-		oss << " (" << args.size() << " given)";
-		throw Error::SyntaxError(oss.str());
-	}
 }
 
 

@@ -19,7 +19,6 @@ public:
 	static Error DivideByZero();
 	static Error MissingLeftBracket();
 	static Error MissingRightBracket();
-	static Error InvalidToken(char token);
 	static Error UnknownOperator(const std::string& str);
 	static Error UnsupportedOperator(Token::Type operand, Token::OperatorType op);
 	static Error UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::OperatorType op);

@@ -10,7 +10,7 @@
 class OperatorManager;
 
 /**
- * Parseur d'expressions mathématiques
+ * Parseur d'expressions
  */
 class Instruction
 {
@@ -23,10 +23,9 @@ public:
 	Token eval(const std::string& expression);
 
 	/**
-	 * Afficher la notation postfixe de la dernière expression évaluée
+	 * Print infix and postifx notation of the last expression
 	 */
-	void debug_postfix() const;
-	void debug_tokens() const;
+	void debug() const;
 
 private:
 	/**

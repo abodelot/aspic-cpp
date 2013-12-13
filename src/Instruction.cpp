@@ -30,32 +30,6 @@ Token Instruction::eval(const std::string& expression)
 }
 
 
-void Instruction::debug_tokens() const
-{
-	std::cout << "infix: ";
-	print_tokens(tokens_);
-}
-
-
-void Instruction::debug_postfix() const
-{
-	std::cout << "postfix: ";
-	print_tokens(postfix_);
-}
-
-
-void Instruction::print_tokens(const TokenList& t) const
-{
-
-    for (TokenList::const_iterator it = t.begin(); it != t.end(); ++it)
-    {
-		it->debug(std::cout);
-		std::cout << " ";
-    }
-	std::cout << std::endl;
-}
-
-
 void Instruction::tokenization(const std::string& expression)
 {
 	// tokenization: transform an expression string into a token vector
@@ -208,8 +182,7 @@ void Instruction::tokenization(const std::string& expression)
 void Instruction::infix_to_postfix()
 {
 	postfix_.clear();
-	while (!stack_.empty())
-		stack_.pop();
+	stack_.clear();
 
 	// transform infix to postfix notation, using shunting-yard algorithm
 	for (size_t i = 0; i < tokens_.size(); ++i)
@@ -338,8 +311,7 @@ void Instruction::infix_to_postfix()
 
 Token Instruction::eval_postfix()
 {
-	while (!stack_.empty())
-		stack_.pop();
+	stack_.clear();
 
 	for (TokenList::const_iterator it = postfix_.begin(); it != postfix_.end(); ++it)
 	{
@@ -380,7 +352,8 @@ Token Instruction::eval_postfix()
 				break;
 
 			case Token::FUNCTION:
-				stack_.push(tok.exec_function(stack_));
+				// Execute function with stack as arguments, and push back the result on the stack
+				stack_.push(tok.get_function()->ptr(stack_));
 				break;
 
 			default:
@@ -403,4 +376,25 @@ Token Instruction::eval_postfix()
 bool Instruction::is_valid_identifier_symbol(char c) const
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
+}
+
+
+void Instruction::debug() const
+{
+	std::cout << "infix:   ";
+	print_tokens(tokens_);
+
+	std::cout << "postfix: ";
+	print_tokens(postfix_);
+}
+
+
+void Instruction::print_tokens(const TokenList& t) const
+{
+    for (TokenList::const_iterator it = t.begin(); it != t.end(); ++it)
+    {
+		it->debug(std::cout);
+		std::cout << "  ";
+    }
+	std::cout << std::endl;
 }

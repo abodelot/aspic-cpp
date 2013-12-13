@@ -39,15 +39,6 @@ Error Error::MissingRightBracket()
 	return Error("a right bracket is missing");
 }
 
-Error Error::InvalidToken(char token)
-{
-	Error e;
-	e.message_ += "token '";
-	e.message_ += token;
-	e.message_ += "' is invalid";
-	return e;
-}
-
 Error Error::UnknownOperator(const std::string& str)
 {
 	return Error("operator '" + str + "' does not exist");

@@ -44,6 +44,8 @@
 		<Unit filename="src/SymbolTable.hpp" />
 		<Unit filename="src/Token.cpp" />
 		<Unit filename="src/Token.hpp" />
+		<Unit filename="src/TokenStack.cpp" />
+		<Unit filename="src/TokenStack.hpp" />
 		<Unit filename="src/Variable.cpp" />
 		<Unit filename="src/Variable.hpp" />
 		<Unit filename="src/functions/LibCore.cpp" />

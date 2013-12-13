@@ -1,8 +1,4 @@
-#include <cstdio>
-
 #include "LibString.hpp"
-#include "../Token.hpp"
-
 
 /**
  * Compute number of characters
@@ -11,9 +7,9 @@
  */
 Token str_len(TokenStack& args)
 {
-	SymbolTable::check_args(args, 1);
-	int res = args.top().as_string().size(); args.pop();
-	return Token::create_int(res);
+	args.check(1);
+	int length = args.pop_string().size();
+	return Token::create_int(length);
 }
 
 /**
@@ -24,15 +20,14 @@ Token str_len(TokenStack& args)
  */
 Token str_count(TokenStack& args)
 {
-	SymbolTable::check_args(args, 2);
-	std::string look_for = args.top().as_string(); args.pop();
-	std::string str =      args.top().as_string(); args.pop();
+	args.check(2);
+	std::string look_for = args.pop_string();
+	std::string str =      args.pop_string();
 
 	size_t pos = str.find(look_for);
 	int count = 0;
 	while (pos != std::string::npos)
 	{
-		puts(str.c_str());
 		pos = str.find(look_for, pos + 1);
 		++count;
 	}
@@ -47,16 +42,14 @@ Token str_count(TokenStack& args)
  */
 Token str_replace(TokenStack& args)
 {
-	SymbolTable::check_args(args, 3);
-	std::string replace_by = args.top().as_string(); args.pop();
-	std::string look_for =   args.top().as_string(); args.pop();
-	std::string target =     args.top().as_string(); args.pop();
+	args.check(3);
+	std::string replace_by = args.pop_string();
+	std::string look_for =   args.pop_string();
+	std::string target =     args.pop_string();
 
-	size_t pos = 0;
 	size_t step = replace_by.size();
 	size_t offset = look_for.size();
-
-	pos = target.find(look_for, pos);
+	size_t pos = target.find(look_for, pos);
 	while (pos != std::string::npos)
 	{
 		target.replace(pos, offset, replace_by);
@@ -73,10 +66,10 @@ Token str_replace(TokenStack& args)
  */
 Token str_substr(TokenStack& args)
 {
-	SymbolTable::check_args(args, 3);
-	int size = args.top().as_int(); args.pop();
-	int from = args.top().as_int(); args.pop();
-	std::string str = args.top().as_string(); args.pop();
+	args.check(3);
+	int size =        args.pop_int();
+	int from =        args.pop_int();
+	std::string str = args.pop_string();
 	return Token::create_string(str.substr(from, size));
 }
 
@@ -87,8 +80,8 @@ Token str_substr(TokenStack& args)
  */
 Token str_trim(TokenStack& args)
 {
-	SymbolTable::check_args(args, 1);
-	std::string str = args.top().as_string(); args.pop();
+	args.check(1);
+	std::string str = args.pop_string();
 	const char* WHITESPACES = " \t\n\r\0xb";
 	std::string::size_type first = str.find_first_not_of(WHITESPACES);
 	if (first != std::string::npos)
@@ -106,8 +99,8 @@ Token str_trim(TokenStack& args)
  */
 Token str_lower(TokenStack& args)
 {
-	SymbolTable::check_args(args, 1);
-	std::string str = args.top().as_string(); args.pop();
+	args.check(1);
+	std::string str = args.pop_string();
 	for (size_t i = 0; i < str.length(); ++i)
 	{
 		str[i] = tolower(str[i]);
@@ -122,8 +115,8 @@ Token str_lower(TokenStack& args)
  */
 Token str_upper(TokenStack& args)
 {
-	SymbolTable::check_args(args, 1);
-	std::string str = args.top().as_string(); args.pop();
+	args.check(1);
+	std::string str = args.pop_string();
 	for (size_t i = 0; i < str.length(); ++i)
 	{
 		str[i] = toupper(str[i]);

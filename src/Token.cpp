@@ -105,9 +105,9 @@ Token::OperatorType Token::get_operator_type() const
 }
 
 
-Token Token::exec_function(std::stack<Token>& args) const
+const Function* Token::get_function() const
 {
-	return (data_.function->ptr)(args);
+	return data_.function;
 }
 
 
@@ -202,7 +202,6 @@ Token Token::apply_unary_operator(Token::OperatorType op)
 				case OP_NOT:
 					return Token::create_bool(! as_bool());
 				default: break;
-
 			}
 			break;
 		case STRING_LITERAL:
@@ -308,7 +307,7 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 
 			case OP_DIVISION:
 			{
-				float denominator = operand.as_float();
+				double denominator = operand.as_float();
 				if (denominator == 0.f)
 					throw Error::DivideByZero();
 
@@ -364,8 +363,9 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 
 			case OP_MULTIPLICATION:
 			{
-				std::string result;
 				int count = operand.as_int();
+				std::string result;
+				result.reserve(count * str_.size());
 				for (int i = 0; i < count; ++i)
 				{
 					result += str_;
@@ -484,7 +484,6 @@ const std::string& Token::as_string() const
 }
 
 
-
 double Token::as_float() const
 {
 	switch (type_)
@@ -556,7 +555,6 @@ void Token::print_value(std::ostream& os) const
 			os << (data_.bool_value ? "true" : "false");
 			break;
 		case VARIABLE:
-			// print encapsulated token
 			data_.variable->get().print_value(std::cout);
 			break;
 		case OPERATOR:
@@ -569,7 +567,7 @@ void Token::print_value(std::ostream& os) const
 			os << ')';
 			break;
 		case ARG_SEPARATOR:
-			os << ", ";
+			os << ',';
 			break;
 		case FUNCTION:
 		case KEYWORD:
@@ -582,16 +580,18 @@ void Token::print_value(std::ostream& os) const
 
 void Token::debug(std::ostream& os) const
 {
-	if (type_ == VARIABLE)
+	switch (type_)
 	{
-		os << SymbolTable::find_variable_name(data_.variable);
-	}
-	else if (type_ == FUNCTION)
-	{
-		os << SymbolTable::find_function_name(data_.function);
-	}
-	else
-	{
-		print_value(os);
+		case VARIABLE:
+			os << SymbolTable::find_variable_name(data_.variable);
+			break;
+		case FUNCTION:
+			os << SymbolTable::find_function_name(data_.function);
+			break;
+		case STRING_LITERAL:
+			os << '"' << str_ << '"';
+			break;
+		default:
+			print_value(os);
 	}
 }

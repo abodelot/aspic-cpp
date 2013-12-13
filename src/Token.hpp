@@ -2,8 +2,6 @@
 #define TOKEN_HPP
 
 #include <string>
-#include <stack>
-
 
 class Variable;
 class Function;
@@ -97,20 +95,12 @@ public:
 	static Token create_variable(Variable* value);
 	static Token create_function(const Function* func);
 
-
 	/**
-	 * Exécuter une fonction
-	 * @param args: arguments la fonction, sous forme de tokens
-	 * @return résultat de la fonction, sous forme de token
-	 */
-	Token exec_function(std::stack<Token>& args) const;
-
-	/**
-	 * Get token type and string representation
+	 * Getters, according to type
 	 */
 	Type get_type() const;
-	OperatorType get_operator_type() const;
-
+	OperatorType    get_operator_type() const;
+	const Function* get_function() const;
 
     /**
      * Print string representation

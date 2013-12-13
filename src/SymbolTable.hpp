@@ -44,13 +44,6 @@ public:
 	 */
 	static void debug();
 
-	/**
-	 * Raises an exception if arguments count is insufficient
-	 * @param args: postfixed tokens
-	 * @param count: expected arguments count
-	 */
-	static void check_args(TokenStack& args, int count);
-
 	// Debug -------------------------------------------------------------------
 
 	static std::string find_variable_name(const Variable* var);
