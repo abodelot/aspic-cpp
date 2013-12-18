@@ -7,7 +7,7 @@
 #include "Token.hpp"
 
 /**
- * Singleton which handles operator recognition
+ * Helper class for operators
  */
 class OperatorManager
 {

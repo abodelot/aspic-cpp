@@ -5,48 +5,46 @@
 #include <vector>
 
 #include "Token.hpp"
-#include "Variable.hpp"
+#include "TokenStack.hpp"
 
 class OperatorManager;
 
-/**
- * Parseur d'expressions
- */
 class Instruction
 {
 public:
 	Instruction();
 
 	/**
-	 * Évaluer une expression
+	 * Eval an expresion
+	 * @return result value as a literal-type token
 	 */
 	Token eval(const std::string& expression);
 
 	/**
-	 * Print infix and postifx notation of the last expression
+	 * Print infix and postifx notation of the last evalued expression
 	 */
 	void debug() const;
 
 private:
 	/**
-	 * Transformation de l'expression en suite de tokens
+	 * Parse input into a token list
 	 */
 	void tokenization(const std::string& expression);
 
 	/**
-	 * Conversion d'une expression infixe vers une notation postfixe
+	 * Transform infix expression to a postfix expression (Reverse Polish Notation)
 	 */
 	void infix_to_postfix();
 
 	/**
-	 * Évaluation de l'expression postfixée
+	 * Eval postfix expression and return result as a literal-type token
 	 */
 	Token eval_postfix();
 
 	/**
 	 * Test if a character is a valid part of an identifier
 	 */
-	bool is_valid_identifier_symbol(char c) const;
+	bool is_valid_identifier_char(char c) const;
 
 	/**
 	 * Test if a character is a valid part of an operator

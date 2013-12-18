@@ -49,7 +49,7 @@ Token str_replace(TokenStack& args)
 
 	size_t step = replace_by.size();
 	size_t offset = look_for.size();
-	size_t pos = target.find(look_for, pos);
+	size_t pos = target.find(look_for);
 	while (pos != std::string::npos)
 	{
 		target.replace(pos, offset, replace_by);

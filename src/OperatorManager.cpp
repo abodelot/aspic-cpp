@@ -209,7 +209,6 @@ const char* OperatorManager::to_str(Token::OperatorType op)
 	{
 		case Token::OP_NOT:
 			return "!";
-
 		case Token::OP_UNARY_PLUS:
 			return "unary+";
 		case Token::OP_UNARY_MINUS:
@@ -258,5 +257,5 @@ const char* OperatorManager::to_str(Token::OperatorType op)
 		case Token::OP_SUBTRACT_AND_ASSIGN:
 			return "-=";
 	}
-	return "????";
+	return NULL;
 }

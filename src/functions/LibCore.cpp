@@ -20,7 +20,7 @@ Token core_input(TokenStack& args)
 	std::string prompt = args.pop_string();
 	std::cout << prompt;
 	std::string input;
-	std::cin >> input; // TODO: do a proper getline and purge the buffer, this will break on whitespaces
+	std::getline(std::cin, input);
 	return Token::create_string(input);
 }
 

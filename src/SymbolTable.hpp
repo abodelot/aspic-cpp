@@ -7,7 +7,6 @@
 #include "Token.hpp"
 #include "Variable.hpp"
 
-
 /**
  * Interpreter symbol table
  * Store each declared identifier (variables or functions)
@@ -57,8 +56,6 @@ private:
 
 	typedef std::map<std::string, Function> FunctionMap;
 	static FunctionMap functions_;
-
-
 };
 
 #endif // SYMBOLTABLE_HPP

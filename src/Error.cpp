@@ -1,5 +1,3 @@
-#include <cstdlib>
-
 #include "Error.hpp"
 #include "OperatorManager.hpp"
 
@@ -9,20 +7,24 @@ Error Error::SyntaxError(const std::string& str)
 	return Error(Syntax, str);
 }
 
+
 Error Error::UnknownOperator(const std::string& str)
 {
 	return Error(Syntax, "operator '" + str + "' does not exist");
 }
 
-Error Error::NameError(const std::string& var_name)
+
+Error Error::NameError(const std::string& identifier)
 {
-	return Error(Name, "referencing variable <" + var_name + "> before assignment");
+	return Error(Name, "name '" + identifier + "' is not defined");
 }
+
 
 Error Error::TypeError(const std::string& str)
 {
 	return Error(Type, str);
 }
+
 
 Error Error::UnsupportedOperator(Token::Type operand, Token::OperatorType op)
 {
@@ -34,6 +36,7 @@ Error Error::UnsupportedOperator(Token::Type operand, Token::OperatorType op)
 	e.message_ += "'";
 	return e;
 }
+
 
 Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::OperatorType op)
 {
@@ -48,15 +51,18 @@ Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::Oper
 	return e;
 }
 
+
 Error Error::InternalError(const std::string& str)
 {
 	return Error(Internal, str);
 }
 
+
 Error Error::DivideByZero()
 {
 	return Error(Runtime, "division or modulo by 0");
 }
+
 
 Error::Error(ID id, const std::string& message)
 {
@@ -71,9 +77,11 @@ Error::Error(ID id, const std::string& message)
 	message_ += message;
 }
 
+
 Error::~Error() throw()
 {
 }
+
 
 const char* Error::what() const throw()
 {

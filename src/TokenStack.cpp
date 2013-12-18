@@ -53,6 +53,6 @@ void TokenStack::check(size_t count) const
 			oss << "s";
 
 		oss << " (" << size() << " given)";
-		throw Error::SyntaxError(oss.str());
+		throw Error::TypeError(oss.str());
 	}
 }

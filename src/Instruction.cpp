@@ -144,11 +144,11 @@ void Instruction::tokenization(const std::string& expression)
 		}
 		// Scanning identifier (function or variable)
 		// We already know that current char is not a digit, so no need to check that
-		else if (is_valid_identifier_symbol(current))
+		else if (is_valid_identifier_char(current))
 		{
 			// on lit tous les caractères jusqu'à recomposer l'identifiant
 			buffer += current;
-			for (++i; i < expression.size() && is_valid_identifier_symbol(expression[i]); ++i)
+			for (++i; i < expression.size() && is_valid_identifier_char(expression[i]); ++i)
 			{
 				buffer += expression[i];
 			}
@@ -372,7 +372,7 @@ Token Instruction::eval_postfix()
 }
 
 
-bool Instruction::is_valid_identifier_symbol(char c) const
+bool Instruction::is_valid_identifier_char(char c) const
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
 }
