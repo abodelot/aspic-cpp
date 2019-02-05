@@ -23,13 +23,13 @@ public:
      */
     bool eval(const std::string& str, Token::OperatorType& op_type, const Token* previous) const;
 
-	/**
-	 * Compare priority of two operators
-	 * @return < 0 if op1 < op2, 0 if op1 == op2, > 0 if op1 > op2
-	 */
-	int compare(const Token& op1, const Token& op2);
+    /**
+     * Compare priority of two operators
+     * @return < 0 if op1 < op2, 0 if op1 == op2, > 0 if op1 > op2
+     */
+    int compare(const Token& op1, const Token& op2);
 
-	static const char* to_str(Token::OperatorType op);
+    static const char* to_str(Token::OperatorType op);
 
 private:
     OperatorManager();

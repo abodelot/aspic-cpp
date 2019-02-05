@@ -42,6 +42,7 @@ name = "J" + name
 print("Your name is " + name * 2 + ".")
 name2 = "Doe"
 print(name + (name2 + " ") * 2 + "!")
+print("Hello " * 2 * 3)
 
 
 ## special chars test

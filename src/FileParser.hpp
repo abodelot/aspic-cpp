@@ -5,14 +5,14 @@
 class FileParser
 {
 public:
-	FileParser();
+    FileParser();
 
-	bool load_file(const char* filename);
+    bool load_file(const char* filename);
 
-	void shell_mode();
+    void shell_mode();
 
 private:
-	void clear_line(std::string& line);
+    void clear_line(std::string& line);
 
 };
 

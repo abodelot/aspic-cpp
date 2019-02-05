@@ -10,9 +10,9 @@
  */
 struct Function
 {
-	typedef Token (*Ptr)(TokenStack&);
-	Function(Ptr p=NULL): ptr(p){}
-	Ptr ptr;
+    typedef Token (*Ptr)(TokenStack&);
+    Function(Ptr p=NULL): ptr(p){}
+    Ptr ptr;
 };
 
 /**
@@ -22,18 +22,18 @@ struct Function
 class Variable
 {
 public:
-	Variable();
+    Variable();
 
-	/**
-	 * Initialize
-	 */
-	void set(const Token& token);
+    /**
+     * Initialize
+     */
+    void set(const Token& token);
 
-	Token& get();
+    Token& get();
 
 private:
-	Token literal_;
-	bool  unset_;
+    Token literal_;
+    bool  unset_;
 };
 
 #endif // VARIABLE_HPP

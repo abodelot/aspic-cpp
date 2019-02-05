@@ -19,20 +19,17 @@ TODO List:
 
 int main(int argc, char* argv[])
 {
-	SymbolTable::register_stdlib();
-	FileParser parser;
-	if (argc == 1)
-	{
-		parser.shell_mode();
-	}
-	else if (parser.load_file(argv[1]))
-	{
-
-	}
-	else
-	{
-		std::cerr << "Can't load file '" << argv[1] << "'\n";
-	}
-	return 0;
+    SymbolTable::register_stdlib();
+    FileParser parser;
+    if (argc == 1)
+    {
+        parser.shell_mode();
+    }
+    else if (!parser.load_file(argv[1]))
+    {
+        std::cerr << "Can't load file '" << argv[1] << "'\n";
+        return -1;
+    }
+    return 0;
 }
 

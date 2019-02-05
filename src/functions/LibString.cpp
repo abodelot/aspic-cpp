@@ -7,9 +7,9 @@
  */
 Token str_len(TokenStack& args)
 {
-	args.check(1);
-	int length = args.pop_string().size();
-	return Token::create_int(length);
+    args.check(1);
+    int length = args.pop_string().size();
+    return Token::create_int(length);
 }
 
 /**
@@ -20,18 +20,18 @@ Token str_len(TokenStack& args)
  */
 Token str_count(TokenStack& args)
 {
-	args.check(2);
-	std::string look_for = args.pop_string();
-	std::string str =      args.pop_string();
+    args.check(2);
+    std::string look_for = args.pop_string();
+    std::string str =      args.pop_string();
 
-	size_t pos = str.find(look_for);
-	int count = 0;
-	while (pos != std::string::npos)
-	{
-		pos = str.find(look_for, pos + 1);
-		++count;
-	}
-	return Token::create_int(count);
+    size_t pos = str.find(look_for);
+    int count = 0;
+    while (pos != std::string::npos)
+    {
+        pos = str.find(look_for, pos + 1);
+        ++count;
+    }
+    return Token::create_int(count);
 }
 
 /**
@@ -42,20 +42,20 @@ Token str_count(TokenStack& args)
  */
 Token str_replace(TokenStack& args)
 {
-	args.check(3);
-	std::string replace_by = args.pop_string();
-	std::string look_for =   args.pop_string();
-	std::string target =     args.pop_string();
+    args.check(3);
+    std::string replace_by = args.pop_string();
+    std::string look_for =   args.pop_string();
+    std::string target =     args.pop_string();
 
-	size_t step = replace_by.size();
-	size_t offset = look_for.size();
-	size_t pos = target.find(look_for);
-	while (pos != std::string::npos)
-	{
-		target.replace(pos, offset, replace_by);
-		pos = target.find(look_for, pos + step);
-	}
-	return Token::create_string(target);
+    size_t step = replace_by.size();
+    size_t offset = look_for.size();
+    size_t pos = target.find(look_for);
+    while (pos != std::string::npos)
+    {
+        target.replace(pos, offset, replace_by);
+        pos = target.find(look_for, pos + step);
+    }
+    return Token::create_string(target);
 }
 
 /**
@@ -66,11 +66,11 @@ Token str_replace(TokenStack& args)
  */
 Token str_substr(TokenStack& args)
 {
-	args.check(3);
-	int size =        args.pop_int();
-	int from =        args.pop_int();
-	std::string str = args.pop_string();
-	return Token::create_string(str.substr(from, size));
+    args.check(3);
+    int size =        args.pop_int();
+    int from =        args.pop_int();
+    std::string str = args.pop_string();
+    return Token::create_string(str.substr(from, size));
 }
 
 /**
@@ -80,16 +80,16 @@ Token str_substr(TokenStack& args)
  */
 Token str_trim(TokenStack& args)
 {
-	args.check(1);
-	std::string str = args.pop_string();
-	const char* WHITESPACES = " \t\n\r\0xb";
-	std::string::size_type first = str.find_first_not_of(WHITESPACES);
-	if (first != std::string::npos)
-	{
-		std::string::size_type last = str.find_last_not_of(WHITESPACES);
-		return Token::create_string(str.substr(first, last - first + 1));
-	}
-	return Token::create_string(str);
+    args.check(1);
+    std::string str = args.pop_string();
+    const char* WHITESPACES = " \t\n\r\0xb";
+    std::string::size_type first = str.find_first_not_of(WHITESPACES);
+    if (first != std::string::npos)
+    {
+        std::string::size_type last = str.find_last_not_of(WHITESPACES);
+        return Token::create_string(str.substr(first, last - first + 1));
+    }
+    return Token::create_string(str);
 }
 
 /**
@@ -99,13 +99,13 @@ Token str_trim(TokenStack& args)
  */
 Token str_lower(TokenStack& args)
 {
-	args.check(1);
-	std::string str = args.pop_string();
-	for (size_t i = 0; i < str.length(); ++i)
-	{
-		str[i] = tolower(str[i]);
-	}
-	return Token::create_string(str);
+    args.check(1);
+    std::string str = args.pop_string();
+    for (size_t i = 0; i < str.length(); ++i)
+    {
+        str[i] = tolower(str[i]);
+    }
+    return Token::create_string(str);
 }
 
 /**
@@ -115,11 +115,11 @@ Token str_lower(TokenStack& args)
  */
 Token str_upper(TokenStack& args)
 {
-	args.check(1);
-	std::string str = args.pop_string();
-	for (size_t i = 0; i < str.length(); ++i)
-	{
-		str[i] = toupper(str[i]);
-	}
-	return Token::create_string(str);
+    args.check(1);
+    std::string str = args.pop_string();
+    for (size_t i = 0; i < str.length(); ++i)
+    {
+        str[i] = toupper(str[i]);
+    }
+    return Token::create_string(str);
 }
