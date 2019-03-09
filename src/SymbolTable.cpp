@@ -32,7 +32,7 @@ void SymbolTable::register_stdlib()
 const Function* SymbolTable::get_function(const std::string& name)
 {
     FunctionMap::const_iterator it = functions_.find(name);
-    return it != functions_.end() ? &it->second : NULL;
+    return it != functions_.end() ? &it->second : nullptr;
 }
 
 Variable* SymbolTable::get_variable(const std::string& name)

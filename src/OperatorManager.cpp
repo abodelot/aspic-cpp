@@ -168,7 +168,7 @@ bool OperatorManager::eval(const std::string& str, Token::OperatorType& op_type,
          - preceded by a left bracket
          - preceded by an argument separator
         */
-        if (previous == NULL
+        if (previous == nullptr
             || previous->is_operator()
             || previous->get_type() == Token::LEFT_BRACKET
             || previous->get_type() == Token::ARG_SEPARATOR)
@@ -253,5 +253,5 @@ const char* OperatorManager::to_str(Token::OperatorType op)
         case Token::OP_SUBTRACT_AND_ASSIGN:
             return "-=";
     }
-    return NULL;
+    return nullptr;
 }

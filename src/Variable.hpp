@@ -11,7 +11,7 @@
 struct Function
 {
     typedef Token (*Ptr)(TokenStack&);
-    Function(Ptr p=NULL): ptr(p){}
+    Function(Ptr p=nullptr): ptr(p){}
     Ptr ptr;
 };
 

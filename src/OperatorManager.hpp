@@ -18,7 +18,7 @@ public:
      * Eval a string representing an operator
      * @param str: string to be evaluated
      * @param op_type: returned operator type
-     * @param previous: token preceding the operator in the expression (or NULL if operator is the first token)
+     * @param previous: token preceding the operator in the expression (or nullptr if operator is the first token)
      * @return true if a token was parsed
      */
     bool eval(const std::string& str, Token::OperatorType& op_type, const Token* previous) const;

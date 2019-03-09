@@ -48,7 +48,7 @@ void Instruction::tokenization(const std::string& expression)
             }
             --i;
             Token::OperatorType op_type;
-            const Token* previous = previous_index != -1 ? &tokens_[previous_index] : NULL;
+            const Token* previous = previous_index != -1 ? &tokens_[previous_index] : nullptr;
             if (operators_.eval(buffer, op_type, previous))
             {
                 tokens_.push_back(Token::create_operator(op_type));
@@ -154,7 +154,7 @@ void Instruction::tokenization(const std::string& expression)
 
             // TODO: allow variables to shadow function defintions?
             const Function* func = SymbolTable::get_function(buffer);
-            if (func != NULL)
+            if (func != nullptr)
             {
                 tokens_.push_back(Token::create_function(func));
             }
