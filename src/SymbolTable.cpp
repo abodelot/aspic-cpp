@@ -5,9 +5,8 @@
 #include "functions/LibCore.hpp"
 #include "functions/LibString.hpp"
 
-// Init static attributes (singleton)
-SymbolTable::VariableMap SymbolTable::variables_;
-SymbolTable::FunctionMap SymbolTable::functions_;
+// Init static attribute (singleton)
+SymbolTable::IdentifierMap SymbolTable::identifiers_;
 
 void SymbolTable::register_stdlib()
 {
@@ -29,30 +28,36 @@ void SymbolTable::register_stdlib()
     add("str_upper", str_upper);
 }
 
-const Function* SymbolTable::get_function(const std::string& name)
+Token& SymbolTable::get(const std::string& name)
 {
-    FunctionMap::const_iterator it = functions_.find(name);
-    return it != functions_.end() ? &it->second : nullptr;
+    return identifiers_[name];
 }
 
-Variable* SymbolTable::get_variable(const std::string& name)
+void SymbolTable::set(const std::string& name, Token& token)
 {
-    return &variables_[name];
+    if (token.is_literal())
+    {
+        identifiers_[name] = token;
+    }
+    else
+    {
+        throw Error::InternalError("symbol table can only store literals");
+    }
 }
 
-void SymbolTable::add(const std::string& name, Function::Ptr function)
+void SymbolTable::add(const std::string& name, const FunctionWrapper& function)
 {
-    functions_[name] = Function(function);
+    identifiers_[name] = Token::create_function(function);
 }
 
 void SymbolTable::debug()
 {
-    for (VariableMap::iterator it = variables_.begin(); it != variables_.end(); ++it)
+    for (IdentifierMap::iterator it = identifiers_.begin(); it != identifiers_.end(); ++it)
     {
         std::cout << it->first.c_str() << ": ";
         try
         {
-            it->second.get().print_value(std::cout);
+            it->second.print_value(std::cout);
         }
         catch (Error& error) // TODO: NameError
         {
@@ -60,27 +65,5 @@ void SymbolTable::debug()
         }
         std::cout << "\n";
     }
-    std::cout << "****** total: " << variables_.size() << " ******" << std::endl;
-}
-
-// Debug -----------------------------------------------------------------------
-
-std::string SymbolTable::find_variable_name(const Variable* var)
-{
-    for (VariableMap::const_iterator it = variables_.begin(); it != variables_.end(); ++it)
-    {
-        if (&it->second == var)
-            return it->first;
-    }
-    return "<unknown variable>";
-}
-
-std::string SymbolTable::find_function_name(const Function* func)
-{
-    for (FunctionMap::const_iterator it = functions_.begin(); it != functions_.end(); ++it)
-    {
-        if (&it->second == func)
-            return it->first;
-    }
-    return "<unknown function>";
+    std::cout << "****** total: " << identifiers_.size() << " ******" << std::endl;
 }

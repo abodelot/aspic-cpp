@@ -152,18 +152,7 @@ void Instruction::tokenization(const std::string& expression)
             }
             --i;
 
-            // TODO: allow variables to shadow function defintions?
-            const Function* func = SymbolTable::get_function(buffer);
-            if (func != nullptr)
-            {
-                tokens_.push_back(Token::create_function(func));
-            }
-            else
-            {
-                // If a variable named after the buffer value doesn't exist, SymbolTable will create it
-                Variable* var = SymbolTable::get_variable(buffer);
-                tokens_.push_back(Token::create_variable(var));
-            }
+            tokens_.push_back(Token::create_identifier(buffer));
         }
         // Ignore whitespaces
         else if (current != ' ' && current != '\t')
@@ -235,7 +224,7 @@ void Instruction::infix_to_postfix()
             // Pop the left parenthesis from the stack, but not onto the output queue.
             stack_.pop();
             // If the token at the top of the stack is a function token, pop it onto the output queue.
-            if (!stack_.empty() && stack_.top().get_type() == Token::FUNCTION)
+            if (!stack_.empty() && stack_.top().is_function())
             {
                 Token& t = stack_.top();
                 postfix_.push_back(t);
@@ -248,12 +237,18 @@ void Instruction::infix_to_postfix()
         case Token::FLOAT_LITERAL:
         case Token::STRING_LITERAL:
         case Token::BOOL_LITERAL:
-        case Token::VARIABLE:
             postfix_.push_back(current);
             break;
 
-        case Token::FUNCTION:
-            stack_.push(current);
+        case Token::IDENTIFIER:
+            if (current.is_function())
+            {
+                stack_.push(current);
+            }
+            else
+            {
+                postfix_.push_back(current);
+            }
             break;
 
         case Token::ARG_SEPARATOR:
@@ -316,7 +311,6 @@ Token Instruction::eval_postfix()
             case Token::INT_LITERAL:
             case Token::FLOAT_LITERAL:
             case Token::STRING_LITERAL:
-            case Token::VARIABLE:
                 stack_.push(tok);
                 break;
 
@@ -346,9 +340,16 @@ Token Instruction::eval_postfix()
                 }
                 break;
 
-            case Token::FUNCTION:
-                // Execute function with stack as arguments, and push back the result on the stack
-                stack_.push(tok.get_function()->ptr(stack_));
+            case Token::IDENTIFIER:
+                if (tok.is_function())
+                {
+                    // Execute function with stack as arguments, and push back the result on the stack
+                    stack_.push(tok.get_function().ptr(stack_));
+                }
+                else
+                {
+                    stack_.push(tok);
+                }
                 break;
 
             default:

@@ -4,8 +4,8 @@
 #include <string>
 #include <map>
 
+#include "FunctionWrapper.hpp"
 #include "Token.hpp"
-#include "Variable.hpp"
 
 /**
  * Interpreter symbol table
@@ -15,47 +15,39 @@ class SymbolTable
 {
 public:
     /**
+     * Get identifier value.
+     * Identifier will be initialized and added to the symbol table it doesn't already exist.
+     * @param name: variable identifier
+     */
+    static Token& get(const std::string& name);
+
+    /**
+     * Set value for a given identifier
+     */
+    static void set(const std::string& name, Token& token);
+
+    /**
      * Initialize the symbol table with the function from the standard library
      */
     static void register_stdlib();
-
-    /**
-     * Retrieve a function definition
-     * @param name: function identifier
-     */
-    static const Function* get_function(const std::string& name);
-
-    /**
-     * Get a variable or declare it doesn't already exist
-     * @param name: variable identifier
-     */
-    static Variable* get_variable(const std::string& name);
-
-    /**
-     * Declare a C++ function
-     * @param name: function identifier
-     * @param function: pointer to C++ function to store
-     */
-    static void add(const std::string& name, Function::Ptr function);
 
     /**
      * Print symbol table content
      */
     static void debug();
 
-    // Debug -------------------------------------------------------------------
-
-    static std::string find_variable_name(const Variable* var);
-    static std::string find_function_name(const Function* func);
-
 private:
     SymbolTable();
 
-    typedef std::map<std::string, Variable> VariableMap;
-    static VariableMap variables_;
+   /**
+     * Declare a C++ function
+     * @param name: function public identifier
+     * @param function: wrapper with the C++ function to store
+     */
+    static void add(const std::string& name, const FunctionWrapper& function);
 
-    typedef std::map<std::string, Function> FunctionMap;
-    static FunctionMap functions_;
+    typedef std::map<std::string, Token> IdentifierMap;
+    static IdentifierMap identifiers_;
 };
 
 #endif // SYMBOLTABLE_HPP

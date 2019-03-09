@@ -44,7 +44,7 @@ private:
     typedef std::map<std::string, Token::OperatorType> OperatorMap;
     OperatorMap operators_;
 
-    int precedences_[Token::OPERATOR_COUNT];
+    int precedences_[Token::_OPERATOR_COUNT];
 };
 
 #endif // OPERATORMANAGER_HPP

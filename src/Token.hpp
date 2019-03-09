@@ -3,8 +3,7 @@
 
 #include <string>
 
-class Variable;
-class Function;
+#include "FunctionWrapper.hpp"
 
 /**
  * Token: holds an atomic element in an expression
@@ -19,8 +18,8 @@ public:
         STRING_LITERAL,
         BOOL_LITERAL,
         OPERATOR,
-        VARIABLE,
         FUNCTION,
+        IDENTIFIER,
         ARG_SEPARATOR,
         LEFT_BRACKET,
         RIGHT_BRACKET,
@@ -60,10 +59,10 @@ public:
         OP_DIVIDE_AND_ASSIGN,   // /=
         OP_MODULO_AND_ASSIGN,   // %=
         OP_ADD_AND_ASSIGN,      // +=
-        OP_SUBTRACT_AND_ASSIGN  // -=
-    };
+        OP_SUBTRACT_AND_ASSIGN, // -=
 
-    static const int OPERATOR_COUNT = 23;
+        _OPERATOR_COUNT
+    };
 
     enum Keyword
     {
@@ -74,6 +73,7 @@ public:
         KW_END
     };
 
+    Token();
     Token(Type);
 
     /**
@@ -92,15 +92,17 @@ public:
     /**
      * Create a token bound to a symbol
      */
-    static Token create_variable(Variable* value);
-    static Token create_function(const Function* func);
+    static Token create_identifier(const std::string& identifier_name);
+    //static Token create_variable(Variable* value);
+    static Token create_function(const FunctionWrapper& function);
 
     /**
      * Getters, according to type
      */
     Type get_type() const;
+    bool is_function() const;
     OperatorType    get_operator_type() const;
-    const Function* get_function() const;
+    const FunctionWrapper& get_function() const;
 
     /**
      * Print string representation
@@ -146,12 +148,15 @@ private:
      */
     union TokenData
     {
+        // Define empty ctor to allow non-POD union members
+        TokenData()
+        {
+        }
         OperatorType    op_type;     // OPERATOR
         int             int_value;   // INT_LITERAL
         bool            bool_value;  // BOOL_LITERAL
         double          float_value; // FOAT_LITERAL
-        Variable*       variable;    // VARIABLE
-        const Function* function;    // FUNCTION
+        FunctionWrapper function;    // FUNCTION
         Keyword         keyword;     // KEYWORD
     };
     // Cannot store it into TokenData union because std::string is an object

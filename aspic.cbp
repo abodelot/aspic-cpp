@@ -35,6 +35,7 @@
 		<Unit filename="src/Error.hpp" />
 		<Unit filename="src/FileParser.cpp" />
 		<Unit filename="src/FileParser.hpp" />
+		<Unit filename="src/FunctionWrapper.hpp" />
 		<Unit filename="src/Instruction.cpp" />
 		<Unit filename="src/Instruction.hpp" />
 		<Unit filename="src/Main.cpp" />
@@ -46,8 +47,6 @@
 		<Unit filename="src/Token.hpp" />
 		<Unit filename="src/TokenStack.cpp" />
 		<Unit filename="src/TokenStack.hpp" />
-		<Unit filename="src/Variable.cpp" />
-		<Unit filename="src/Variable.hpp" />
 		<Unit filename="src/functions/LibCore.cpp" />
 		<Unit filename="src/functions/LibCore.hpp" />
 		<Unit filename="src/functions/LibString.cpp" />

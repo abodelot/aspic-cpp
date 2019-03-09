@@ -3,7 +3,7 @@
 #include <cmath>
 
 #include "Token.hpp"
-#include "Variable.hpp"
+#include "FunctionWrapper.hpp"
 #include "Error.hpp"
 #include "OperatorManager.hpp"
 #include "SymbolTable.hpp"
@@ -22,12 +22,22 @@ const char* Token::type_to_str(Type type)
             return "bool";
         case STRING_LITERAL:
             return "string";
+        case FUNCTION:
+            return "function";
+        case IDENTIFIER:
+            return "identifier";
         default: break;
     }
     return "";
 }
 
 // constructors ----------------------------------------------------------------
+
+Token::Token():
+    type_(INT_LITERAL)
+{
+    data_.int_value = 0;
+}
 
 Token::Token(Type type):
     type_(type)
@@ -69,17 +79,17 @@ Token Token::create_operator(OperatorType op_type)
     return self;
 }
 
-Token Token::create_variable(Variable* variable)
+Token Token::create_function(const FunctionWrapper& function)
 {
-    Token self(VARIABLE);
-    self.data_.variable = variable;
+    Token self(FUNCTION);
+    self.data_.function = function;
     return self;
 }
 
-Token Token::create_function(const Function* func)
+Token Token::create_identifier(const std::string& identifier_name)
 {
-    Token self(FUNCTION);
-    self.data_.function = func;
+    Token self(IDENTIFIER);
+    self.str_ = identifier_name;
     return self;
 }
 
@@ -96,9 +106,22 @@ Token::OperatorType Token::get_operator_type() const
     return data_.op_type;
 }
 
-const Function* Token::get_function() const
+const FunctionWrapper& Token::get_function() const
 {
-    return data_.function;
+    if (type_ == FUNCTION)
+    {
+        return data_.function;
+    }
+    if (type_ == IDENTIFIER)
+    {
+        return SymbolTable::get(str_).get_function();
+    }
+    throw Error::InternalError("token is not a function");
+}
+
+bool Token::is_function() const
+{
+    return type_ == FUNCTION || (type_ == IDENTIFIER && SymbolTable::get(str_).type_ == FUNCTION);
 }
 
 // operator helpers ------------------------------------------------------------
@@ -197,8 +220,8 @@ Token Token::apply_unary_operator(Token::OperatorType op)
                 return Token::create_bool(! as_bool());
             }
             break;
-        case VARIABLE:
-            return data_.variable->get().apply_unary_operator(op);
+        case IDENTIFIER:
+            return SymbolTable::get(str_).apply_unary_operator(op);
         default:
             break;
 
@@ -386,55 +409,55 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
         }
         break;
 
-    case VARIABLE:
+    case IDENTIFIER:
         switch (op)
         {
             // Handle operators which update the variable value, operand is the assigned lvalue
             case OP_ASSIGNMENT:
             {
                 // Always copy by value, otherwise copying the operand name will create a reference
-                if (operand.type_ == VARIABLE)
+                if (operand.type_ == IDENTIFIER)
                 {
-                    Token& lvalue = operand.data_.variable->get();
-                    data_.variable->set(lvalue);
+                    Token& lvalue = SymbolTable::get(operand.str_);
+                    SymbolTable::set(str_, lvalue);
                     return lvalue;
                 }
-                data_.variable->set(operand);
+                SymbolTable::set(str_, operand);
                 return operand;
             }
             case OP_MULTIPLY_AND_ASSIGN:
             {
-                Token& rvalue = data_.variable->get();
+                Token& rvalue = SymbolTable::get(str_);
                 rvalue = rvalue.apply_binary_operator(OP_MULTIPLICATION, operand);
                 return rvalue;
             }
             case OP_DIVIDE_AND_ASSIGN:
             {
-                Token& rvalue = data_.variable->get();
+                Token& rvalue = SymbolTable::get(str_);
                 rvalue = rvalue.apply_binary_operator(OP_DIVISION, operand);
                 return rvalue;
             }
             case OP_MODULO_AND_ASSIGN:
             {
-                Token& rvalue = data_.variable->get();
+                Token& rvalue = SymbolTable::get(str_);
                 rvalue = rvalue.apply_binary_operator(OP_MODULO, operand);
                 return rvalue;
             }
             case OP_ADD_AND_ASSIGN:
             {
-                Token& rvalue = data_.variable->get();
+                Token& rvalue = SymbolTable::get(str_);
                 rvalue = rvalue.apply_binary_operator(OP_ADDITION, operand);
                 return rvalue;
             }
             case OP_SUBTRACT_AND_ASSIGN:
             {
-                Token& rvalue = data_.variable->get();
+                Token& rvalue = SymbolTable::get(str_);
                 rvalue = rvalue.apply_binary_operator(OP_SUBTRACTION, operand);
                 return rvalue;
             }
             default:
                 // Variable is not modified, extract value and apply operator on it
-                return data_.variable->get().apply_binary_operator(op, operand);
+                return SymbolTable::get(str_).apply_binary_operator(op, operand);
         }
         break;
     default:
@@ -446,12 +469,12 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 
 bool Token::is_literal() const
 {
-    return type_ == STRING_LITERAL || type_ == INT_LITERAL || type_ == FLOAT_LITERAL || type_ == BOOL_LITERAL;
+    return type_ == STRING_LITERAL || type_ == INT_LITERAL || type_ == FLOAT_LITERAL || type_ == BOOL_LITERAL || FUNCTION;
 }
 
 bool Token::is_typed(Type type) const
 {
-    return type_ == type || (type_ == VARIABLE && data_.variable->get().get_type() == type);
+    return type_ == type || (type_ == IDENTIFIER && SymbolTable::get(str_).get_type() == type);
 }
 
 // cast ------------------------------------------------------------------------
@@ -461,8 +484,8 @@ const std::string& Token::as_string() const
     if (type_ == STRING_LITERAL)
         return str_;
 
-    if (type_ == VARIABLE)
-        return data_.variable->get().as_string();
+    if (type_ == IDENTIFIER)
+        return SymbolTable::get(str_).as_string();
 
     throw Error::TypeError("a string is required");
 }
@@ -477,8 +500,8 @@ double Token::as_float() const
             return (double) data_.int_value;
         case BOOL_LITERAL:
             return (double) data_.bool_value;
-        case VARIABLE:
-            return data_.variable->get().as_float();
+        case IDENTIFIER:
+            return SymbolTable::get(str_).as_float();
         default:
             throw Error::TypeError("a float is required");
     }
@@ -492,8 +515,8 @@ int Token::as_int() const
             return data_.int_value;
         case BOOL_LITERAL:
             return data_.bool_value ? 1 : 0;
-        case VARIABLE:
-            return data_.variable->get().as_int();
+        case IDENTIFIER:
+            return SymbolTable::get(str_).as_int();
         default:
             throw Error::TypeError("an integer is required");
     }
@@ -511,8 +534,8 @@ bool Token::as_bool() const
             return str_.size() > 0;
         case BOOL_LITERAL:
             return data_.bool_value;
-        case VARIABLE:
-            return data_.variable->get().as_bool();
+        case IDENTIFIER:
+            return SymbolTable::get(str_).as_bool();
         default:
             throw Error::TypeError("a boolean is required");
     }
@@ -534,8 +557,11 @@ void Token::print_value(std::ostream& os) const
         case BOOL_LITERAL:
             os << (data_.bool_value ? "true" : "false");
             break;
-        case VARIABLE:
-            data_.variable->get().print_value(std::cout);
+        case FUNCTION:
+            os << "<function>";
+            break;
+        case IDENTIFIER:
+            SymbolTable::get(str_).print_value(std::cout);
             break;
         case OPERATOR:
             os << OperatorManager::to_str(data_.op_type);
@@ -549,9 +575,10 @@ void Token::print_value(std::ostream& os) const
         case ARG_SEPARATOR:
             os << ',';
             break;
-        case FUNCTION:
         case KEYWORD:
             os << "<not implemented>";
+            break;
+        default:
             break;
     }
 }
@@ -562,11 +589,8 @@ void Token::debug(std::ostream& os) const
 {
     switch (type_)
     {
-        case VARIABLE:
-            os << SymbolTable::find_variable_name(data_.variable);
-            break;
-        case FUNCTION:
-            os << SymbolTable::find_function_name(data_.function);
+        case IDENTIFIER:
+            os << str_;
             break;
         case STRING_LITERAL:
             os << '"' << str_ << '"';

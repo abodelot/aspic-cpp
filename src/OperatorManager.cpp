@@ -252,6 +252,8 @@ const char* OperatorManager::to_str(Token::OperatorType op)
             return "+=";
         case Token::OP_SUBTRACT_AND_ASSIGN:
             return "-=";
+
+        default:
+            return nullptr;
     }
-    return nullptr;
 }

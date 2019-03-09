@@ -6,10 +6,12 @@ python program_test.txt > out.python 2>&1
 echo "running with aspic"
 ../aspic program_test.txt > out.aspic 2>&1
 if diff out.python out.aspic > /dev/null; then
-	echo "test succeed"
+    echo "test succeed"
+    rm out.python
+    rm out.aspic
+
 else
-	echo "test failed"
+    echo "test failed"
+    diff out.python out.aspic
 fi
 
-rm out.python
-rm out.aspic
