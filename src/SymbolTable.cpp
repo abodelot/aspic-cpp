@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 
 #include "SymbolTable.hpp"
 #include "Error.hpp"
@@ -28,19 +29,27 @@ void SymbolTable::register_stdlib()
     add("str_upper", str_upper);
 }
 
+bool SymbolTable::contains(const std::string& name)
+{
+    return identifiers_.find(name) != identifiers_.end();
+}
+
 Token& SymbolTable::get(const std::string& name)
 {
-    return identifiers_[name];
+    IdentifierMap::iterator it(identifiers_.find(name));
+    if (it != identifiers_.end()) {
+        return it->second;
+    }
+    throw Error::NameError(name);
 }
+
 
 void SymbolTable::set(const std::string& name, Token& token)
 {
-    if (token.is_literal())
-    {
+    if (token.is_literal()) {
         identifiers_[name] = token;
     }
-    else
-    {
+    else {
         throw Error::InternalError("symbol table can only store literals");
     }
 }
@@ -52,18 +61,18 @@ void SymbolTable::add(const std::string& name, const FunctionWrapper& function)
 
 void SymbolTable::print_all_symbols()
 {
-    for (IdentifierMap::iterator it = identifiers_.begin(); it != identifiers_.end(); ++it)
-    {
-        std::cout << it->first.c_str() << ": ";
-        try
-        {
-            it->second.print_value(std::cout);
+    // Get max identifier length
+    size_t max_length = 0;
+    for (const auto& kv: identifiers_) {
+        if (kv.first.size() > max_length) {
+            max_length = kv.first.size();
         }
-        catch (Error& error) // TODO: NameError
-        {
-            std::cout << "[not initialized yet]";
-        }
-        std::cout << "\n";
     }
-    std::cout << "****** total: " << identifiers_.size() << " ******" << std::endl;
+
+    for (const auto& kv: identifiers_) {
+        std::cout << std::setw(max_length) << std::left << kv.first.c_str() << " | ";
+        kv.second.print_value(std::cout);
+        std::cout << std::endl;
+    }
+    std::cout << "Symbol table size: " << identifiers_.size() << std::endl;
 }

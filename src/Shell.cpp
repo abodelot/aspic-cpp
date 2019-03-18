@@ -37,9 +37,11 @@ void Shell::run()
         else if (input == "debug") {
             parser.debug();
         }
-        else if (parser.tokenize(input)) {
+        else {
             try {
-                parser.eval().print_value(std::cout);
+                if (parser.tokenize(input)) {
+                    parser.eval().print_value(std::cout);
+                }
                 std::cout << std::endl;
             }
             catch (Error& e) {

@@ -130,7 +130,6 @@ public:
      * Operand helpers
      */
     bool is_literal() const;
-    bool is_typed(Type type) const;
 
     /**
      * Get literal value from an operand token, value is casted if necesary
@@ -142,6 +141,8 @@ public:
     bool               as_bool() const;
 
 private:
+    bool is_typed(Type type) const;
+
     /**
      * Holds the token value, according to Token::Type
      */

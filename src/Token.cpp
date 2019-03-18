@@ -121,7 +121,8 @@ const FunctionWrapper& Token::get_function() const
 
 bool Token::is_function() const
 {
-    return type_ == FUNCTION || (type_ == IDENTIFIER && SymbolTable::get(str_).type_ == FUNCTION);
+    return type_ == FUNCTION
+        || (type_ == IDENTIFIER && SymbolTable::contains(str_) && SymbolTable::get(str_).type_ == FUNCTION);
 }
 
 // operator helpers ------------------------------------------------------------
@@ -469,7 +470,11 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 
 bool Token::is_literal() const
 {
-    return type_ == STRING_LITERAL || type_ == INT_LITERAL || type_ == FLOAT_LITERAL || type_ == BOOL_LITERAL || FUNCTION;
+    return type_ == STRING_LITERAL
+        || type_ == INT_LITERAL
+        || type_ == FLOAT_LITERAL
+        || type_ == BOOL_LITERAL
+        || FUNCTION;
 }
 
 bool Token::is_typed(Type type) const
