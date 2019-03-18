@@ -15,10 +15,17 @@ public:
     Instruction();
 
     /**
-     * Eval an expresion
+     * Parse input into a token list
+     * @return true if at least one token was parsed
+     */
+    bool tokenize(const std::string& expression);
+
+    /**
+     * Eval an expresion.
+     * Important: instruction must be tokenized first!
      * @return result value as a literal-type token
      */
-    Token eval(const std::string& expression);
+    Token eval();
 
     /**
      * Print infix and postifx notation of the last evalued expression
@@ -26,10 +33,6 @@ public:
     void debug() const;
 
 private:
-    /**
-     * Parse input into a token list
-     */
-    void tokenization(const std::string& expression);
 
     /**
      * Transform infix expression to a postfix expression (Reverse Polish Notation)

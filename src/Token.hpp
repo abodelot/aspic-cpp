@@ -93,7 +93,6 @@ public:
      * Create a token bound to a symbol
      */
     static Token create_identifier(const std::string& identifier_name);
-    //static Token create_variable(Variable* value);
     static Token create_function(const FunctionWrapper& function);
 
     /**

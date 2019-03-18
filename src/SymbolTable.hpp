@@ -32,9 +32,9 @@ public:
     static void register_stdlib();
 
     /**
-     * Print symbol table content
+     * Print symbol table content to stdout (for debugging purpose)
      */
-    static void debug();
+    static void print_all_symbols();
 
 private:
     SymbolTable();

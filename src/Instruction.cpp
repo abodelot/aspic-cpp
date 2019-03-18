@@ -9,25 +9,14 @@
 #include "SymbolTable.hpp"
 #include "OperatorManager.hpp"
 
+#define COMMENT_SYMBOL '#'
 
 Instruction::Instruction() :
     operators_(OperatorManager::get_instance())
 {
 }
 
-Token Instruction::eval(const std::string& expression)
-{
-    // 1. Split string into a token list
-    tokenization(expression);
-
-    // 2. Convert tokens from infix notation to postfix notation
-    infix_to_postfix();
-
-    // 3. Eval postfixed expression
-    return eval_postfix();
-}
-
-void Instruction::tokenization(const std::string& expression)
+bool Instruction::tokenize(const std::string& expression)
 {
     // tokenization: transform an expression string into a token vector
     tokens_.clear();
@@ -123,7 +112,7 @@ void Instruction::tokenization(const std::string& expression)
                         case 't':  buffer += '\t'; break; // ASCII Horizontal Tab (TAB)
                         case 'v':  buffer += '\v'; break; // ASCII Vertical Tab (VT)
                         default:
-                            // Not a special character, the prevous backslash is kept
+                            // Not a special character, the previous backslash is kept
                             buffer += '\\';
                             buffer += expression[i];
                             break;
@@ -154,6 +143,10 @@ void Instruction::tokenization(const std::string& expression)
 
             tokens_.push_back(Token::create_identifier(buffer));
         }
+        else if (current == COMMENT_SYMBOL)
+        {
+            i = expression.size();
+        }
         // Ignore whitespaces
         else if (current != ' ' && current != '\t')
         {
@@ -162,6 +155,20 @@ void Instruction::tokenization(const std::string& expression)
 
         previous_index = tokens_.size() - 1;
     }
+
+    // At least one token should be parsed for tokenization to be successfull
+    return tokens_.size() > 0;
+}
+
+Token Instruction::eval()
+{
+    // Important: instruction must be tokenized first!
+
+    // 1. Convert tokens from infix notation to postfix notation
+    infix_to_postfix();
+
+    // 2. Eval postfixed expression
+    return eval_postfix();
 }
 
 void Instruction::infix_to_postfix()
@@ -285,7 +292,7 @@ void Instruction::infix_to_postfix()
 
     while (!stack_.empty())
     {
-        // la pile ne doit contenir plus que des opérateurs
+        // Stack must only contain operators at this point
         Token& t = stack_.top();
         if (t.is_operator())
         {

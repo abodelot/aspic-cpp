@@ -50,7 +50,7 @@ void SymbolTable::add(const std::string& name, const FunctionWrapper& function)
     identifiers_[name] = Token::create_function(function);
 }
 
-void SymbolTable::debug()
+void SymbolTable::print_all_symbols()
 {
     for (IdentifierMap::iterator it = identifiers_.begin(); it != identifiers_.end(); ++it)
     {

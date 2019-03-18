@@ -15,3 +15,6 @@
 aspic.layout
 aspic.depend
 aspic
+
+# Editors
+*.swp
