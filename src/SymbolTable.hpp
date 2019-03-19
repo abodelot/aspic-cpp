@@ -1,5 +1,5 @@
-#ifndef SYMBOLTABLE_HPP
-#define SYMBOLTABLE_HPP
+#ifndef ASPIC_SYMBOLTABLE_HPP
+#define ASPIC_SYMBOLTABLE_HPP
 
 #include <string>
 #include <map>
@@ -15,9 +15,14 @@ class SymbolTable
 {
 public:
     /**
-     * Get identifier value.
-     * Identifier will be initialized and added to the symbol table it doesn't already exist.
-     * @param name: variable identifier
+     * Check if a given identifier exists in the symbol table
+     * @return true if there is such an identifier, otherwise false
+     */
+    static bool contains(const std::string& name);
+
+    /**
+     * Get value of given identifier. Raise NameError exception if identifier is not declared.
+     * @param name: identifier name
      */
     static Token& get(const std::string& name);
 
@@ -27,7 +32,7 @@ public:
     static void set(const std::string& name, Token& token);
 
     /**
-     * Initialize the symbol table with the function from the standard library
+     * Initialize the symbol table with the functions from the standard library
      */
     static void register_stdlib();
 
@@ -50,4 +55,4 @@ private:
     static IdentifierMap identifiers_;
 };
 
-#endif // SYMBOLTABLE_HPP
+#endif
