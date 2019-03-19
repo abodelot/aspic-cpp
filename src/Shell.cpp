@@ -40,9 +40,8 @@ void Shell::run()
         else {
             try {
                 if (parser.tokenize(input)) {
-                    parser.eval().print_value(std::cout);
+                    std::cout << parser.eval() << std::endl;
                 }
-                std::cout << std::endl;
             }
             catch (Error& e) {
                 std::cout << e.what() << std::endl;

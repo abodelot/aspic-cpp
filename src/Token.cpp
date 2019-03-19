@@ -486,25 +486,24 @@ bool Token::is_typed(Type type) const
 
 const std::string& Token::as_string() const
 {
-    if (type_ == STRING_LITERAL)
+    if (type_ == STRING_LITERAL) {
         return str_;
-
-    if (type_ == IDENTIFIER)
+    }
+    if (type_ == IDENTIFIER) {
         return SymbolTable::get(str_).as_string();
-
+    }
     throw Error::TypeError("a string is required");
 }
 
 double Token::as_float() const
 {
-    switch (type_)
-    {
+    switch (type_) {
         case FLOAT_LITERAL:
             return data_.float_value;
         case INT_LITERAL:
-            return (double) data_.int_value;
+            return static_cast<double>(data_.int_value);
         case BOOL_LITERAL:
-            return (double) data_.bool_value;
+            return static_cast<double>(data_.bool_value);
         case IDENTIFIER:
             return SymbolTable::get(str_).as_float();
         default:
@@ -514,8 +513,7 @@ double Token::as_float() const
 
 int Token::as_int() const
 {
-    switch (type_)
-    {
+    switch (type_) {
         case INT_LITERAL:
             return data_.int_value;
         case BOOL_LITERAL:
@@ -529,8 +527,7 @@ int Token::as_int() const
 
 bool Token::as_bool() const
 {
-    switch (type_)
-    {
+    switch (type_) {
         case INT_LITERAL:
             return data_.int_value != 0;
         case FLOAT_LITERAL:
@@ -546,46 +543,46 @@ bool Token::as_bool() const
     }
 }
 
-void Token::print_value(std::ostream& os) const
+std::ostream& operator<<(std::ostream& os, const Token& token)
 {
-    switch (type_)
-    {
-        case INT_LITERAL:
-            os << data_.int_value;
+    switch (token.type_) {
+        case Token::INT_LITERAL:
+            os << token.data_.int_value;
             break;
-        case FLOAT_LITERAL:
-            os << data_.float_value;
+        case Token::FLOAT_LITERAL:
+            os << token.data_.float_value;
             break;
-        case STRING_LITERAL:
-            os << str_;
+        case Token::STRING_LITERAL:
+            os << token.str_;
             break;
-        case BOOL_LITERAL:
-            os << (data_.bool_value ? "true" : "false");
+        case Token::BOOL_LITERAL:
+            os << (token.data_.bool_value ? "true" : "false");
             break;
-        case FUNCTION:
-            os << "<function>";
+        case Token::FUNCTION:
+            os << "<function at " << &token.data_.function << ">";
             break;
-        case IDENTIFIER:
-            SymbolTable::get(str_).print_value(std::cout);
+        case Token::IDENTIFIER:
+            os << SymbolTable::get(token.str_);
             break;
-        case OPERATOR:
-            os << OperatorManager::to_str(data_.op_type);
+        case Token::OPERATOR:
+            os << OperatorManager::to_str(token.data_.op_type);
             break;
-        case LEFT_BRACKET:
+        case Token::LEFT_BRACKET:
             os << '(';
             break;
-        case RIGHT_BRACKET:
+        case Token::RIGHT_BRACKET:
             os << ')';
             break;
-        case ARG_SEPARATOR:
+        case Token::ARG_SEPARATOR:
             os << ',';
             break;
-        case KEYWORD:
+        case Token::KEYWORD:
             os << "<not implemented>";
             break;
         default:
             break;
     }
+    return os;
 }
 
 // debug -----------------------------------------------------------------------
@@ -601,6 +598,6 @@ void Token::debug(std::ostream& os) const
             os << '"' << str_ << '"';
             break;
         default:
-            print_value(os);
+            os << *this;
     }
 }

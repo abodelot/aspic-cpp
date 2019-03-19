@@ -1,7 +1,8 @@
-#ifndef TOKEN_HPP
-#define TOKEN_HPP
+#ifndef ASPIC_TOKEN_HPP
+#define ASPIC_TOKEN_HPP
 
 #include <string>
+#include <iostream>
 
 #include "FunctionWrapper.hpp"
 
@@ -107,7 +108,6 @@ public:
      * Print string representation
      */
     void debug(std::ostream& os) const;
-    void print_value(std::ostream& os) const;
 
     /**
      * Operator helpers
@@ -141,6 +141,8 @@ public:
     bool               as_bool() const;
 
 private:
+    friend std::ostream& operator<<(std::ostream&, const Token& token);
+
     bool is_typed(Type type) const;
 
     /**
@@ -166,4 +168,6 @@ private:
     Type       type_;
 };
 
-#endif // TOKEN_HPP
+std::ostream& operator<<(std::ostream&, const Token& token);
+
+#endif

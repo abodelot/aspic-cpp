@@ -70,8 +70,8 @@ void SymbolTable::print_all_symbols()
     }
 
     for (const auto& kv: identifiers_) {
-        std::cout << std::setw(max_length) << std::left << kv.first.c_str() << " | ";
-        kv.second.print_value(std::cout);
+        std::cout << std::setw(max_length) << std::left << kv.first << " | ";
+        kv.second.debug(std::cout);
         std::cout << std::endl;
     }
     std::cout << "Symbol table size: " << identifiers_.size() << std::endl;

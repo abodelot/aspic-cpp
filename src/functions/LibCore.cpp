@@ -8,8 +8,7 @@ Token core_print(TokenStack& args)
 {
     args.check(1);
     Token arg = args.top(); args.pop();
-    arg.print_value(std::cout);
-    std::cout << std::endl;
+    std::cout << arg << std::endl;
     return Token::create_int(0); // TODO: return Token::NONE
 }
 
