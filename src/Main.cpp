@@ -13,10 +13,10 @@ TODO List:
 - bugfix typeof avec variables
 */
 
-#include <iostream>
 #include "Shell.hpp"
 #include "FileLoader.hpp"
 #include "SymbolTable.hpp"
+
 
 int main(int argc, char* argv[])
 {
@@ -28,10 +28,8 @@ int main(int argc, char* argv[])
     else {
         FileLoader loader;
         if (!loader.load_file(argv[1])) {
-            std::cerr << "Can't load file '" << argv[1] << "'\n";
+            return 1;
         }
-        return -1;
     }
     return 0;
 }
-

@@ -1,0 +1,30 @@
+assert(" ")
+assert("hello" == "hello")
+var = "hello"
+assert(var == var)
+assert(var == "hello")
+assert("hello" == var)
+assert("hello" == "he" + "l" * 2 + "o")
+var2 = "world"
+assert(var + " " + var2 == "hello world")
+
+name = "alexandre"
+assert(str_len(name) == 9)
+assert(str_len(name * 2) == 18)
+assert(str_len("") == 0)
+
+assert(str_count(name, "a") == 2)
+assert(str_count(name, "A") == 0)
+assert(str_count(name, "x") == 1)
+assert(str_count(name, "xa") == 1)
+assert(str_count(name, "xz") == 0)
+assert(str_count(name, "z") == 0)
+
+name = "o"
+name += "hn"
+name = "J" + name
+name2 = "Doe"
+name += str_replace(name2 + "!", "D", " D")
+assert(name == "John Doe!")
+
+print("ok")

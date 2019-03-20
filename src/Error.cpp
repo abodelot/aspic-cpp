@@ -2,6 +2,11 @@
 #include "OperatorManager.hpp"
 
 
+Error Error::AssertionError()
+{
+    return Error(Assertion);
+}
+
 Error Error::SyntaxError(const std::string& str)
 {
     return Error(Syntax, str);
@@ -25,7 +30,7 @@ Error Error::TypeError(const std::string& str)
 Error Error::UnsupportedOperator(Token::Type operand, Token::OperatorType op)
 {
     Error e(Type);
-    e.message_ += "type '";
+    e.message_ += ": type '";
     e.message_ += Token::type_to_str(operand);
     e.message_ += "' doesn't support operator '";
     e.message_ += OperatorManager::to_str(op);
@@ -36,7 +41,7 @@ Error Error::UnsupportedOperator(Token::Type operand, Token::OperatorType op)
 Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::OperatorType op)
 {
     Error e(Type);
-    e.message_ += "unsupported binary operator '";
+    e.message_ += ": unsupported binary operator '";
     e.message_ += OperatorManager::to_str(op);
     e.message_ += "' for operands '";
     e.message_ += Token::type_to_str(a);
@@ -58,22 +63,20 @@ Error Error::DivideByZero()
 
 Error::Error(ID id, const std::string& message)
 {
-    switch (id)
-    {
-        case Syntax:   message_ = "[SyntaxError] ";   break;
-        case Name:     message_ = "[NameError] ";     break;
-        case Type:     message_ = "[TypeError] ";     break;
-        case Internal: message_ = "[InternalError] "; break;
-        case Runtime:  message_ = "[RuntimeError] ";  break;
+    switch (id) {
+        case Assertion: message_ = "AssertionError"; break;
+        case Syntax:    message_ = "SyntaxError";    break;
+        case Name:      message_ = "NameError";      break;
+        case Type:      message_ = "TypeError";      break;
+        case Internal:  message_ = "InternalError";  break;
+        case Runtime:   message_ = "RuntimeError";   break;
     }
-    message_ += message;
+    if (message.size()) {
+        message_ += ": " + message;
+    }
 }
 
-Error::~Error() throw()
-{
-}
-
-const char* Error::what() const throw()
+const char* Error::what() const noexcept
 {
     return message_.c_str();
 }

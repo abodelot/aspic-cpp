@@ -1,11 +1,14 @@
-#ifndef LIBCORE_HPP
-#define LIBCORE_HPP
+#ifndef ASPIC_LIBCORE_HPP
+#define ASPIC_LIBCORE_HPP
 
 #include "../TokenStack.hpp"
 
 /**
  * Core library: essential and utility functions
  */
+
+// raise AssertionError if argument != true
+Token core_assert(TokenStack& args);
 
 // print string representation to std::out
 Token core_print(TokenStack& args);
@@ -25,4 +28,4 @@ Token core_min(TokenStack& args);
 // a > b ? a : b
 Token core_max(TokenStack& args);
 
-#endif // LIBCORE_HPP
+#endif

@@ -12,6 +12,7 @@ SymbolTable::IdentifierMap SymbolTable::identifiers_;
 void SymbolTable::register_stdlib()
 {
     // Load core library (no prefix)
+    add("assert", core_assert);
     add("print", core_print);
     add("input", core_input);
     add("typeof", core_typeof);

@@ -2,7 +2,18 @@
 #include <cmath>
 
 #include "LibCore.hpp"
+#include "Error.hpp"
 
+
+Token core_assert(TokenStack& args)
+{
+    args.check(1);
+    bool result= args.pop_bool();
+    if (!result) {
+        throw Error::AssertionError();
+    }
+    return Token::create_int(1); // TODO: return Token::NONE
+}
 
 Token core_print(TokenStack& args)
 {
