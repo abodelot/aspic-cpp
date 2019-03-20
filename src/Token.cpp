@@ -569,9 +569,6 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
         case Token::ARG_SEPARATOR:
             os << ',';
             break;
-        case Token::KEYWORD:
-            os << "<not implemented>";
-            break;
         default:
             break;
     }
@@ -589,6 +586,9 @@ void Token::debug(std::ostream& os) const
             break;
         case STRING_LITERAL:
             os << '"' << str_ << '"';
+            break;
+        case BOOL_LITERAL:
+            os << "bool<" << (data_.bool_value ? "true" : "false") << ">";
             break;
         default:
             os << *this;

@@ -6,7 +6,7 @@ C_RED="\e[1;91;7m"
 C_GREEN="\e[1;92;7m"
 C_NONE="\e[0m"
 
-for i in $(find ./tests -name "*_test.txt" -type f); do
+for i in $(find ./tests -name "*_test.txt" -type f | sort); do
     if ./aspic $i; then
         echo ${C_GREEN} PASS ${C_NONE} $i
     else

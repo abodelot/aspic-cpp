@@ -1,5 +1,5 @@
-#ifndef INSTRUCTION_HPP
-#define INSTRUCTION_HPP
+#ifndef ASPIC_INSTRUCTION_HPP
+#define ASPIC_INSTRUCTION_HPP
 
 #include <string>
 #include <vector>
@@ -64,4 +64,4 @@ private:
     OperatorManager& operators_;
 };
 
-#endif // INSTRUCTION_HPP
+#endif

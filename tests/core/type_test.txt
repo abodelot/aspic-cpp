@@ -5,6 +5,8 @@ assert(type(1.2) == "float")
 assert(type(-3.4) == "float")
 assert(type("hello") == "string")
 assert(type("") == "string")
+assert(type(true) == "bool")
+assert(type(false) == "bool")
 
 # type() on variable
 a = 1

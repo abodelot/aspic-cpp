@@ -9,8 +9,6 @@ TODO List:
 ----------
 
 - fonctions à arguments variables?? (http://www.kallisti.net.nz/blog/2008/02/extension-to-the-shunting-yard-algorithm-to-allow-variable-numbers-of-arguments-to-functions/)
-- mot clefs
-- bugfix typeof avec variables
 */
 
 #include "Shell.hpp"
