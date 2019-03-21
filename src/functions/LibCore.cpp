@@ -33,11 +33,11 @@ Token core_input(TokenStack& args)
     return Token::create_string(input);
 }
 
-Token core_typeof(TokenStack& args)
+Token core_type(TokenStack& args)
 {
     args.check(1);
     Token arg = args.top(); args.pop();
-    return Token::create_string(Token::type_to_str(arg.get_type()));
+    return Token::create_string(Token::type_to_str(arg.get_contained_type()));
 }
 
 Token core_round(TokenStack& args)

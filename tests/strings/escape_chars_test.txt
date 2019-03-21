@@ -1,0 +1,14 @@
+## special chars test
+
+assert(str_len("\a") == 1)
+assert(str_len("\b") == 1)
+assert(str_len("\t") == 1)
+assert(str_len("\f") == 1)
+assert(str_len("\r") == 1)
+assert(str_len("\n") == 1)
+assert(str_len("\\") == 1)
+assert("'" == '\'')
+assert('"' == "\"")
+assert("'\n" == '\'\n')
+assert("'''" == "'" + "\'" + '\'')
+assert('"""' == '"' * 3)

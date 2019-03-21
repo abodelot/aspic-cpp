@@ -15,7 +15,7 @@ void SymbolTable::register_stdlib()
     add("assert", core_assert);
     add("print", core_print);
     add("input", core_input);
-    add("typeof", core_typeof);
+    add("type", core_type);
     add("round", core_round);
     add("min", core_min);
     add("max", core_max);

@@ -20,6 +20,7 @@ bool FileLoader::load_file(const char* filename)
                 }
             }
             catch (Error& error) {
+                // Dump exception to stderr and exit
                 std::cerr << "File \"" << filename << "\", line " << line_number << std::endl;
                 std::cerr << "\t" << line << std::endl;
                 std::cerr << error.what() << std::endl;

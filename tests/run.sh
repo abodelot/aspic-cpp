@@ -1,17 +1,16 @@
 #!/bin/sh
 
-echo "running with python"
-python program_test.txt > out.python 2>&1
+# Must be launched from the project root directory!
 
-echo "running with aspic"
-../aspic program_test.txt > out.aspic 2>&1
-if diff out.python out.aspic > /dev/null; then
-    echo "test succeed"
-    rm out.python
-    rm out.aspic
+C_RED="\e[1;91;7m"
+C_GREEN="\e[1;92;7m"
+C_NONE="\e[0m"
 
-else
-    echo "test failed"
-    diff out.python out.aspic
-fi
-
+for i in $(find ./tests -name "*_test.txt" -type f); do
+    if ./aspic $i; then
+        echo ${C_GREEN} PASS ${C_NONE} $i
+    else
+        echo ${C_RED} FAIL ${C_NONE} $i
+        exit 1
+    fi
+done

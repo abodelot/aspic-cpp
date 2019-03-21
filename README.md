@@ -11,5 +11,14 @@ The parser implementation is based upon the [Shunting-yard algorithm](http://en.
 
 Install GNU readline. Debian:
 
-`sudo apt install libreadline-dev`
+```
+sudo apt install libreadline-dev
+```
 
+## Testing
+
+Aspic is tested with its own `assert` function. Tests can be run with:
+
+```
+./tests/run.sh
+```

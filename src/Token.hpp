@@ -100,6 +100,7 @@ public:
      * Getters, according to type
      */
     Type get_type() const;
+    Type get_contained_type() const;
     bool is_function() const;
     OperatorType    get_operator_type() const;
     const FunctionWrapper& get_function() const;
@@ -143,7 +144,11 @@ public:
 private:
     friend std::ostream& operator<<(std::ostream&, const Token& token);
 
-    bool is_typed(Type type) const;
+    /**
+     * Check if token is typed with given type, or if token is an identifier
+     * pointing to a literal with given type
+     */
+    bool contains(Type type) const;
 
     /**
      * Holds the token value, according to Token::Type

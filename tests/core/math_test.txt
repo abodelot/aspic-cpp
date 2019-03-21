@@ -1,0 +1,48 @@
+## math test
+
+var = 2 + 3
+assert(var == 5)
+var*=5
+assert(var== 25)
+assert(var * -1   == - 25)
+var2 = var- 3
+assert(var2 == 22)
+assert(var2 - 50   / 3 == 6)
+assert((var2 - 2) / 4 == 5)
+a= ((5 - 3 + 9) ** 8 ) / 6 - (17 - 6 / 2 * 6) ** 10
+assert(a == 35726479)
+pi = 3.141592
+assert(round(pi * 2, 2) == 6.28)
+radius = 7
+assert(round(pi * radius ** 2, 3) == 153.938)
+a -= 200
+assert(a == 35726279)
+b = (5 + 6) * 8 - (3 - -96)
+total = a + b
+b *= -1
+total -= b
+b /= 5
+assert(b == 2)
+assert(total == 35726257)
+assert(round(-(pi) - -4, 4) == 0.8584)
+assert(round(-(pi) / 6 - -4, 4) == 3.4764)
+assert(round(-(pi) * 5 / 6 - (9.3) - -4, 4) == -7.918)
+assert(round(-(pi) * 5 / 6 + (9.3 / 9) - -4, 4) == 2.4153)
+assert(round(-(pi / 5.3) * 5 / 6 - (9.3 / 9) - -4, 4) == 2.4727)
+assert(round(-(pi / 6.3) * 5 / 6 - (9.3 / 9 ** 6) - -4, 4) == 3.5844)
+
+# pow operator
+assert(1 ** 1 == 1)
+assert(1 ** 0 == 1)
+assert(2 ** 3 ** 3 == 134217728)
+assert((2 ** 3) ** 3 == 512)
+assert(2 ** (3 ** 2) == 512)
+
+# modulo operator
+assert(20 % 3 == 2)
+assert(0 % 9 == 0)
+assert(0 % 1 == 0)
+assert(10 % 6 == 4)
+assert(10 % 5 == 0)
+assert(100 % 2 == 0)
+assert(101 % 2 == 1)

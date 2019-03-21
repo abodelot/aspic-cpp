@@ -1,0 +1,26 @@
+# type() on literals
+assert(type(5) == "int")
+assert(type(-2) == "int")
+assert(type(1.2) == "float")
+assert(type(-3.4) == "float")
+assert(type("hello") == "string")
+assert(type("") == "string")
+
+# type() on variable
+a = 1
+assert(type(a) == "int")
+a = -2
+assert(type(a) == "int")
+a += 2.5
+assert(type(a) == "float")
+var = "string"
+assert(type(var) == "string")
+assert(type(type(4)) == "string")
+
+# type() on boolean expressions
+assert(type(1 > 2) == "bool")
+assert(type(1 < 2) == "bool")
+assert(type(1 >= 2) == "bool")
+assert(type(1 >= 2) == "bool")
+assert(type(1 != 2) == "bool")
+assert(type(1 == 2) == "bool")

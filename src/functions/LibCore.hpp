@@ -17,7 +17,7 @@ Token core_print(TokenStack& args);
 Token core_input(TokenStack& args);
 
 // get type as string
-Token core_typeof(TokenStack& args);
+Token core_type(TokenStack& args);
 
 // round to floating number to x decimals
 Token core_round(TokenStack& args);

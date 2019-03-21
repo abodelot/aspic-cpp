@@ -12,8 +12,7 @@
 
 const char* Token::type_to_str(Type type)
 {
-    switch (type)
-    {
+    switch (type) {
         case INT_LITERAL:
             return "int";
         case FLOAT_LITERAL:
@@ -100,6 +99,11 @@ Token::Type Token::get_type() const
     return type_;
 }
 
+Token::Type Token::get_contained_type() const
+{
+    return type_== IDENTIFIER ? SymbolTable::get(str_).type_ : type_;
+}
+
 Token::OperatorType Token::get_operator_type() const
 {
     assert(type_ == OPERATOR);
@@ -108,12 +112,10 @@ Token::OperatorType Token::get_operator_type() const
 
 const FunctionWrapper& Token::get_function() const
 {
-    if (type_ == FUNCTION)
-    {
+    if (type_ == FUNCTION) {
         return data_.function;
     }
-    if (type_ == IDENTIFIER)
-    {
+    if (type_ == IDENTIFIER) {
         return SymbolTable::get(str_).get_function();
     }
     throw Error::InternalError("token is not a function");
@@ -135,13 +137,11 @@ bool Token::is_operator() const
 bool Token::is_unary_operator() const
 {
     // must be an operator
-    if (!is_operator())
-    {
+    if (!is_operator()) {
         return false;
     }
     // switch on unary operators
-    switch (data_.op_type)
-    {
+    switch (data_.op_type) {
         case OP_NOT:
         case OP_UNARY_PLUS:
         case OP_UNARY_MINUS:
@@ -159,18 +159,15 @@ bool Token::is_binary_operator() const
 bool Token::is_right_associative_operator() const
 {
     // must be an operator
-    if (!is_operator())
-    {
+    if (!is_operator()) {
         return false;
     }
     // all unary operators are right associative
-    if (is_unary_operator())
-    {
+    if (is_unary_operator()) {
         return true;
     }
     // switch on remaining right associative operators
-    switch (data_.op_type)
-    {
+    switch (data_.op_type) {
         case OP_POW:
         case OP_ASSIGNMENT:
         case OP_MULTIPLY_AND_ASSIGN:
@@ -188,12 +185,10 @@ bool Token::is_right_associative_operator() const
 
 Token Token::apply_unary_operator(Token::OperatorType op)
 {
-    switch (type_)
-    {
+    switch (type_) {
         case INT_LITERAL:
         case BOOL_LITERAL:
-            switch (op)
-            {
+            switch (op) {
                 case OP_UNARY_PLUS:
                     return Token::create_int(+ as_int());
                 case OP_UNARY_MINUS:
@@ -204,8 +199,7 @@ Token Token::apply_unary_operator(Token::OperatorType op)
             }
             break;
         case FLOAT_LITERAL:
-            switch (op)
-            {
+            switch (op) {
                 case OP_UNARY_PLUS:
                     return Token::create_float(+ as_float());
                 case OP_UNARY_MINUS:
@@ -216,8 +210,7 @@ Token Token::apply_unary_operator(Token::OperatorType op)
             }
             break;
         case STRING_LITERAL:
-            if (op == OP_NOT)
-            {
+            if (op == OP_NOT) {
                 return Token::create_bool(! as_bool());
             }
             break;
@@ -236,40 +229,37 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
     {
     case INT_LITERAL:
     case BOOL_LITERAL: // false is equivalent to 0, true is equivalent to 1
-
-        if (operand.is_typed(FLOAT_LITERAL))
-        {
+        if (operand.contains(FLOAT_LITERAL)) {
             // if the other operand is float typed, the result will be also float typed
             Token cast_to_float = Token::create_float(as_float());
             return cast_to_float.apply_binary_operator(op, operand);
         }
 
-        switch (op)
-        {
+        switch (op) {
             case OP_POW:
                 return Token::create_int(std::pow(as_int(), operand.as_int()));
 
             case OP_MULTIPLICATION:
                 // 2 * "hello" => "hellohello"
-                if (operand.is_typed(STRING_LITERAL))
+                if (operand.contains(STRING_LITERAL)) {
                     return operand.apply_binary_operator(op, *this);
-
+                }
                 return Token::create_int(as_int() * operand.as_int());
 
             case OP_DIVISION:
             {
                 int denominator = operand.as_int();
-                if (denominator == 0)
+                if (denominator == 0) {
                     throw Error::DivideByZero();
-
+                }
                 return Token::create_int(as_int() / denominator);
             }
             case OP_MODULO:
             {
                 int denominator = operand.as_int();
-                if (denominator == 0)
+                if (denominator == 0) {
                     throw Error::DivideByZero();
-
+                }
                 return Token::create_int(as_int() % denominator);
             }
             case OP_ADDITION:
@@ -318,17 +308,17 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
             case OP_DIVISION:
             {
                 double denominator = operand.as_float();
-                if (denominator == 0.f)
+                if (denominator == 0.f) {
                     throw Error::DivideByZero();
-
+                }
                 return Token::create_float(as_float() / denominator);
             }
             case OP_MODULO:
             {
                 double denominator = operand.as_float();
-                if (denominator == 0.f)
+                if (denominator == 0.f) {
                     throw Error::DivideByZero();
-
+                }
                 return Token::create_float(fmod(as_float(), denominator));
             }
             case OP_ADDITION:
@@ -366,18 +356,21 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
         break;
 
     case STRING_LITERAL:
-        switch (op)
-        {
+        switch (op) {
             case OP_ADDITION:
-                return Token::create_string(str_ + operand.as_string());
+                if (operand.contains(STRING_LITERAL)) {
+                    return Token::create_string(str_ + operand.as_string());
+                }
+                else {
+                    throw Error::UnsupportedBinaryOperator(type_, operand.type_, op);
+                }
 
             case OP_MULTIPLICATION:
             {
                 int count = operand.as_int();
                 std::string result;
                 result.reserve(count * str_.size());
-                for (int i = 0; i < count; ++i)
-                {
+                for (int i = 0; i < count; ++i) {
                     result += str_;
                 }
                 return Token::create_string(result);
@@ -474,10 +467,10 @@ bool Token::is_literal() const
         || type_ == INT_LITERAL
         || type_ == FLOAT_LITERAL
         || type_ == BOOL_LITERAL
-        || FUNCTION;
+        || type_ == FUNCTION;
 }
 
-bool Token::is_typed(Type type) const
+bool Token::contains(Type type) const
 {
     return type_ == type || (type_ == IDENTIFIER && SymbolTable::get(str_).get_type() == type);
 }
