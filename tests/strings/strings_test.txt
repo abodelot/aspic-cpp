@@ -8,6 +8,7 @@ assert("hello" == var)
 assert("hello" == "he" + "l" * 2 + "o")
 var2 = "world"
 assert(var + " " + var2 == "hello world")
+assert(str_replace(str_upper(var + " " + var2), "L" * 2, str_lower("X")) == "HExO WORLD")
 
 # += and *= operators
 var = "my"

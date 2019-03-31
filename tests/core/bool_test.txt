@@ -1,0 +1,22 @@
+assert(1 < 2)
+assert(1 < 2 == true)
+assert(2 > 1)
+assert(2 > 1 == true)
+assert(1 > 2 == false)
+
+assert(0 == false)
+assert(1 == true)
+assert(true == true)
+assert(false == false)
+assert(false == false)
+assert((false != false) == (true != true))
+
+n = 1
+assert(n == 1)
+assert(n == true)
+assert(n >= 1)
+n += 1
+assert(n >= 1)
+assert(n == 2)
+n = n < 0
+assert(n == false)

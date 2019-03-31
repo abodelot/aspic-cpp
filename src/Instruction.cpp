@@ -11,6 +11,7 @@
 
 #define COMMENT_SYMBOL '#'
 
+
 Instruction::Instruction() :
     operators_(OperatorManager::get_instance())
 {
@@ -21,7 +22,6 @@ bool Instruction::tokenize(const std::string& expression)
     // tokenization: transform an expression string into a token vector
     tokens_.clear();
     static std::string buffer; // buffer is the string representation of the currently parsed token
-    int previous_index = -1;
     for (size_t i = 0; i < expression.size(); ++i)
     {
         buffer.clear();
@@ -37,7 +37,7 @@ bool Instruction::tokenize(const std::string& expression)
             }
             --i;
             Token::OperatorType op_type;
-            const Token* previous = previous_index != -1 ? &tokens_[previous_index] : nullptr;
+            const Token* previous = tokens_.empty() ? nullptr : &(tokens_.back());
             if (operators_.eval(buffer, op_type, previous))
             {
                 tokens_.push_back(Token::create_operator(op_type));
@@ -83,21 +83,28 @@ bool Instruction::tokenize(const std::string& expression)
         // Scanning string literal
         else if (current == '"' || current == '\'')
         {
-            char closure_char = current; // "...", '...'
+            // The closing quote must match the opening quote (single or double)
+            char closure_char = current;
             bool escape_next_char = false;
             for (++i; i < expression.size(); ++i)
             {
                 if (!escape_next_char)
                 {
                     if (expression[i] == closure_char)
+                    {
                         break;
+                    }
 
                     if (expression[i] == '\\')
+                    {
                         escape_next_char = true;
+                    }
                     else
+                    {
                         buffer += expression[i];
+                    }
                 }
-                else if (escape_next_char)
+                else
                 {
                     switch (expression[i])
                     {
@@ -129,20 +136,34 @@ bool Instruction::tokenize(const std::string& expression)
 
             tokens_.push_back(Token::create_string(buffer));
         }
-        // Scanning identifier (function or variable)
+        // Scanning identifiers (functions, variables, and reserved literal keywords)
         // We already know that current char is not a digit, so no need to check that
         else if (is_valid_identifier_char(current))
         {
             // Swallow characters until the end of the identifier
-            buffer += current;
+            buffer = current;
             for (++i; i < expression.size() && is_valid_identifier_char(expression[i]); ++i)
             {
                 buffer += expression[i];
             }
             --i;
 
-            tokens_.push_back(Token::create_identifier(buffer));
+            // Check if identifier is a reserved keyword
+            if (buffer == "true")
+            {
+                tokens_.push_back(Token::create_bool(true));
+            }
+            else if (buffer == "false")
+            {
+                tokens_.push_back(Token::create_bool(false));
+            }
+            else
+            {
+                // Not a keyword, create an identifier
+                tokens_.push_back(Token::create_identifier(buffer));
+            }
         }
+        // Ignore everything after comment symbol
         else if (current == COMMENT_SYMBOL)
         {
             i = expression.size();
@@ -152,8 +173,6 @@ bool Instruction::tokenize(const std::string& expression)
         {
             throw Error::SyntaxError(std::string("illegal character encountered: ") + current);
         }
-
-        previous_index = tokens_.size() - 1;
     }
 
     // At least one token should be parsed for tokenization to be successfull
@@ -315,6 +334,7 @@ Token Instruction::eval_postfix()
         const Token& tok = *it;
         switch (tok.get_type())
         {
+            case Token::BOOL_LITERAL:
             case Token::INT_LITERAL:
             case Token::FLOAT_LITERAL:
             case Token::STRING_LITERAL:
@@ -377,7 +397,10 @@ Token Instruction::eval_postfix()
 
 bool Instruction::is_valid_identifier_char(char c) const
 {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
+    return (c >= 'a' && c <= 'z')
+        || (c >= 'A' && c <= 'Z')
+        || (c >= '0' && c <= '9')
+        || (c == '_');
 }
 
 bool Instruction::is_valid_operator_char(char c) const

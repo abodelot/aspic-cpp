@@ -23,8 +23,7 @@ public:
         IDENTIFIER,
         ARG_SEPARATOR,
         LEFT_BRACKET,
-        RIGHT_BRACKET,
-        KEYWORD
+        RIGHT_BRACKET
     };
 
     static const char* type_to_str(Type type);
@@ -63,15 +62,6 @@ public:
         OP_SUBTRACT_AND_ASSIGN, // -=
 
         _OPERATOR_COUNT
-    };
-
-    enum Keyword
-    {
-        KW_IF,
-        KW_ELIF,
-        KW_ELSE,
-        KW_WHILE,
-        KW_END
     };
 
     Token();
@@ -159,12 +149,12 @@ private:
         TokenData()
         {
         }
+
         OperatorType    op_type;     // OPERATOR
         int             int_value;   // INT_LITERAL
         bool            bool_value;  // BOOL_LITERAL
         double          float_value; // FOAT_LITERAL
         FunctionWrapper function;    // FUNCTION
-        Keyword         keyword;     // KEYWORD
     };
     // Cannot store it into TokenData union because std::string is an object
     std::string str_;              // STRING_LITERAL
