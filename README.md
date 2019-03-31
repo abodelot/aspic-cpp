@@ -7,13 +7,19 @@ The parser implementation is based upon the [Shunting-yard algorithm](http://en.
 * Author: Alexandre Bodelot <alexandre.bodelot@gmail.com>
 * Website: https://github.com/abodelot/aspic
 
-## Dependencies
+## Setup
 
-Install GNU readline. Debian:
+1. Install GNU readline library. On Debian/Ubuntu:
 
-```
-sudo apt install libreadline-dev
-```
+    ```
+    sudo apt install libreadline-dev
+    ```
+
+2. Build with make:
+
+    ```
+    make
+    ```
 
 ## Testing
 
