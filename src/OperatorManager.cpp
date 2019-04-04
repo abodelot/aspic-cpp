@@ -14,7 +14,7 @@ Precedence and associativity of postfix operators
   1                           C++ class or namespace scope resolution       class_or_namespace :: member
   2                           member selection                              object . member
   2                           member selection                              pointer -> member
-  2                           subscripting                                  pointer [ expr ]
+* 2                           subscripting                                  pointer [ expr ]
   2                           function call                                 expr ( expr_list )
   2                           value construction                            type ( expr_list )
   2                           postfix increment                             lvalue ++
@@ -123,6 +123,8 @@ OperatorManager::OperatorManager()
 
     // init precedences
     // see http://en.cppreference.com/w/cpp/language/operator_precedence for details
+    precedences_[Token::OP_INDEX]          = 2;
+
     precedences_[Token::OP_NOT]            = 3;
     precedences_[Token::OP_UNARY_PLUS]     = 3;
     precedences_[Token::OP_UNARY_MINUS]    = 3;
@@ -203,6 +205,9 @@ const char* OperatorManager::to_str(Token::OperatorType op)
 {
     switch (op)
     {
+        case Token::OP_INDEX:
+            return "[]";
+
         case Token::OP_NOT:
             return "!";
         case Token::OP_UNARY_PLUS:

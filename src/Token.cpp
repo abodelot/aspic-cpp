@@ -357,12 +357,29 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 
     case STRING_LITERAL:
         switch (op) {
+            case OP_INDEX:
+                if (operand.contains(Token::INT_LITERAL)) {
+                    int index = operand.as_int();
+                    int length = str_.size();
+                    if (index < -length || index >= length) {
+                        throw Error::IndexError(index);
+                    }
+                    if (index < 0) {
+                        index = str_.size() + index;
+                    }
+                    std::string str(1, str_[index]);
+                    return Token::create_string(str);
+                }
+                else {
+                    throw Error::UnsupportedBinaryOperator(type_, operand.get_contained_type(), op);
+                }
+
             case OP_ADDITION:
                 if (operand.contains(STRING_LITERAL)) {
                     return Token::create_string(str_ + operand.as_string());
                 }
                 else {
-                    throw Error::UnsupportedBinaryOperator(type_, operand.type_, op);
+                    throw Error::UnsupportedBinaryOperator(type_, operand.get_contained_type(), op);
                 }
 
             case OP_MULTIPLICATION:

@@ -6,7 +6,7 @@ OBJ     := $(SRC:%.cpp=$(OBJDIR)/%.o)
 DEP     := $(SRC:%.cpp=$(OBJDIR)/%.d)
 
 CC      := g++
-CFLAGS  := -MMD -MP -I$(SRCDIR) -std=c++11 -pedantic -Wall -Wextra -Wwrite-strings -O2
+CFLAGS  := -MMD -MP -I$(SRCDIR) -std=c++11 -pedantic -Wall -Wextra -Wwrite-strings -Wuseless-cast -O2
 LDFLAGS := -lreadline
 
 C_GREEN  := \033[1;32m
