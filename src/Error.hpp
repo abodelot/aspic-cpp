@@ -26,6 +26,9 @@ public:
     static Error UnsupportedOperator(Token::Type operand, Token::OperatorType op);
     static Error UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::OperatorType op);
 
+    // IndexError: bad index for operator []
+    static Error IndexError(int index);
+
     // Internal
     static Error InternalError(const std::string& str);
 
@@ -41,8 +44,9 @@ private:
         Syntax,
         Name,
         Type,
+        Index,
         Internal,
-        Runtime
+        Runtime,
     };
 
     Error(ID id, const std::string& message = "");

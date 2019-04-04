@@ -34,6 +34,8 @@ public:
      */
     enum OperatorType
     {
+        OP_INDEX,       // []
+
         OP_NOT,         // !
         OP_UNARY_PLUS,  // +
         OP_UNARY_MINUS, // -

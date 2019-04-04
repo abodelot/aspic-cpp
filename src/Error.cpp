@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "Error.hpp"
 #include "OperatorManager.hpp"
 
@@ -51,6 +53,13 @@ Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::Oper
     return e;
 }
 
+Error Error::IndexError(int index)
+{
+    std::ostringstream oss;
+    oss << "index " << index << " is out of range";
+    return Error(Index, oss.str());
+
+}
 Error Error::InternalError(const std::string& str)
 {
     return Error(Internal, str);
@@ -68,6 +77,7 @@ Error::Error(ID id, const std::string& message)
         case Syntax:    message_ = "SyntaxError";    break;
         case Name:      message_ = "NameError";      break;
         case Type:      message_ = "TypeError";      break;
+        case Index:     message_ = "IndexError";     break;
         case Internal:  message_ = "InternalError";  break;
         case Runtime:   message_ = "RuntimeError";   break;
     }

@@ -53,9 +53,17 @@ bool Instruction::tokenize(const std::string& expression)
             tokens_.push_back(Token(Token::LEFT_BRACKET));
         }
         // right bracket?
-        else if (current == ')')
+        else if (current == ')' || current == ']')
         {
             tokens_.push_back(Token(Token::RIGHT_BRACKET));
+        }
+        // index operator?
+        else if (current == '[')
+        {
+            // string[a + b] * c
+            // => string OP_INDEX (a + b) * c
+            tokens_.push_back(Token::create_operator(Token::OP_INDEX));
+            tokens_.push_back(Token(Token::LEFT_BRACKET));
         }
         // arg separator?
         else if (current == ',')
