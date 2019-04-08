@@ -58,3 +58,6 @@ assert(("" && "a") == "")
 assert((false && false) == false)
 assert((0 && 0) == 0)
 assert(("" && "") == "")
+
+assert(true && false || true)
+assert(true || false && false == false)

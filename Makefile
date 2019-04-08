@@ -6,7 +6,8 @@ OBJ     := $(SRC:%.cpp=$(OBJDIR)/%.o)
 DEP     := $(SRC:%.cpp=$(OBJDIR)/%.d)
 
 CC      := g++
-CFLAGS  := -MMD -MP -I$(SRCDIR) -std=c++11 -pedantic -Wall -Wextra -Wwrite-strings -Wuseless-cast -O2
+CFLAGS  := -MMD -MP -I$(SRCDIR) -std=c++11 -pedantic -O2
+WFLAGS  := -Wall -Wextra -Wwrite-strings -Wuseless-cast -Wold-style-cast
 LDFLAGS := -lreadline
 
 C_GREEN  := \033[1;32m
@@ -20,7 +21,7 @@ $(TARGET): $(OBJ)
 $(OBJDIR)/%.o: %.cpp
 	@echo "$(C_GREEN)compiling\033[0m $<"
 	@mkdir -p $(shell dirname $@)
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CC) $(CFLAGS) $(WFLAGS) -c $< -o $@
 
 -include $(DEP)
 

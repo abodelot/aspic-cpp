@@ -15,7 +15,7 @@ void Shell::run()
     std::cout << "Type expressions for the interpreter to evaluate, or one of the following commands:" << std::endl;
     std::cout << " * exit : exit interpreter" << std::endl;
     std::cout << " * pool : print list of entries in symbol table"  << std::endl;
-    std::cout << " * debug: print last expression in infix and postfix forms" << std::endl;
+    std::cout << " * lexer: print last parsed expression" << std::endl;
 
     // Configure readline to insert tabs (instead of PATH completion)
     rl_bind_key('\t', rl_insert);
@@ -39,9 +39,7 @@ void Shell::run()
         }
         else {
             try {
-                if (parser.tokenize(input)) {
-                    std::cout << parser.eval() << std::endl;
-                }
+                std::cout << parser.eval(input) << std::endl;
             }
             catch (Error& e) {
                 std::cout << e.what() << std::endl;

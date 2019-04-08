@@ -6,14 +6,15 @@
 #include "Instruction.hpp"
 #include "SymbolTable.hpp"
 #include "Error.hpp"
-#include "SymbolTable.hpp"
+#include "TokenStack.hpp"
 #include "OperatorManager.hpp"
 
 #define COMMENT_SYMBOL '#'
 
 
 Instruction::Instruction() :
-    operators_(OperatorManager::get_instance())
+    operators_(OperatorManager::get_instance()),
+    index_(0)
 {
 }
 
@@ -47,25 +48,36 @@ bool Instruction::tokenize(const std::string& expression)
                 throw Error::UnknownOperator(buffer);
             }
         }
-        // left bracket?
+        // Left parenthesis?
         else if (current == '(')
         {
-            tokens_.push_back(Token(Token::LEFT_BRACKET));
+            // Can be either grouping or a function call operator, depending on previous token
+            const Token* previous = tokens_.empty() ? nullptr : &(tokens_.back());
+            if (previous == nullptr
+                || previous->get_type() == Token::OPERATOR
+                || previous->get_type() == Token::LEFT_PARENTHESIS) {
+                tokens_.push_back(Token(Token::LEFT_PARENTHESIS));
+            }
+            else {
+                tokens_.push_back(Token::create_operator(Token::OP_FUNC_CALL));
+            }
         }
-        // right bracket?
-        else if (current == ')' || current == ']')
+        // Right parenthesis?
+        else if (current == ')')
+        {
+            tokens_.push_back(Token(Token::RIGHT_PARENTHESIS));
+        }
+        // Left bracket?
+        else if (current == '[')
+        {
+            tokens_.push_back(Token::create_operator(Token::OP_INDEX));
+        }
+        // Right bracket?
+        else if (current == ']')
         {
             tokens_.push_back(Token(Token::RIGHT_BRACKET));
         }
-        // index operator?
-        else if (current == '[')
-        {
-            // string[a + b] * c
-            // => string OP_INDEX (a + b) * c
-            tokens_.push_back(Token::create_operator(Token::OP_INDEX));
-            tokens_.push_back(Token(Token::LEFT_BRACKET));
-        }
-        // arg separator?
+        // Arg separator?
         else if (current == ',')
         {
             tokens_.push_back(Token(Token::ARG_SEPARATOR));
@@ -187,220 +199,85 @@ bool Instruction::tokenize(const std::string& expression)
     return tokens_.size() > 0;
 }
 
-Token Instruction::eval()
+Token Instruction::eval(const std::string& input)
 {
-    // Important: instruction must be tokenized first!
-
-    // 1. Convert tokens from infix notation to postfix notation
-    infix_to_postfix();
-
-    // 2. Eval postfixed expression
-    return eval_postfix();
-}
-
-void Instruction::infix_to_postfix()
-{
-    postfix_.clear();
-    stack_.clear();
-
-    // transform infix to postfix notation, using shunting-yard algorithm
-    for (size_t i = 0; i < tokens_.size(); ++i)
-    {
-        Token& current = tokens_[i];
-
-        switch (current.get_type())
-        {
-        case Token::OPERATOR:
-            /*
-            while there is an operator token 'op' at the top of the stack, and
-                either current is left-associative and its precedence is less than or equal to that of 'op'
-                or current is right-associative and its precedence is less than that of 'op'
-            */
-            while (!stack_.empty() && stack_.top().is_operator() &&
-                ((!current.is_right_associative_operator() && operators_.compare(current, stack_.top()) <= 0)
-                 || (current.is_right_associative_operator() && operators_.compare(current, stack_.top()) < 0)))
-            {
-                Token& op = stack_.top();
-                stack_.pop();
-                postfix_.push_back(op);
-            }
-            stack_.push(current);
-            break;
-
-        case Token::LEFT_BRACKET:
-            stack_.push(current);
-            break;
-
-        case Token::RIGHT_BRACKET:
-        {
-            bool bracket_found = false;
-            // Until the token at the top of the stack is a left parenthesis,
-            // pop operators off the stack onto the output queue
-            while (!stack_.empty())
-            {
-                if (stack_.top().get_type() == Token::LEFT_BRACKET)
-                {
-                    bracket_found = true;
-                    break;
-                }
-                else
-                {
-                    Token& t = stack_.top();
-                    postfix_.push_back(t);
-                    stack_.pop();
-                }
-            }
-            // If the stack runs out without finding a left parenthesis, then there are mismatched parentheses.
-            if (!bracket_found)
-            {
-                throw Error::SyntaxError("a left bracket is missing");
-            }
-            // Pop the left parenthesis from the stack, but not onto the output queue.
-            stack_.pop();
-            // If the token at the top of the stack is a function token, pop it onto the output queue.
-            if (!stack_.empty() && stack_.top().is_function())
-            {
-                Token& t = stack_.top();
-                postfix_.push_back(t);
-                stack_.pop();
-            }
-            break;
-        }
-
-        case Token::INT_LITERAL:
-        case Token::FLOAT_LITERAL:
-        case Token::STRING_LITERAL:
-        case Token::BOOL_LITERAL:
-            postfix_.push_back(current);
-            break;
-
-        case Token::IDENTIFIER:
-            if (current.is_function())
-            {
-                stack_.push(current);
-            }
-            else
-            {
-                postfix_.push_back(current);
-            }
-            break;
-
-        case Token::ARG_SEPARATOR:
-        {
-            bool bracket_found = false;
-            // Until the token at the top of the stack is a left parenthesis,
-            // pop operators off the stack onto the output queue
-            while (!stack_.empty())
-            {
-                if (stack_.top().get_type() == Token::LEFT_BRACKET)
-                {
-                    bracket_found = true;
-                    break;
-                }
-                else
-                {
-                    Token& t = stack_.top();
-                    postfix_.push_back(t);
-                    stack_.pop();
-                }
-            }
-            // If no left parentheses are encountered, either the separator
-            // was misplaced or parentheses were mismatched.
-            if (!bracket_found)
-            {
-                throw Error::SyntaxError("a left bracket is missing");
-            }
-            break;
-        }
-        default:
-            break;
-        }
+    if (tokenize(input)) {
+        tokens_.push_back(Token(Token::END));
+        index_ = 0;
+        return parse(0);
     }
-
-    while (!stack_.empty())
-    {
-        // Stack must only contain operators at this point
-        Token& t = stack_.top();
-        if (t.is_operator())
-        {
-            postfix_.push_back(t);
-        }
-        else
-        {
-            throw Error::SyntaxError("a right bracket is missing");
-        }
-        stack_.pop();
+    else {
+        return Token::create_int(-1); // TODO: properly ignore line, without creating a dummy token
     }
 }
 
-Token Instruction::eval_postfix()
+Token Instruction::parse(int rbp)
 {
-    stack_.clear();
+    // See Pratt parser algorithm
+    Token* t = &tokens_[index_++];
+    Token left = null_denotation(*t);
+    while (rbp < tokens_[index_].lbp) {
+        t = &tokens_[index_++];
+        left = left_denotation(*t, left);
+    }
+    return left;
+}
 
-    for (TokenList::const_iterator it = postfix_.begin(); it != postfix_.end(); ++it)
-    {
-        const Token& tok = *it;
-        switch (tok.get_type())
-        {
-            case Token::BOOL_LITERAL:
-            case Token::INT_LITERAL:
-            case Token::FLOAT_LITERAL:
-            case Token::STRING_LITERAL:
-                stack_.push(tok);
-                break;
+Token Instruction::null_denotation(Token& token)
+{
+    if (token.is_literal() || token.get_type() == Token::IDENTIFIER) {
+        return token;
+    }
+    if (token.get_type() == Token::LEFT_PARENTHESIS) {
+        Token next = parse(0);
+        advance(Token::RIGHT_PARENTHESIS);
+        return next;
+    }
+    if (token.get_type() == Token::OPERATOR) {
+        Token right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
+        return right.apply_unary_operator(token.get_operator_type());
+    }
+    throw Error::SyntaxError("missing value");
+}
 
-            case Token::OPERATOR:
-                if (tok.is_binary_operator())
-                {
-                    // binary operator -> 2 operands
-                    if (stack_.size() < 2)
-                    {
-                        throw Error::SyntaxError("binary operator needs two operands");
+Token Instruction::left_denotation(Token& token, Token& left)
+{
+    if (token.get_type() == Token::OPERATOR) {
+        if (token.get_operator_type() == Token::OP_FUNC_CALL) {
+            TokenStack args;
+            if (tokens_[index_].get_type() != Token::RIGHT_PARENTHESIS) {
+                while (true) {
+                    args.push(parse(0));
+                    if (tokens_[index_].get_type() != Token::ARG_SEPARATOR) {
+                        break;
                     }
-                    Token operand2 = stack_.top(); stack_.pop();
-                    Token operand1 = stack_.top(); stack_.pop();
-                    // on applique l'opérateur binaire sur les deux opérandes et on rempile le résultat
-                    stack_.push(operand1.apply_binary_operator(tok.get_operator_type(), operand2));
+                    advance(Token::ARG_SEPARATOR);
                 }
-                else
-                {
-                    // unary operator -> 1 operand
-                    if (stack_.size() < 1)
-                    {
-                        throw Error::SyntaxError("unary operator needs one operand");
-                    }
-                    Token operand = stack_.top(); stack_.pop();
-                    // on applique l'opérateur unaire sur l'opérande et on rempile le résultat
-                    stack_.push(operand.apply_unary_operator(tok.get_operator_type()));
-                }
-                break;
-
-            case Token::IDENTIFIER:
-                if (tok.is_function())
-                {
-                    // Execute function with stack as arguments, and push back the result on the stack
-                    stack_.push(tok.get_function().ptr(stack_));
-                }
-                else
-                {
-                    stack_.push(tok);
-                }
-                break;
-
-            default:
-                throw Error::InternalError("illegal token in postfix expression");
-                break;
+            }
+            advance(Token::RIGHT_PARENTHESIS);
+            return left.get_function()(args);
+        }
+        else if (token.get_operator_type() == Token::OP_INDEX) {
+            Token right = parse(0);
+            advance(Token::RIGHT_BRACKET);
+            return left.apply_binary_operator(Token::OP_INDEX, right);
+        }
+        else {
+            Token right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
+            return left.apply_binary_operator(token.get_operator_type(), right);
         }
     }
-    if (stack_.empty())
-    {
-        throw Error::InternalError("postfixed expression didn't yield any result");
+    else {
+        throw Error::InternalError("expected operator");
     }
-    else if (stack_.size() > 1)
-    {
-        throw Error::SyntaxError("too many arguments or operands");
+}
+
+void Instruction::advance(Token::Type type)
+{
+    if (tokens_[index_].get_type() != type) {
+        throw Error::UnexpectedTokenType(type, tokens_[index_].get_type());
     }
-    return stack_.top();
+    ++index_;
 }
 
 bool Instruction::is_valid_identifier_char(char c) const
@@ -426,11 +303,8 @@ bool Instruction::is_valid_operator_char(char c) const
 
 void Instruction::debug() const
 {
-    std::cout << "infix:   ";
+    std::cout << "lexer:   ";
     print_tokens(tokens_);
-
-    std::cout << "postfix: ";
-    print_tokens(postfix_);
 }
 
 void Instruction::print_tokens(const TokenList& t) const

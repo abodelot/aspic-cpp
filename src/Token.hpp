@@ -6,6 +6,7 @@
 
 #include "FunctionWrapper.hpp"
 
+
 /**
  * Token: holds an atomic element in an expression
  */
@@ -22,19 +23,21 @@ public:
         FUNCTION,
         IDENTIFIER,
         ARG_SEPARATOR,
-        LEFT_BRACKET,
-        RIGHT_BRACKET
+        LEFT_PARENTHESIS,
+        RIGHT_PARENTHESIS,
+        RIGHT_BRACKET, // Note: left bracket is OP_INDEX
+        END
     };
 
     static const char* type_to_str(Type type);
 
     /**
-     * Types d'opérateur (token de type OPERATOR uniquement)
-     * dans l'ordre croissant de priorité
+     * Operator type for token typed as OPERATOR
      */
     enum OperatorType
     {
         OP_INDEX,       // []
+        OP_FUNC_CALL,   // ()
 
         OP_NOT,         // !
         OP_UNARY_PLUS,  // +
@@ -93,8 +96,7 @@ public:
      */
     Type get_type() const;
     Type get_contained_type() const;
-    bool is_function() const;
-    OperatorType    get_operator_type() const;
+    OperatorType get_operator_type() const;
     const FunctionWrapper& get_function() const;
 
     /**
@@ -106,8 +108,6 @@ public:
      * Operator helpers
      */
     bool is_operator() const;
-    bool is_unary_operator() const;
-    bool is_binary_operator() const;
     bool is_right_associative_operator() const;
 
     /**
@@ -133,6 +133,7 @@ public:
     double             as_float() const;
     bool               as_bool() const;
 
+    int lbp;
 private:
     friend std::ostream& operator<<(std::ostream&, const Token& token);
 

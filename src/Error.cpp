@@ -9,6 +9,8 @@ Error Error::AssertionError()
     return Error(Assertion);
 }
 
+// Syntax
+
 Error Error::SyntaxError(const std::string& str)
 {
     return Error(Syntax, str);
@@ -17,6 +19,16 @@ Error Error::SyntaxError(const std::string& str)
 Error Error::UnknownOperator(const std::string& str)
 {
     return Error(Syntax, "operator '" + str + "' does not exist");
+}
+
+Error Error::UnexpectedTokenType(Token::Type expected, Token::Type got)
+{
+    Error e(Syntax);
+    e.message_ += ": expected ";
+    e.message_ += Token::type_to_str(expected);
+    e.message_ += ", got ";
+    e.message_ += Token::type_to_str(got);
+    return e;
 }
 
 Error Error::NameError(const std::string& identifier)
@@ -29,12 +41,12 @@ Error Error::TypeError(const std::string& str)
     return Error(Type, str);
 }
 
-Error Error::UnsupportedOperator(Token::Type operand, Token::OperatorType op)
+Error Error::UnsupportedUnaryOperator(Token::Type operand, Token::OperatorType op)
 {
     Error e(Type);
     e.message_ += ": type '";
     e.message_ += Token::type_to_str(operand);
-    e.message_ += "' doesn't support operator '";
+    e.message_ += "' doesn't support unary operator '";
     e.message_ += OperatorManager::to_str(op);
     e.message_ += "'";
     return e;

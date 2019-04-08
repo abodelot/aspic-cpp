@@ -1,0 +1,25 @@
+# nested function calls
+assert(str_upper(str_lower(str_replace("TEZT", "Z", "s"))) == "TEST")
+
+# assignment inside function calls
+d = str_substr(a = "testing", b = 1, c = 3)
+assert(a == "testing")
+assert(b == 1)
+assert(c == 3)
+assert(d == "est")
+
+# copy function reference to a variable
+copy = str_len
+assert(type(copy) == "function")
+assert(copy("foobar") == 6)
+copy = str_upper
+assert(copy("foobaz") == "FOOBAZ")
+
+# shadow function with a variable
+str_upper = 8000
+assert(str_upper == 8000)
+assert(type(str_upper) == "int")
+
+# copy is still a reference to original function
+assert(type(copy) == "function")
+assert(copy("abc") == "ABC")

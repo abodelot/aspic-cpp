@@ -2,6 +2,7 @@
 
 #include "OperatorManager.hpp"
 
+#include "Error.hpp"
 /*
 Operator precedence and associativity are the same than C++:
 http://publib.boulder.ibm.com/infocenter/comphelp/v8v101/index.jsp?topic=/com.ibm.xlcpp8a.doc/language/ref/preeval.htm
@@ -123,34 +124,40 @@ OperatorManager::OperatorManager()
 
     // init precedences
     // see http://en.cppreference.com/w/cpp/language/operator_precedence for details
-    precedences_[Token::OP_INDEX]          = 2;
+    precedences_[Token::OP_INDEX]          = 100;
+    precedences_[Token::OP_FUNC_CALL]      = 100;
 
-    precedences_[Token::OP_NOT]            = 3;
-    precedences_[Token::OP_UNARY_PLUS]     = 3;
-    precedences_[Token::OP_UNARY_MINUS]    = 3;
+    precedences_[Token::OP_NOT]            = 90;
+    precedences_[Token::OP_UNARY_PLUS]     = 90;
+    precedences_[Token::OP_UNARY_MINUS]    = 90;
 
-    precedences_[Token::OP_POW]            = 4;
-    precedences_[Token::OP_MULTIPLICATION] = 5;
-    precedences_[Token::OP_DIVISION]       = 5;
-    precedences_[Token::OP_MODULO]         = 5;
-    precedences_[Token::OP_ADDITION]       = 6;
-    precedences_[Token::OP_SUBTRACTION]    = 6;
+    precedences_[Token::OP_POW]            = 80;
 
-    precedences_[Token::OP_LESS_THAN]             = 8;
-    precedences_[Token::OP_LESS_THAN_OR_EQUAL]    = 8;
-    precedences_[Token::OP_GREATER_THAN]          = 8;
-    precedences_[Token::OP_GREATER_THAN_OR_EQUAL] = 8;
-    precedences_[Token::OP_EQUAL]                 = 9;
-    precedences_[Token::OP_NOT_EQUAL]             = 9;
-    precedences_[Token::OP_LOGICAL_AND]           = 13;
-    precedences_[Token::OP_LOGICAL_OR]            = 14;
+    precedences_[Token::OP_MULTIPLICATION] = 70;
+    precedences_[Token::OP_DIVISION]       = 70;
+    precedences_[Token::OP_MODULO]         = 70;
 
-    precedences_[Token::OP_ASSIGNMENT]            = 16;
-    precedences_[Token::OP_MULTIPLY_AND_ASSIGN]   = 16;
-    precedences_[Token::OP_DIVIDE_AND_ASSIGN]     = 16;
-    precedences_[Token::OP_MODULO_AND_ASSIGN]     = 16;
-    precedences_[Token::OP_ADD_AND_ASSIGN]        = 16;
-    precedences_[Token::OP_SUBTRACT_AND_ASSIGN]   = 16;
+    precedences_[Token::OP_ADDITION]       = 60;
+    precedences_[Token::OP_SUBTRACTION]    = 60;
+
+    precedences_[Token::OP_LESS_THAN]             = 50;
+    precedences_[Token::OP_LESS_THAN_OR_EQUAL]    = 50;
+    precedences_[Token::OP_GREATER_THAN]          = 50;
+    precedences_[Token::OP_GREATER_THAN_OR_EQUAL] = 50;
+
+    precedences_[Token::OP_EQUAL]                 = 40;
+    precedences_[Token::OP_NOT_EQUAL]             = 40;
+
+    precedences_[Token::OP_LOGICAL_AND]           = 30;
+
+    precedences_[Token::OP_LOGICAL_OR]            = 20;
+
+    precedences_[Token::OP_ASSIGNMENT]            = 10;
+    precedences_[Token::OP_MULTIPLY_AND_ASSIGN]   = 10;
+    precedences_[Token::OP_DIVIDE_AND_ASSIGN]     = 10;
+    precedences_[Token::OP_MODULO_AND_ASSIGN]     = 10;
+    precedences_[Token::OP_ADD_AND_ASSIGN]        = 10;
+    precedences_[Token::OP_SUBTRACT_AND_ASSIGN]   = 10;
 }
 
 bool OperatorManager::eval(const std::string& str, Token::OperatorType& op_type, const Token* previous) const
@@ -172,7 +179,7 @@ bool OperatorManager::eval(const std::string& str, Token::OperatorType& op_type,
         */
         if (previous == nullptr
             || previous->is_operator()
-            || previous->get_type() == Token::LEFT_BRACKET
+            || previous->get_type() == Token::LEFT_PARENTHESIS
             || previous->get_type() == Token::ARG_SEPARATOR)
         {
             op_type = to_unary(op_type);
@@ -181,11 +188,9 @@ bool OperatorManager::eval(const std::string& str, Token::OperatorType& op_type,
     return true;
 }
 
-int OperatorManager::compare(const Token& op1, const Token& op2)
+int OperatorManager::get_binding_power(Token::OperatorType type) const
 {
-    int a = op1.get_operator_type();
-    int b = op2.get_operator_type();
-    return precedences_[b] - precedences_[a];
+    return precedences_[type];
 }
 
 Token::OperatorType OperatorManager::to_unary(Token::OperatorType op)
@@ -206,7 +211,9 @@ const char* OperatorManager::to_str(Token::OperatorType op)
     switch (op)
     {
         case Token::OP_INDEX:
-            return "[]";
+            return "op[]";
+        case Token::OP_FUNC_CALL:
+            return "op()";
 
         case Token::OP_NOT:
             return "!";

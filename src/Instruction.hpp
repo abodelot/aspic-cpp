@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "Token.hpp"
-#include "TokenStack.hpp"
 
 class OperatorManager;
 
@@ -15,17 +14,11 @@ public:
     Instruction();
 
     /**
-     * Parse input into a token list
-     * @return true if at least one token was parsed
-     */
-    bool tokenize(const std::string& expression);
-
-    /**
      * Eval an expresion.
-     * Important: instruction must be tokenized first!
+     * @param expresion: expression to be parsed
      * @return result value as a literal-type token
      */
-    Token eval();
+    Token eval(const std::string& expression);
 
     /**
      * Print infix and postifx notation of the last evalued expression
@@ -33,16 +26,11 @@ public:
     void debug() const;
 
 private:
-
     /**
-     * Transform infix expression to a postfix expression (Reverse Polish Notation)
+     * Parse input into a token list
+     * @return true if at least one token was parsed
      */
-    void infix_to_postfix();
-
-    /**
-     * Eval postfix expression and return result as a literal-type token
-     */
-    Token eval_postfix();
+    bool tokenize(const std::string& expression);
 
     /**
      * Test if a character is a valid part of an identifier
@@ -54,14 +42,28 @@ private:
      */
     bool is_valid_operator_char(char c) const;
 
+    Token parse(int rbp);
+
+    void advance(Token::Type type);
+
+    /**
+     * Parse method when token appears at the beginning of a language construct
+     */
+    Token null_denotation(Token& current);
+
+    /**
+     * Parse method when token appears inside the construct
+     */
+    Token left_denotation(Token& current, Token& left);
+
+
     typedef std::vector<Token> TokenList;
 
     void print_tokens(const TokenList& t) const;
 
-    TokenList postfix_;
     TokenList tokens_;
-    TokenStack stack_;
     OperatorManager& operators_;
+    size_t index_;
 };
 
 #endif

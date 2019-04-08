@@ -34,6 +34,9 @@ assert(name[1] == "o")
 assert(name[2 * 2 + 1] == name[5])
 assert(name[1] + name[2] * 2 == "ohh")
 assert(name[0][0][0][0] == "J")
+var = "hello"
+var += var[0]
+assert(var == "helloh")
 
 # function call inside [] operator
 assert(name[-1] == name[str_len(name) - 1])

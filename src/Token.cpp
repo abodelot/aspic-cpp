@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cassert>
 #include <cmath>
 
 #include "Token.hpp"
@@ -25,20 +24,33 @@ const char* Token::type_to_str(Type type)
             return "function";
         case IDENTIFIER:
             return "identifier";
-        default: break;
+        case ARG_SEPARATOR:
+            return ",";
+        case LEFT_PARENTHESIS:
+            return "(";
+        case RIGHT_PARENTHESIS:
+            return ")";
+        case RIGHT_BRACKET:
+            return "]";
+        case OPERATOR:
+            return "operator";
+        case END:
+            return "<end>";
     }
-    return "";
+    return nullptr;
 }
 
 // constructors ----------------------------------------------------------------
 
 Token::Token():
+    lbp(0),
     type_(INT_LITERAL)
 {
     data_.int_value = 0;
 }
 
 Token::Token(Type type):
+    lbp(0),
     type_(type)
 {
 }
@@ -74,6 +86,7 @@ Token Token::create_bool(bool value)
 Token Token::create_operator(OperatorType op_type)
 {
     Token self(OPERATOR);
+    self.lbp = OperatorManager::get_instance().get_binding_power(op_type);
     self.data_.op_type = op_type;
     return self;
 }
@@ -106,7 +119,6 @@ Token::Type Token::get_contained_type() const
 
 Token::OperatorType Token::get_operator_type() const
 {
-    assert(type_ == OPERATOR);
     return data_.op_type;
 }
 
@@ -118,13 +130,7 @@ const FunctionWrapper& Token::get_function() const
     if (type_ == IDENTIFIER) {
         return SymbolTable::get(str_).get_function();
     }
-    throw Error::InternalError("token is not a function");
-}
-
-bool Token::is_function() const
-{
-    return type_ == FUNCTION
-        || (type_ == IDENTIFIER && SymbolTable::contains(str_) && SymbolTable::get(str_).type_ == FUNCTION);
+    throw Error::TypeError("token is not a function");
 }
 
 // operator helpers ------------------------------------------------------------
@@ -134,40 +140,17 @@ bool Token::is_operator() const
     return type_ == OPERATOR;
 }
 
-bool Token::is_unary_operator() const
-{
-    // must be an operator
-    if (!is_operator()) {
-        return false;
-    }
-    // switch on unary operators
-    switch (data_.op_type) {
-        case OP_NOT:
-        case OP_UNARY_PLUS:
-        case OP_UNARY_MINUS:
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool Token::is_binary_operator() const
-{
-    return !is_unary_operator(); // thx captain obvious
-}
-
 bool Token::is_right_associative_operator() const
 {
     // must be an operator
     if (!is_operator()) {
         return false;
     }
-    // all unary operators are right associative
-    if (is_unary_operator()) {
-        return true;
-    }
     // switch on remaining right associative operators
     switch (data_.op_type) {
+        case OP_NOT:
+        case OP_UNARY_PLUS:
+        case OP_UNARY_MINUS:
         case OP_POW:
         case OP_ASSIGNMENT:
         case OP_MULTIPLY_AND_ASSIGN:
@@ -220,7 +203,7 @@ Token Token::apply_unary_operator(Token::OperatorType op)
             break;
 
     }
-    throw Error::UnsupportedOperator(type_, op);
+    throw Error::UnsupportedUnaryOperator(type_, op);
 }
 
 Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
@@ -570,7 +553,8 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
             os << (token.data_.bool_value ? "true" : "false");
             break;
         case Token::FUNCTION:
-            os << "<function at " << &token.data_.function << ">";
+            // Function pointer needs to be casted to void* to be displayed
+            os << "<function at " << reinterpret_cast<void *>(token.data_.function) << ">";
             break;
         case Token::IDENTIFIER:
             os << SymbolTable::get(token.str_);
@@ -578,14 +562,20 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
         case Token::OPERATOR:
             os << OperatorManager::to_str(token.data_.op_type);
             break;
-        case Token::LEFT_BRACKET:
-            os << '(';
-            break;
-        case Token::RIGHT_BRACKET:
-            os << ')';
-            break;
         case Token::ARG_SEPARATOR:
             os << ',';
+            break;
+        case Token::LEFT_PARENTHESIS:
+            os << '(';
+            break;
+        case Token::RIGHT_PARENTHESIS:
+            os << ')';
+            break;
+        case Token::RIGHT_BRACKET:
+            os << ']';
+            break;
+        case Token::END:
+            os << "<end>";
             break;
         default:
             break;

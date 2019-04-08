@@ -15,9 +15,7 @@ bool FileLoader::load_file(const char* filename)
         size_t line_number = 1;
         while (std::getline(file, line)) {
             try {
-                if (parser.tokenize(line)) {
-                    parser.eval();
-                }
+                parser.eval(line);
             }
             catch (Error& error) {
                 // Dump exception to stderr and exit
