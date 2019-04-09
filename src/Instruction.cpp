@@ -20,37 +20,32 @@ Instruction::Instruction() :
 
 bool Instruction::tokenize(const std::string& expression)
 {
-    // tokenization: transform an expression string into a token vector
+    // Utility buffer for parsing multi-chars tokens
+    static std::string buffer;
+
     tokens_.clear();
-    static std::string buffer; // buffer is the string representation of the currently parsed token
-    for (size_t i = 0; i < expression.size(); ++i)
-    {
-        buffer.clear();
+    for (size_t i = 0; i < expression.size(); ++i) {
         char current = expression[i];
 
         // operator?
-        if (is_valid_operator_char(current))
-        {
-            buffer += current;
-            for (++i; i < expression.size() && is_valid_operator_char(expression[i]); ++i)
-            {
-                buffer += expression[i];
+        if (is_valid_operator_char(current)) {
+            size_t start = i++;
+            while (i < expression.size() && is_valid_operator_char(expression[i])) {
+                ++i;
             }
+            buffer = expression.substr(start, i - start);
             --i;
             Token::OperatorType op_type;
             const Token* previous = tokens_.empty() ? nullptr : &(tokens_.back());
-            if (operators_.eval(buffer, op_type, previous))
-            {
+            if (operators_.eval(buffer, op_type, previous)) {
                 tokens_.push_back(Token::create_operator(op_type));
             }
-            else
-            {
+            else {
                 throw Error::UnknownOperator(buffer);
             }
         }
         // Left parenthesis?
-        else if (current == '(')
-        {
+        else if (current == '(') {
             // Can be either grouping or a function call operator, depending on previous token
             const Token* previous = tokens_.empty() ? nullptr : &(tokens_.back());
             if (previous == nullptr
@@ -63,71 +58,60 @@ bool Instruction::tokenize(const std::string& expression)
             }
         }
         // Right parenthesis?
-        else if (current == ')')
-        {
+        else if (current == ')') {
             tokens_.push_back(Token(Token::RIGHT_PARENTHESIS));
         }
         // Left bracket?
-        else if (current == '[')
-        {
+        else if (current == '[') {
             tokens_.push_back(Token::create_operator(Token::OP_INDEX));
         }
         // Right bracket?
-        else if (current == ']')
-        {
+        else if (current == ']') {
             tokens_.push_back(Token(Token::RIGHT_BRACKET));
         }
         // Arg separator?
-        else if (current == ',')
-        {
+        else if (current == ',') {
             tokens_.push_back(Token(Token::ARG_SEPARATOR));
         }
         // Scanning int or float literal
-        else if (isdigit(current) || current == '.')
-        {
+        else if (isdigit(current) || current == '.') {
+            size_t start = i++;
             bool dot_found = current == '.';
-            buffer += current;
             // While char is a digit, and no more than one dot '.' has been found
-            for (++i; i < expression.size() && (isdigit(expression[i]) || (!dot_found && expression[i] == '.')); ++i)
-            {
+            while (i < expression.size() && (isdigit(expression[i]) || (!dot_found && expression[i] == '.'))) {
                 dot_found |= expression[i] == '.';
-                buffer += expression[i];
+                ++i;
             }
-            --i;
+            buffer = expression.substr(start, i - start);
             // ASCII to int, or to float if we've found a dot
             Token t = dot_found
                 ? Token::create_float(atof(buffer.c_str()))
                 : Token::create_int(atoi(buffer.c_str()));
             tokens_.push_back(t);
+            --i;
         }
         // Scanning string literal
-        else if (current == '"' || current == '\'')
-        {
+        else if (current == '"' || current == '\'') {
             // The closing quote must match the opening quote (single or double)
             char closure_char = current;
             bool escape_next_char = false;
-            for (++i; i < expression.size(); ++i)
-            {
-                if (!escape_next_char)
-                {
-                    if (expression[i] == closure_char)
-                    {
+            buffer.clear();
+            // Swallow chars into buffer until end of string is reached
+            for (++i; i < expression.size(); ++i) {
+                if (!escape_next_char) {
+                    if (expression[i] == closure_char) {
                         break;
                     }
 
-                    if (expression[i] == '\\')
-                    {
+                    if (expression[i] == '\\') {
                         escape_next_char = true;
                     }
-                    else
-                    {
+                    else {
                         buffer += expression[i];
                     }
                 }
-                else
-                {
-                    switch (expression[i])
-                    {
+                else {
+                    switch (expression[i]) {
                         case '\\': buffer += '\\'; break; // Backslash (\)
                         case '\'': buffer += '\''; break; // Single quote (')
                         case '\"': buffer += '\"'; break; // Double quote (")
@@ -149,8 +133,7 @@ bool Instruction::tokenize(const std::string& expression)
             }
 
             // Ensure string is correctly enclosed
-            if (i == expression.size())
-            {
+            if (i == expression.size()) {
                 throw Error::SyntaxError("EOL while scanning string literal");
             }
 
@@ -158,39 +141,36 @@ bool Instruction::tokenize(const std::string& expression)
         }
         // Scanning identifiers (functions, variables, and reserved literal keywords)
         // We already know that current char is not a digit, so no need to check that
-        else if (is_valid_identifier_char(current))
-        {
-            // Swallow characters until the end of the identifier
-            buffer = current;
-            for (++i; i < expression.size() && is_valid_identifier_char(expression[i]); ++i)
-            {
-                buffer += expression[i];
+        else if (is_valid_identifier_char(current)) {
+            // Increment i until the end of the identifier is reached
+            size_t start = i++;
+            while (i < expression.size() && is_valid_identifier_char(expression[i])) {
+                ++i;
             }
+            buffer = expression.substr(start, i - start);
             --i;
 
             // Check if identifier is a reserved keyword
-            if (buffer == "true")
-            {
+            if (buffer == "true") {
                 tokens_.push_back(Token::create_bool(true));
             }
-            else if (buffer == "false")
-            {
+            else if (buffer == "false") {
                 tokens_.push_back(Token::create_bool(false));
             }
-            else
-            {
+            else if (buffer == "null") {
+                tokens_.push_back(Token(Token::NULL_VALUE));
+            }
+            else {
                 // Not a keyword, create an identifier
                 tokens_.push_back(Token::create_identifier(buffer));
             }
         }
         // Ignore everything after comment symbol
-        else if (current == COMMENT_SYMBOL)
-        {
+        else if (current == COMMENT_SYMBOL) {
             i = expression.size();
         }
         // Ignore whitespaces
-        else if (current != ' ' && current != '\t')
-        {
+        else if (current != ' ' && current != '\t') {
             throw Error::SyntaxError(std::string("illegal character encountered: ") + current);
         }
     }
@@ -207,7 +187,7 @@ Token Instruction::eval(const std::string& input)
         return parse(0);
     }
     else {
-        return Token::create_int(-1); // TODO: properly ignore line, without creating a dummy token
+        return Token(Token::NULL_VALUE);
     }
 }
 
@@ -291,10 +271,8 @@ bool Instruction::is_valid_identifier_char(char c) const
 bool Instruction::is_valid_operator_char(char c) const
 {
     const char* ALPHABET = "+-*/%=!<>|&";
-    for (const char* p = ALPHABET; *p != '\0'; ++p)
-    {
-        if (*p == c)
-        {
+    for (const char* p = ALPHABET; *p != '\0'; ++p) {
+        if (*p == c) {
             return true;
         }
     }
@@ -309,8 +287,7 @@ void Instruction::debug() const
 
 void Instruction::print_tokens(const TokenList& t) const
 {
-    for (TokenList::const_iterator it = t.begin(); it != t.end(); ++it)
-    {
+    for (TokenList::const_iterator it = t.begin(); it != t.end(); ++it) {
         it->debug(std::cout);
         std::cout << "  ";
     }

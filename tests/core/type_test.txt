@@ -7,6 +7,7 @@ assert(type("hello") == "string")
 assert(type("") == "string")
 assert(type(true) == "bool")
 assert(type(false) == "bool")
+assert(type(null) == "null")
 
 # type() on variable
 a = 1
@@ -18,6 +19,8 @@ assert(type(a) == "float")
 var = "string"
 assert(type(var) == "string")
 assert(type(type(4)) == "string")
+var = null
+assert(type(var) == "null")
 
 # type() on boolean expressions
 assert(type(1 > 2) == "bool")

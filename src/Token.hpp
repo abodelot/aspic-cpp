@@ -19,6 +19,7 @@ public:
         FLOAT_LITERAL,
         STRING_LITERAL,
         BOOL_LITERAL,
+        NULL_VALUE,
         OPERATOR,
         FUNCTION,
         IDENTIFIER,

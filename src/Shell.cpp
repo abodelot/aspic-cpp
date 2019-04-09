@@ -34,12 +34,15 @@ void Shell::run()
         else if (input == "pool") {
             SymbolTable::print_all_symbols();
         }
-        else if (input == "debug") {
+        else if (input == "lexer") {
             parser.debug();
         }
         else {
             try {
-                std::cout << parser.eval(input) << std::endl;
+                Token token = parser.eval(input);
+                if (token.get_type() != Token::NULL_VALUE) {
+                    std::cout << token << std::endl;
+                }
             }
             catch (Error& e) {
                 std::cout << e.what() << std::endl;

@@ -12,7 +12,7 @@ Token core_assert(TokenStack& args)
     if (!result) {
         throw Error::AssertionError();
     }
-    return Token::create_int(1); // TODO: return Token::NONE
+    return Token(Token::NULL_VALUE);
 }
 
 Token core_print(TokenStack& args)
@@ -20,7 +20,7 @@ Token core_print(TokenStack& args)
     args.check(1);
     Token arg = args.top(); args.pop();
     std::cout << arg << std::endl;
-    return Token::create_int(0); // TODO: return Token::NONE
+    return Token(Token::NULL_VALUE);
 }
 
 Token core_input(TokenStack& args)

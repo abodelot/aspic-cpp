@@ -20,6 +20,8 @@ const char* Token::type_to_str(Type type)
             return "bool";
         case STRING_LITERAL:
             return "string";
+        case NULL_VALUE:
+            return "null";
         case FUNCTION:
             return "function";
         case IDENTIFIER:
@@ -459,7 +461,7 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
         break;
     }
 
-    throw Error::UnsupportedBinaryOperator(type_, operand.type_, op);
+    throw Error::UnsupportedBinaryOperator(type_, operand.get_contained_type(), op);
 }
 
 bool Token::is_literal() const
@@ -468,6 +470,7 @@ bool Token::is_literal() const
         || type_ == INT_LITERAL
         || type_ == FLOAT_LITERAL
         || type_ == BOOL_LITERAL
+        || type_ == NULL_VALUE
         || type_ == FUNCTION;
 }
 
@@ -530,6 +533,8 @@ bool Token::as_bool() const
             return str_.size() > 0;
         case BOOL_LITERAL:
             return data_.bool_value;
+        case NULL_VALUE:
+            return false;
         case IDENTIFIER:
             return SymbolTable::get(str_).as_bool();
         default:
@@ -551,6 +556,9 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
             break;
         case Token::BOOL_LITERAL:
             os << (token.data_.bool_value ? "true" : "false");
+            break;
+        case Token::NULL_VALUE:
+            os << "null";
             break;
         case Token::FUNCTION:
             // Function pointer needs to be casted to void* to be displayed
