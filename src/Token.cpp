@@ -287,10 +287,10 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
                 return Token::create_bool(as_int() != operand.as_int());
 
             case OP_LOGICAL_AND:
-                return Token::create_bool(as_bool() && operand.as_bool());
+                return as_bool() ? operand : *this;
 
             case OP_LOGICAL_OR:
-                return Token::create_bool(as_bool() || operand.as_bool());
+                return as_bool() ? *this : operand;
 
             default: break;
         }
@@ -346,10 +346,10 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
                 return Token::create_bool(as_float() != operand.as_float());
 
             case OP_LOGICAL_AND:
-                return Token::create_bool(as_bool() && operand.as_bool());
+                return as_bool() ? operand : *this;
 
             case OP_LOGICAL_OR:
-                return Token::create_bool(as_bool() || operand.as_bool());
+                return as_bool() ? *this : operand;
 
             default: break;
         }
@@ -412,10 +412,11 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
                 return Token::create_bool(str_ != operand.as_string());
 
             case OP_LOGICAL_AND:
-                return Token::create_bool(as_bool() && operand.as_bool());
+                return as_bool() ? operand : *this;
 
             case OP_LOGICAL_OR:
-                return Token::create_bool(as_bool() || operand.as_bool());
+                return as_bool() ? *this : operand;
+
             default: break;
         }
         break;

@@ -1,0 +1,60 @@
+# Logical not
+#-------------------------------------------------------------------------------
+
+assert(!false)
+assert(! !true)
+assert(!"")
+assert(! !"a")
+assert(!0)
+
+# Logical or
+#-------------------------------------------------------------------------------
+
+assert(true || true)
+assert(1 || 2)
+assert((1 || 2) == 1)
+assert((2 || 1) == 2)
+assert(("a" || "b") == "a")
+assert(("b" || "a") == "b")
+assert((10 || "abc") == 10)
+assert(("abc" || 10) == "abc")
+
+assert(true || false)
+assert(1 || 0)
+assert((1 || 0) == 1)
+assert("a" || "")
+assert(("a" || "") == "a")
+
+assert(false || true)
+assert(0 || 1)
+assert((0 || 1) == 1)
+assert("" || "a")
+assert(("" || "a") == "a")
+
+assert((false || false) == false)
+assert((0 || 0) == 0)
+assert(("" || "") == "")
+
+# Logical and
+#-------------------------------------------------------------------------------
+
+assert(true && true)
+assert(1 && 2)
+assert((1 && 2) == 2)
+assert((2 && 1) == 1)
+assert("a" && "b" == "b")
+assert("b" && "a" == "a")
+assert(10 && "abc" == "abc")
+assert("abc" && 10 == 10)
+
+assert((true && false) == false)
+assert((1 && 0) == 0)
+assert(("a" && "") == "")
+
+assert((false && true) == false)
+assert((0 && 1) == 0)
+assert(("" && "a") == "")
+
+assert((false && false) == false)
+assert((0 && 0) == 0)
+assert(("" && "") == "")
