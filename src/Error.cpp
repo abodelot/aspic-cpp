@@ -77,9 +77,14 @@ Error Error::InternalError(const std::string& str)
     return Error(Internal, str);
 }
 
+Error Error::ValueError(const std::string& str)
+{
+    return Error(Value, str);
+}
+
 Error Error::DivideByZero()
 {
-    return Error(Runtime, "division or modulo by 0");
+    return Error(Value, "division or modulo by 0");
 }
 
 Error::Error(ID id, const std::string& message)
@@ -91,7 +96,7 @@ Error::Error(ID id, const std::string& message)
         case Type:      message_ = "TypeError";      break;
         case Index:     message_ = "IndexError";     break;
         case Internal:  message_ = "InternalError";  break;
-        case Runtime:   message_ = "RuntimeError";   break;
+        case Value:     message_ = "ValueError";     break;
     }
     if (message.size()) {
         message_ += ": " + message;

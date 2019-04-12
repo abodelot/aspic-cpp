@@ -336,6 +336,9 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
             case OP_MULTIPLICATION:
             {
                 int count = operand.as_int();
+                if (count < 0) {
+                    throw Error::ValueError("Cannot construct string with negative length");
+                }
                 std::string result;
                 result.reserve(count * str_.size());
                 for (int i = 0; i < count; ++i) {

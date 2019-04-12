@@ -33,7 +33,8 @@ public:
     // Internal
     static Error InternalError(const std::string& str);
 
-    // Runtime
+    // ValueError
+    static Error ValueError(const std::string& str);
     static Error DivideByZero();
 
     const char* what() const noexcept override;
@@ -47,7 +48,7 @@ private:
         Type,
         Index,
         Internal,
-        Runtime,
+        Value,
     };
 
     Error(ID id, const std::string& message = "");
