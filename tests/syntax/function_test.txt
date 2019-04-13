@@ -10,9 +10,12 @@ assert(d == "est")
 
 # copy function reference to a variable
 copy = str_len
+assert(copy == str_len)
 assert(type(copy) == "function")
 assert(copy("foobar") == 6)
 copy = str_upper
+assert(copy == str_upper)
+assert(copy != str_len)
 assert(copy("foobaz") == "FOOBAZ")
 
 # shadow function with a variable

@@ -1,22 +1,29 @@
-assert(1 < 2)
-assert(1 < 2 == true)
-assert(2 > 1)
-assert(2 > 1 == true)
-assert(1 > 2 == false)
-
-assert(0 == false)
-assert(1 == true)
+assert(!false)
+assert(false == false)
+assert(true)
 assert(true == true)
-assert(false == false)
-assert(false == false)
-assert((false != false) == (true != true))
 
-n = 1
-assert(n == 1)
+# Strong typing for booleans
+assert(false != 0)
+assert(0 != false)
+assert(false != 0.0)
+assert(0.0 != false)
+assert(false != "false")
+assert("false" != false)
+
+assert(true != 1)
+assert(1 != true)
+assert(true != 1.0)
+assert(1.0 != true)
+assert(true != "true")
+assert("true" != true)
+
+assert((false != false) == (true != true))
+n = true
+assert(n)
 assert(n == true)
-assert(n >= 1)
-n += 1
-assert(n >= 1)
-assert(n == 2)
-n = n < 0
-assert(n == false)
+assert(true == n)
+assert(n != false)
+assert(! !n)
+assert(type(n) == "bool")
+assert(!n == false)

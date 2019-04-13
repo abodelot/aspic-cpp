@@ -42,6 +42,11 @@ const char* Token::type_to_str(Type type)
     return nullptr;
 }
 
+Token::Type Token::get_type() const
+{
+    return type_;
+}
+
 // constructors ----------------------------------------------------------------
 
 Token::Token():
@@ -107,39 +112,16 @@ Token Token::create_identifier(const std::string& identifier_name)
     return self;
 }
 
-// getters by type -------------------------------------------------------------
+// operator methods ------------------------------------------------------------
 
-Token::Type Token::get_type() const
+bool Token::is_operator() const
 {
-    return type_;
-}
-
-Token::Type Token::get_contained_type() const
-{
-    return type_== IDENTIFIER ? SymbolTable::get(str_).type_ : type_;
+    return type_ == OPERATOR;
 }
 
 Token::OperatorType Token::get_operator_type() const
 {
     return data_.op_type;
-}
-
-const FunctionWrapper& Token::get_function() const
-{
-    if (type_ == FUNCTION) {
-        return data_.function;
-    }
-    if (type_ == IDENTIFIER) {
-        return SymbolTable::get(str_).get_function();
-    }
-    throw Error::TypeError("token is not a function");
-}
-
-// operator helpers ------------------------------------------------------------
-
-bool Token::is_operator() const
-{
-    return type_ == OPERATOR;
 }
 
 bool Token::is_right_associative_operator() const
@@ -165,8 +147,6 @@ bool Token::is_right_associative_operator() const
             return false;
     }
 }
-
-// operator implementation -----------------------------------------------------
 
 Token Token::apply_unary_operator(Token::OperatorType op)
 {
@@ -210,12 +190,23 @@ Token Token::apply_unary_operator(Token::OperatorType op)
 
 Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
 {
-    switch (type_)
-    {
+    // ==, !=, ||, &&: operator implementation is not type-dependant
+    switch (op) {
+        case OP_EQUAL:
+            return Token::create_bool(get_value().equal(operand.get_value()));
+        case OP_NOT_EQUAL:
+            return Token::create_bool(!get_value().equal(operand.get_value()));
+        case OP_LOGICAL_AND:
+            return as_bool() ? operand : *this;
+        case OP_LOGICAL_OR:
+            return as_bool() ? *this : operand;
+        default: break;
+    }
+
+    switch (type_) {
     case INT_LITERAL:
-    case BOOL_LITERAL: // false is equivalent to 0, true is equivalent to 1
         if (operand.contains(FLOAT_LITERAL)) {
-            // if the other operand is float typed, the result will be also float typed
+            // If the other operand is float typed, the result will be also float typed
             Token cast_to_float = Token::create_float(as_float());
             return cast_to_float.apply_binary_operator(op, operand);
         }
@@ -265,25 +256,12 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
             case OP_GREATER_THAN_OR_EQUAL:
                 return Token::create_bool(as_int() >= operand.as_int());
 
-            case OP_EQUAL:
-                return Token::create_bool(as_int() == operand.as_int());
-
-            case OP_NOT_EQUAL:
-                return Token::create_bool(as_int() != operand.as_int());
-
-            case OP_LOGICAL_AND:
-                return as_bool() ? operand : *this;
-
-            case OP_LOGICAL_OR:
-                return as_bool() ? *this : operand;
-
             default: break;
         }
         break;
 
     case FLOAT_LITERAL:
-        switch (op)
-        {
+        switch (op) {
             case OP_POW:
                 return Token::create_float(std::pow(as_float(), operand.as_float()));
 
@@ -324,18 +302,6 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
             case OP_GREATER_THAN_OR_EQUAL:
                 return Token::create_bool(as_float() >= operand.as_float());
 
-            case OP_EQUAL:
-                return Token::create_bool(as_float() == operand.as_float());
-
-            case OP_NOT_EQUAL:
-                return Token::create_bool(as_float() != operand.as_float());
-
-            case OP_LOGICAL_AND:
-                return as_bool() ? operand : *this;
-
-            case OP_LOGICAL_OR:
-                return as_bool() ? *this : operand;
-
             default: break;
         }
         break;
@@ -343,7 +309,7 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
     case STRING_LITERAL:
         switch (op) {
             case OP_INDEX:
-                if (operand.contains(Token::INT_LITERAL)) {
+                if (operand.contains(INT_LITERAL)) {
                     int index = operand.as_int();
                     int length = str_.size();
                     if (index < -length || index >= length) {
@@ -352,11 +318,11 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
                     if (index < 0) {
                         index = str_.size() + index;
                     }
-                    std::string str(1, str_[index]);
-                    return Token::create_string(str);
+                    // Return char located at index as a new string token
+                    return Token::create_string(std::string(1, str_[index]));
                 }
                 else {
-                    throw Error::UnsupportedBinaryOperator(type_, operand.get_contained_type(), op);
+                    throw Error::UnsupportedBinaryOperator(type_, operand.get_value_type(), op);
                 }
 
             case OP_ADDITION:
@@ -364,7 +330,7 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
                     return Token::create_string(str_ + operand.as_string());
                 }
                 else {
-                    throw Error::UnsupportedBinaryOperator(type_, operand.get_contained_type(), op);
+                    throw Error::UnsupportedBinaryOperator(type_, operand.get_value_type(), op);
                 }
 
             case OP_MULTIPLICATION:
@@ -390,31 +356,17 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
             case OP_GREATER_THAN_OR_EQUAL:
                 return Token::create_bool(str_ >= operand.as_string());
 
-            case OP_EQUAL:
-                return Token::create_bool(str_ == operand.as_string());
-
-            case OP_NOT_EQUAL:
-                return Token::create_bool(str_ != operand.as_string());
-
-            case OP_LOGICAL_AND:
-                return as_bool() ? operand : *this;
-
-            case OP_LOGICAL_OR:
-                return as_bool() ? *this : operand;
-
             default: break;
         }
         break;
 
     case IDENTIFIER:
-        switch (op)
-        {
+        switch (op) {
             // Handle operators which update the variable value, operand is the assigned lvalue
             case OP_ASSIGNMENT:
             {
                 // Always copy by value, otherwise copying the operand name will create a reference
-                if (operand.type_ == IDENTIFIER)
-                {
+                if (operand.type_ == IDENTIFIER) {
                     Token& lvalue = SymbolTable::get(operand.str_);
                     SymbolTable::set(str_, lvalue);
                     return lvalue;
@@ -461,10 +413,12 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
         break;
     }
 
-    throw Error::UnsupportedBinaryOperator(type_, operand.get_contained_type(), op);
+    throw Error::UnsupportedBinaryOperator(type_, operand.get_value_type(), op);
 }
 
-bool Token::is_literal() const
+// value methods ---------------------------------------------------------------
+
+bool Token::is_value() const
 {
     return type_ == STRING_LITERAL
         || type_ == INT_LITERAL
@@ -472,6 +426,57 @@ bool Token::is_literal() const
         || type_ == BOOL_LITERAL
         || type_ == NULL_VALUE
         || type_ == FUNCTION;
+}
+
+const Token& Token::get_value() const
+{
+    if (is_value()) {
+        return *this;
+    }
+    if (type_ == IDENTIFIER) {
+        return SymbolTable::get(str_);
+    }
+    throw Error::InternalError("token is not a value");
+}
+
+Token::Type Token::get_value_type() const
+{
+    return type_== IDENTIFIER ? SymbolTable::get(str_).type_ : type_;
+}
+
+bool Token::equal(const Token& token) const
+{
+    if (type_ != token.type_) {
+        // Allow casting for int/float
+        if (is_numeric() && token.is_numeric()) {
+            if (type_ == FLOAT_LITERAL) {
+                return data_.float_value == token.as_float();
+            }
+            else if (token.type_ == FLOAT_LITERAL) {
+                return as_float() == token.data_.float_value;
+            }
+            else {
+                return as_int() == token.as_int();
+            }
+        }
+        return false;
+    }
+    switch (type_) {
+        case BOOL_LITERAL:
+            return data_.bool_value == token.data_.bool_value;
+        case INT_LITERAL:
+            return data_.int_value == token.data_.int_value;
+        case FLOAT_LITERAL:
+            return data_.float_value == token.data_.float_value;
+        case STRING_LITERAL:
+            return str_ == token.str_;
+        case NULL_VALUE:
+            return true; // null == null
+        case FUNCTION:
+            return data_.function == token.data_.function;
+        default:
+            return false;
+    }
 }
 
 bool Token::contains(Type type) const
@@ -499,8 +504,6 @@ double Token::as_float() const
             return data_.float_value;
         case INT_LITERAL:
             return static_cast<double>(data_.int_value);
-        case BOOL_LITERAL:
-            return static_cast<double>(data_.bool_value);
         case IDENTIFIER:
             return SymbolTable::get(str_).as_float();
         default:
@@ -513,8 +516,6 @@ int Token::as_int() const
     switch (type_) {
         case INT_LITERAL:
             return data_.int_value;
-        case BOOL_LITERAL:
-            return data_.bool_value ? 1 : 0;
         case IDENTIFIER:
             return SymbolTable::get(str_).as_int();
         default:
@@ -534,12 +535,27 @@ bool Token::as_bool() const
         case BOOL_LITERAL:
             return data_.bool_value;
         case NULL_VALUE:
+            // null is always evaluated as false
             return false;
         case IDENTIFIER:
             return SymbolTable::get(str_).as_bool();
+        case FUNCTION:
+            // a defined function is always evaluated as true
+            return true;
         default:
             throw Error::TypeError("a boolean is required");
     }
+}
+
+const FunctionWrapper& Token::get_function() const
+{
+    if (type_ == FUNCTION) {
+        return data_.function;
+    }
+    if (type_ == IDENTIFIER) {
+        return SymbolTable::get(str_).get_function();
+    }
+    throw Error::TypeError("token is not a function");
 }
 
 std::ostream& operator<<(std::ostream& os, const Token& token)

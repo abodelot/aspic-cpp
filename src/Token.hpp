@@ -73,6 +73,11 @@ public:
     Token();
     Token(Type);
 
+    Type get_type() const;
+
+    // Factory methods
+    // -------------------------------------------------------------------------
+
     /**
      * Create an operand token (literal value)
      */
@@ -92,24 +97,19 @@ public:
     static Token create_identifier(const std::string& identifier_name);
     static Token create_function(const FunctionWrapper& function);
 
-    /**
-     * Getters, according to type
-     */
-    Type get_type() const;
-    Type get_contained_type() const;
-    OperatorType get_operator_type() const;
-    const FunctionWrapper& get_function() const;
-
-    /**
-     * Print string representation
-     */
-    void debug(std::ostream& os) const;
+    // Methods for operator tokens
+    // -------------------------------------------------------------------------
 
     /**
      * Operator helpers
      */
     bool is_operator() const;
     bool is_right_associative_operator() const;
+
+    /**
+     * Getters, according to type
+     */
+    OperatorType get_operator_type() const;
 
     /**
      * Apply an operation on an operand
@@ -120,10 +120,34 @@ public:
     Token apply_unary_operator(Token::OperatorType op);
     Token apply_binary_operator(Token::OperatorType op, Token& operand);
 
+    // Methods for value tokens
+    // -------------------------------------------------------------------------
+
     /**
-     * Operand helpers
+     * @return true if token holds a value, otherwise false
      */
-    bool is_literal() const;
+    bool is_value() const;
+
+    /**
+     * If token is a value, return reference to self.
+     * If token is an identifier, return reference to token in the symbol table
+     */
+    const Token& get_value() const;
+
+    Type get_value_type() const;
+
+    bool is_numeric() const
+    {
+        return type_ == INT_LITERAL || type_ == FLOAT_LITERAL;
+    }
+
+    /**
+     * Compare two value tokens
+     */
+    bool equal(const Token& token) const;
+
+    // Value getters
+    // -------------------------------------------------------------------------
 
     /**
      * Get literal value from an operand token, value is casted if necesary
@@ -133,6 +157,13 @@ public:
     int                as_int() const;
     double             as_float() const;
     bool               as_bool() const;
+
+    const FunctionWrapper& get_function() const;
+
+    /**
+     * Print string representation
+     */
+    void debug(std::ostream& os) const;
 
     int lbp;
 private:

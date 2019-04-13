@@ -1,5 +1,17 @@
 ## math test
 
+# float and int values
+assert(10 == 10.0)
+assert(10.0 == 10)
+assert(3.14 == 3.14000)
+
+assert(10 != 10.5)
+assert(10.5 != 10)
+assert(9.5 < 10)
+assert(9 < 9.5)
+assert(10.5 > 10)
+assert(10 > 9.5)
+
 var = 2 + 3
 assert(var == 5)
 var*=5

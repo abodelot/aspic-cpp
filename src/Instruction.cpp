@@ -205,7 +205,7 @@ Token Instruction::parse(int rbp)
 
 Token Instruction::null_denotation(Token& token)
 {
-    if (token.is_literal() || token.get_type() == Token::IDENTIFIER) {
+    if (token.is_value() || token.get_type() == Token::IDENTIFIER) {
         return token;
     }
     if (token.get_type() == Token::LEFT_PARENTHESIS) {
@@ -281,7 +281,7 @@ bool Instruction::is_valid_operator_char(char c) const
 
 void Instruction::debug() const
 {
-    std::cout << "lexer:   ";
+    std::cout << "lexer: ";
     print_tokens(tokens_);
 }
 
@@ -289,7 +289,7 @@ void Instruction::print_tokens(const TokenList& t) const
 {
     for (TokenList::const_iterator it = t.begin(); it != t.end(); ++it) {
         it->debug(std::cout);
-        std::cout << "  ";
+        std::cout << " ";
     }
     std::cout << std::endl;
 }

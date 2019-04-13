@@ -37,7 +37,7 @@ Token core_type(TokenStack& args)
 {
     args.check(1);
     Token arg = args.top(); args.pop();
-    return Token::create_string(Token::type_to_str(arg.get_contained_type()));
+    return Token::create_string(Token::type_to_str(arg.get_value_type()));
 }
 
 Token core_round(TokenStack& args)

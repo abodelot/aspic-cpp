@@ -1,4 +1,4 @@
-# Logical not
+# Logical not: !
 #-------------------------------------------------------------------------------
 
 assert(!false)
@@ -7,7 +7,67 @@ assert(!"")
 assert(! !"a")
 assert(!0)
 
-# Logical or
+# Less than: <
+#-------------------------------------------------------------------------------
+
+assert(1 < 2)
+assert(1.5 < 2)
+assert(1 < 2.5)
+assert("abc" < "def")
+
+# Less than or equal to: <=
+#-------------------------------------------------------------------------------
+
+assert(1 <= 1)
+assert(1 <= 2)
+assert(1.0 <= 2)
+assert(1 <= 1.0)
+assert("abc" <= "def")
+assert("abc" <= "abc")
+
+# Greater than: >
+#-------------------------------------------------------------------------------
+
+assert(2 > 1)
+assert(2 > 1.5)
+assert(2.5 > 2)
+assert("def" > "abcd")
+
+# Greater than or equal to: >=
+#-------------------------------------------------------------------------------
+
+assert(3 >= 2)
+assert(3 >= 3)
+assert(3.5 >= 3)
+assert(3.5 >= 3.5)
+assert(3 >= 2.5)
+assert(3.5 >= 2.5)
+assert("def" >= "abcd")
+assert("a" >= "a")
+
+# Equal: ==
+#-------------------------------------------------------------------------------
+
+assert(10 == 10)
+assert(10.0 == 10)
+assert(10 == 10.0)
+assert(10.0 == 10.0)
+assert(true == true)
+assert(null == null)
+assert("foobar" == "foobar")
+assert(str_count == str_count)
+
+# Not equal: !=
+#-------------------------------------------------------------------------------
+
+assert(1 != 2)
+assert(1 != 1.5)
+assert(1 != "hello")
+assert(1 != true)
+assert(1 != null)
+assert(1 != str_count)
+
+# Logical or: ||
 #-------------------------------------------------------------------------------
 
 assert(true || true)
@@ -18,6 +78,8 @@ assert(("a" || "b") == "a")
 assert(("b" || "a") == "b")
 assert((10 || "abc") == 10)
 assert(("abc" || 10) == "abc")
+assert(str_count || 4 == str_count)
+assert(4 || str_count == 4)
 
 assert(true || false)
 assert(1 || 0)
@@ -35,7 +97,7 @@ assert((false || false) == false)
 assert((0 || 0) == 0)
 assert(("" || "") == "")
 
-# Logical and
+# Logical and: &&
 #-------------------------------------------------------------------------------
 
 assert(true && true)
@@ -46,6 +108,8 @@ assert("a" && "b" == "b")
 assert("b" && "a" == "a")
 assert(10 && "abc" == "abc")
 assert("abc" && 10 == 10)
+assert(str_count && 10 == 10)
+assert(10 && str_count == str_count)
 
 assert((true && false) == false)
 assert((1 && 0) == 0)

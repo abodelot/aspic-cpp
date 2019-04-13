@@ -1,13 +1,13 @@
 Aspic
 =====
 
-Aspic is an instruction interpreter written in C++.
+Aspic is an expression interpreter written in C++.
 The parser implementation is based upon the [Pratt parsing technique](https://en.wikipedia.org/wiki/Pratt_parser).
 
 * Author: Alexandre Bodelot <alexandre.bodelot@gmail.com>
 * Website: https://github.com/abodelot/aspic
 
-## Setup
+## Build
 
 1. Install GNU readline library. On Debian/Ubuntu:
 
@@ -20,6 +20,11 @@ The parser implementation is based upon the [Pratt parsing technique](https://en
     ```
     make
     ```
+
+## Usage
+
+- Interactive mode: `./aspic`
+- Load a file: `./aspic <path_to_file>`
 
 ## Testing
 
