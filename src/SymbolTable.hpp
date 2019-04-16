@@ -29,7 +29,7 @@ public:
     /**
      * Set value for a given identifier
      */
-    static void set(const std::string& name, Token& token);
+    static void set(const std::string& name, const Token& token);
 
     /**
      * Initialize the symbol table with the functions from the standard library

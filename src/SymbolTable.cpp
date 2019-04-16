@@ -45,7 +45,7 @@ Token& SymbolTable::get(const std::string& name)
 }
 
 
-void SymbolTable::set(const std::string& name, Token& token)
+void SymbolTable::set(const std::string& name, const Token& token)
 {
     if (token.is_value()) {
         identifiers_[name] = token;

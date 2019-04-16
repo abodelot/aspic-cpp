@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Token.hpp"
+#include "AST.hpp"
 
 class OperatorManager;
 
@@ -21,9 +22,11 @@ public:
     Token eval(const std::string& expression);
 
     /**
-     * Print infix and postifx notation of the last evalued expression
+     * Print scanned tokens
      */
-    void debug() const;
+    void print_tokens() const;
+
+    void print_ast() const;
 
 private:
     /**
@@ -42,19 +45,19 @@ private:
      */
     bool is_valid_operator_char(char c) const;
 
-    Token parse(int rbp);
+    AST::Node* parse(int rbp);
 
     void advance(Token::Type type);
 
     /**
      * Parse method when token appears at the beginning of a language construct
      */
-    Token null_denotation(Token& current);
+    AST::Node* null_denotation(Token& current);
 
     /**
      * Parse method when token appears inside the construct
      */
-    Token left_denotation(Token& current, Token& left);
+    AST::Node* left_denotation(Token& current, AST::Node* left);
 
 
     typedef std::vector<Token> TokenList;
@@ -62,6 +65,7 @@ private:
     void print_tokens(const TokenList& t) const;
 
     TokenList tokens_;
+    AST ast_;
     OperatorManager& operators_;
     size_t index_;
 };

@@ -97,6 +97,14 @@ assert((false || false) == false)
 assert((0 || 0) == 0)
 assert(("" || "") == "")
 
+# lazy evaluation
+assert(1 || assert(false)) # AssertError not raised
+assert(1 || "a" > true) # TypeError not raised
+x = 10
+assert(1 || (x += 2)) # x += not performed
+assert(x == 10)
+
+
 # Logical and: &&
 #-------------------------------------------------------------------------------
 
@@ -125,3 +133,10 @@ assert(("" && "") == "")
 
 assert(true && false || true)
 assert(true || false && false == false)
+
+# lazy evaluation
+assert(!(0 && assert(false))) # AssertError not raised
+assert(!(false && "a" > 10)) # TypeError not raised
+x = 10
+assert(!(0 && (x = 5))) # x = not performed
+assert(x == 10)

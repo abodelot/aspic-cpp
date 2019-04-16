@@ -1,4 +1,3 @@
-# + and * operators
 assert(" ")
 assert("hello" == "hello")
 var = "hello"
@@ -10,12 +9,6 @@ var2 = "world"
 assert(var + " " + var2 == "hello world")
 assert(str_replace(str_upper(var + " " + var2), "L" * 2, str_lower("X")) == "HExO WORLD")
 
-# += and *= operators
-var = "my"
-var += " string"
-assert(var == "my string")
-var += ""
-assert(var == "my string")
 name = "o"
 name += "hn"
 name = "J" + name
@@ -23,6 +16,35 @@ assert(name == "John")
 name2 = "Doe"
 name += str_replace(name2 + "!", "D", " D")
 assert(name == "John Doe!")
+
+# + operator
+assert("abc" + "def" == "abcdef")
+x = "abc"
+assert(x + "xyz" == "abcxyz")
+assert(x == "abc")
+assert("123" + x == "123abc")
+
+# += operator
+x += "xyz"
+assert(x == "abcxyz")
+x += x
+assert(x == "abcxyzabcxyz")
+x += ""
+assert(x == "abcxyzabcxyz")
+
+# * operator
+assert("foo" * 2 == "foofoo")
+x = "foo"
+assert("foo" * 2 == "foofoo")
+assert(3 * "foo" == "foofoofoo")
+
+# *= operator
+x = "hello"
+x *= 3
+assert(x == "hellohellohello")
+y = 2
+y *= "abc"
+assert(y == "abcabc")
 
 # [] operator
 assert("foobar"[0] == "f")

@@ -118,7 +118,7 @@ public:
      * @return operation result, encapsuled in a new token
      */
     Token apply_unary_operator(Token::OperatorType op);
-    Token apply_binary_operator(Token::OperatorType op, Token& operand);
+    Token apply_binary_operator(Token::OperatorType op, const Token& operand);
 
     // Methods for value tokens
     // -------------------------------------------------------------------------
@@ -174,6 +174,9 @@ private:
      * pointing to a literal with given type
      */
     bool contains(Type type) const;
+
+    // helper function for str * int operation
+    static Token multiply_string(const std::string& source, int count);
 
     /**
      * Holds the token value, according to Token::Type

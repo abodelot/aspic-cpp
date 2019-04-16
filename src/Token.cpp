@@ -7,6 +7,19 @@
 #include "OperatorManager.hpp"
 #include "SymbolTable.hpp"
 
+Token Token::multiply_string(const std::string& source, int count)
+{
+    if (count < 0) {
+        throw Error::ValueError("Cannot construct string with negative length");
+    }
+    Token result = Token::create_string("");
+    result.str_.reserve(count * source.size());
+    for (int i = 0; i < count; ++i) {
+        result.str_ += source;
+    }
+    return result;
+}
+
 // helpers ---------------------------------------------------------------------
 
 const char* Token::type_to_str(Type type)
@@ -188,7 +201,7 @@ Token Token::apply_unary_operator(Token::OperatorType op)
     throw Error::UnsupportedUnaryOperator(type_, op);
 }
 
-Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
+Token Token::apply_binary_operator(Token::OperatorType op, const Token& operand)
 {
     // ==, !=, ||, &&: operator implementation is not type-dependant
     switch (op) {
@@ -216,9 +229,8 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
                 return Token::create_int(std::pow(as_int(), operand.as_int()));
 
             case OP_MULTIPLICATION:
-                // 2 * "hello" => "hellohello"
                 if (operand.contains(STRING_LITERAL)) {
-                    return operand.apply_binary_operator(op, *this);
+                    return multiply_string(operand.as_string(), as_int());
                 }
                 return Token::create_int(as_int() * operand.as_int());
 
@@ -334,18 +346,7 @@ Token Token::apply_binary_operator(Token::OperatorType op, Token& operand)
                 }
 
             case OP_MULTIPLICATION:
-            {
-                int count = operand.as_int();
-                if (count < 0) {
-                    throw Error::ValueError("Cannot construct string with negative length");
-                }
-                std::string result;
-                result.reserve(count * str_.size());
-                for (int i = 0; i < count; ++i) {
-                    result += str_;
-                }
-                return Token::create_string(result);
-            }
+                return multiply_string(str_, operand.as_int());
 
             case OP_LESS_THAN:
                 return Token::create_bool(str_ < operand.as_string());

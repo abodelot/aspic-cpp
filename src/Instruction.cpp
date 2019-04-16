@@ -184,18 +184,19 @@ Token Instruction::eval(const std::string& input)
     if (tokenize(input)) {
         tokens_.push_back(Token(Token::END));
         index_ = 0;
-        return parse(0);
+        ast_.build(parse(0));
+        return ast_.eval();
     }
     else {
         return Token(Token::NULL_VALUE);
     }
 }
 
-Token Instruction::parse(int rbp)
+AST::Node* Instruction::parse(int rbp)
 {
     // See Pratt parser algorithm
     Token* t = &tokens_[index_++];
-    Token left = null_denotation(*t);
+    AST::Node* left = null_denotation(*t);
     while (rbp < tokens_[index_].lbp) {
         t = &tokens_[index_++];
         left = left_denotation(*t, left);
@@ -203,31 +204,32 @@ Token Instruction::parse(int rbp)
     return left;
 }
 
-Token Instruction::null_denotation(Token& token)
+AST::Node* Instruction::null_denotation(Token& token)
 {
     if (token.is_value() || token.get_type() == Token::IDENTIFIER) {
-        return token;
+        return new AST::ValueNode(token);
     }
     if (token.get_type() == Token::LEFT_PARENTHESIS) {
-        Token next = parse(0);
+        AST::Node* next = parse(0);
         advance(Token::RIGHT_PARENTHESIS);
         return next;
     }
     if (token.get_type() == Token::OPERATOR) {
-        Token right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
-        return right.apply_unary_operator(token.get_operator_type());
+        AST::Node* right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
+        return new AST::UnaryOpNode(token.get_operator_type(), right);
     }
     throw Error::SyntaxError("missing value");
 }
 
-Token Instruction::left_denotation(Token& token, Token& left)
+AST::Node* Instruction::left_denotation(Token& token, AST::Node* left)
 {
     if (token.get_type() == Token::OPERATOR) {
         if (token.get_operator_type() == Token::OP_FUNC_CALL) {
-            TokenStack args;
+            AST::FuncCallNode* node = new AST::FuncCallNode(Token::OP_FUNC_CALL, left);
+            // Find arguments until matching right parenthesis
             if (tokens_[index_].get_type() != Token::RIGHT_PARENTHESIS) {
                 while (true) {
-                    args.push(parse(0));
+                    node->push_arg(parse(0));
                     if (tokens_[index_].get_type() != Token::ARG_SEPARATOR) {
                         break;
                     }
@@ -235,16 +237,16 @@ Token Instruction::left_denotation(Token& token, Token& left)
                 }
             }
             advance(Token::RIGHT_PARENTHESIS);
-            return left.get_function()(args);
+            return node;
         }
         else if (token.get_operator_type() == Token::OP_INDEX) {
-            Token right = parse(0);
+            AST::Node* right = parse(0);
             advance(Token::RIGHT_BRACKET);
-            return left.apply_binary_operator(Token::OP_INDEX, right);
+            return new AST::BinaryOpNode(Token::OP_INDEX, left, right);
         }
         else {
-            Token right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
-            return left.apply_binary_operator(token.get_operator_type(), right);
+            AST::Node* right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
+            return new AST::BinaryOpNode(token.get_operator_type(), left, right);
         }
     }
     else {
@@ -279,10 +281,15 @@ bool Instruction::is_valid_operator_char(char c) const
     return false;
 }
 
-void Instruction::debug() const
+void Instruction::print_tokens() const
 {
     std::cout << "lexer: ";
     print_tokens(tokens_);
+}
+
+void Instruction::print_ast() const
+{
+    ast_.print();
 }
 
 void Instruction::print_tokens(const TokenList& t) const

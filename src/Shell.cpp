@@ -13,9 +13,10 @@ void Shell::run()
     Instruction parser;
     std::cout << "Aspic (" __DATE__ ", " __TIME__ ")" << std::endl;
     std::cout << "Type expressions for the interpreter to evaluate, or one of the following commands:" << std::endl;
-    std::cout << " * exit : exit interpreter" << std::endl;
-    std::cout << " * pool : print list of entries in symbol table"  << std::endl;
-    std::cout << " * lexer: print last parsed expression" << std::endl;
+    std::cout << " * exit:  exit interpreter" << std::endl;
+    std::cout << " * pool:  print list of entries in symbol table"  << std::endl;
+    std::cout << " * lexer: print parsed tokens of last expression" << std::endl;
+    std::cout << " * ast:   print abstract syntax tree of last expression" << std::endl;
 
     // Configure readline to insert tabs (instead of PATH completion)
     rl_bind_key('\t', rl_insert);
@@ -35,7 +36,10 @@ void Shell::run()
             SymbolTable::print_all_symbols();
         }
         else if (input == "lexer") {
-            parser.debug();
+            parser.print_tokens();
+        }
+        else if (input == "ast") {
+            parser.print_ast();
         }
         else {
             try {
