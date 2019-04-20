@@ -1,5 +1,5 @@
 /**
- * Aspic: an instruction interpreter using the Shunting-yard algorithm
+ * Aspic: an expression interpreter
  * See README.md for more details
  * @author Alexandre Bodelot <alexandre.bodelot@gmail.com>
  */

@@ -8,7 +8,7 @@
 Token core_assert(TokenStack& args)
 {
     args.check(1);
-    bool result= args.pop_bool();
+    bool result = args.pop_bool();
     if (!result) {
         throw Error::AssertionError();
     }
@@ -17,9 +17,13 @@ Token core_assert(TokenStack& args)
 
 Token core_print(TokenStack& args)
 {
-    args.check(1);
-    Token arg = args.top(); args.pop();
-    std::cout << arg << std::endl;
+    for (size_t i = 0; i < args.size(); ++i) {
+        if (i > 0) {
+            std::cout << ' ';
+        }
+        std::cout << args[i];
+    }
+    std::cout << std::endl;
     return Token(Token::NULL_VALUE);
 }
 
