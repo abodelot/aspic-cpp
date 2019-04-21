@@ -1,5 +1,5 @@
-#ifndef ASPIC_INSTRUCTION_HPP
-#define ASPIC_INSTRUCTION_HPP
+#ifndef ASPIC_PARSER_HPP
+#define ASPIC_PARSER_HPP
 
 #include <string>
 #include <vector>
@@ -9,24 +9,42 @@
 
 class OperatorManager;
 
-class Instruction
+/**
+ * Evaluation entry-point:
+ * Tokenize input stream and build AST
+ */
+class Parser
 {
 public:
-    Instruction();
+    Parser();
 
     /**
-     * Eval an expresion.
+     * Feed an expresion to the parser. Result will be appended to AST.
      * @param expresion: expression to be parsed
      * @return result value as a literal-type token
      */
-    Token eval(const std::string& expression);
+    bool feed(const std::string& expression);
 
     /**
-     * Print scanned tokens
+     * Print scanned tokens (debug)
      */
     void print_tokens() const;
 
+    /**
+     * Print internal AST to stdout
+     */
     void print_ast() const;
+
+    /**
+     * Evaluate internal AST.
+     * @return result value, wrapped in a token
+     */
+    Token eval_ast() const;
+
+    /**
+     * Clear parsed tokens and AST.
+     */
+    void reset();
 
 private:
     /**
@@ -60,11 +78,9 @@ private:
     AST::Node* left_denotation(Token& current, AST::Node* left);
 
 
-    typedef std::vector<Token> TokenList;
+    typedef std::vector<Token> TokenVector;
 
-    void print_tokens(const TokenList& t) const;
-
-    TokenList tokens_;
+    TokenVector tokens_;
     AST ast_;
     OperatorManager& operators_;
     size_t index_;

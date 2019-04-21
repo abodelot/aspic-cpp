@@ -618,7 +618,7 @@ void Token::debug(std::ostream& os) const
     switch (type_)
     {
         case IDENTIFIER:
-            os << str_;
+            os << "id:" << str_;
             break;
         case STRING_LITERAL:
             os << '"' << str_ << '"';

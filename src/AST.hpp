@@ -21,23 +21,47 @@ public:
         virtual void repr(int depth) const = 0;
     };
 
+    typedef std::vector<const Node*> NodeVector;
+
+    /**
+     * Sequence of expressions
+     */
+    class BodyNode: public Node
+    {
+    public:
+        BodyNode(const Node* node);
+
+        ~BodyNode();
+
+        void append(const Node* node);
+
+        // Return last expression result
+        Token eval() const override;
+
+        void repr(int depth) const;
+
+    private:
+        NodeVector body_;
+    };
+
     /**
      * Handle one operator, one operand
      */
     class UnaryOpNode: public Node
     {
     public:
-        UnaryOpNode(Token::OperatorType op, Node* operand_);
+        UnaryOpNode(Token::OperatorType op, const Node* operand_);
 
         ~UnaryOpNode();
 
+        // Return operation result
         Token eval() const override;
 
         void repr(int depth) const override;
 
     private:
         Token::OperatorType op_;
-        Node* operand_;
+        const Node* operand_;
     };
 
     /**
@@ -46,18 +70,19 @@ public:
     class BinaryOpNode: public Node
     {
     public:
-        BinaryOpNode(Token::OperatorType op, Node* first, Node* second);
+        BinaryOpNode(Token::OperatorType op, const Node* first, const Node* second);
 
         ~BinaryOpNode();
 
+        // Return operation result
         Token eval() const override;
 
         void repr(int depth) const override;
 
     private:
         Token::OperatorType op_;
-        Node* first_;
-        Node* second_;
+        const Node* first_;
+        const Node* second_;
     };
 
     /**
@@ -68,6 +93,7 @@ public:
     public:
         ValueNode(const Token& t);
 
+        // Return value
         Token eval() const override;
 
         void repr(int depth) const override;
@@ -78,15 +104,16 @@ public:
 
     /**
      * Handle one operator, one left operand, and N right operands (arguments)
-     * Currently, this is only used for representing function calls
+     * Used for representing function calls
      */
     class FuncCallNode: public Node
     {
     public:
-        FuncCallNode(Token::OperatorType op, Node* operand);
+        FuncCallNode(const Node* func);
 
         ~FuncCallNode();
 
+        // Return function call result
         Token eval() const override;
 
         void repr(int depth) const override;
@@ -94,17 +121,16 @@ public:
         void push_arg(const Node* node);
 
     private:
-        Token::OperatorType op_;
-        Node* operand_;
-        std::vector<const Node*> arguments_;
+        const Node* func_;
+        NodeVector arguments_;
     };
 
     AST();
 
     ~AST();
 
-    // Define root of the AST
-    void build(const Node* node);
+    // Add a node at the top-level of the AST
+    void append(const Node* node);
 
     // Deallocate all nodes
     void clear();
@@ -116,7 +142,7 @@ public:
     void print() const;
 
 private:
-    const AST::Node* root_;
+    AST::BodyNode* root_;
 };
 
 #endif

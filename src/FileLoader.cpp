@@ -3,29 +3,31 @@
 
 #include "Error.hpp"
 #include "FileLoader.hpp"
-#include "Instruction.hpp"
+#include "Parser.hpp"
 
 
 bool FileLoader::load_file(const char* filename)
 {
     std::ifstream file(filename);
     if (file) {
-        Instruction parser;
+        Parser parser;
         std::string line;
-        size_t line_number = 1;
-        while (std::getline(file, line)) {
-            try {
-                parser.eval(line);
+        try {
+            size_t line_number = 1;
+            while (std::getline(file, line)) {
+                parser.feed(line);
+                ++line_number;
             }
-            catch (Error& error) {
-                // Dump exception to stderr and exit
-                std::cerr << "File \"" << filename << "\", line " << line_number << std::endl;
-                std::cerr << "\t" << line << std::endl;
-                std::cerr << error.what() << std::endl;
-                file.close();
-                return false;
-            }
-            ++line_number;
+            parser.eval_ast();
+        }
+        catch (Error& error) {
+            // Dump exception to stderr and exit
+            // FIXME: track filename / linenumber in AST
+            // std::cerr << "File \"" << filename << "\", line " << line_number << std::endl;
+            // std::cerr << "\t" << line << std::endl;
+            std::cerr << error.what() << std::endl;
+            file.close();
+            return false;
         }
         file.close();
         return true;

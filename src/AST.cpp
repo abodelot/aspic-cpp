@@ -14,10 +14,14 @@ AST::~AST()
     clear();
 }
 
-void AST::build(const Node* node)
+void AST::append(const Node* node)
 {
-   clear();
-   root_ = node;
+    if (root_ == nullptr) {
+        root_ = new AST::BodyNode(node);
+    }
+    else {
+        root_->append(node);
+    }
 }
 
 void AST::clear()
@@ -35,12 +39,60 @@ Token AST::eval() const
 
 void AST::print() const
 {
-    root_->repr(0);
+    if (root_ != nullptr) {
+        root_->repr(0);
+    }
+}
+
+// AST::BodyNode
+
+AST::BodyNode::BodyNode(const Node* node)
+{
+    body_.push_back(node);
+}
+
+AST::BodyNode::~BodyNode()
+{
+    for (auto& node: body_) {
+        delete node;
+    }
+}
+
+void AST::BodyNode::append(const Node* node)
+{
+    body_.push_back(node);
+}
+
+Token AST::BodyNode::eval() const
+{
+    // Return value from the last expression in body (ruby-like)
+    size_t loop_length = body_.size() - 1;
+    for (size_t i = 0; i < loop_length; ++i) {
+        body_[i]->eval();
+    }
+    return body_.back()->eval();
+}
+
+void AST::BodyNode::repr(int depth) const
+{
+    for (int i = 0; i < depth; ++i) {
+        std::cout << "  ";
+    }
+    std::cout << '[' << std::endl;
+
+    for (const auto& node: body_) {
+        node->repr(depth + 1);
+    }
+
+    for (int i = 0; i < depth; ++i) {
+        std::cout << "  ";
+    }
+    std::cout << ']' << std::endl;
 }
 
 // AST::UnaryOpNode
 
-AST::UnaryOpNode::UnaryOpNode(Token::OperatorType op, AST::Node* operand):
+AST::UnaryOpNode::UnaryOpNode(Token::OperatorType op, const AST::Node* operand):
     op_(op),
     operand_(operand)
 {
@@ -74,7 +126,7 @@ void AST::UnaryOpNode::repr(int depth) const
 
 // AST::BinaryOpNode
 
-AST::BinaryOpNode::BinaryOpNode(Token::OperatorType op, Node* first, Node* second):
+AST::BinaryOpNode::BinaryOpNode(Token::OperatorType op, const Node* first, const Node* second):
     op_(op),
     first_(first),
     second_(second)
@@ -135,15 +187,14 @@ void AST::BinaryOpNode::repr(int depth) const
 
 // AST::FuncCallNode
 
-AST::FuncCallNode::FuncCallNode(Token::OperatorType op, Node* operand):
-    op_(op),
-    operand_(operand)
+AST::FuncCallNode::FuncCallNode(const Node* func):
+    func_(func)
 {
 }
 
 AST::FuncCallNode::~FuncCallNode()
 {
-    delete operand_;
+    delete func_;
     for (auto& node: arguments_) {
         delete node;
     }
@@ -151,7 +202,7 @@ AST::FuncCallNode::~FuncCallNode()
 
 Token AST::FuncCallNode::eval() const
 {
-    Token fn = operand_->eval();
+    Token fn = func_->eval();
     TokenStack stack;
     for (auto& node: arguments_) {
         stack.push(node->eval());
@@ -164,8 +215,8 @@ void AST::FuncCallNode::repr(int depth) const
     for (int i = 0; i < depth; ++i) {
         std::cout << "  ";
     }
-    std::cout << "(" << OperatorManager::to_str(op_) << std::endl;
-    operand_->repr(depth + 1);
+    std::cout << "(func_call" << std::endl;
+    func_->repr(depth + 1);
 
     for (auto& node: arguments_) {
         node->repr(depth + 1);

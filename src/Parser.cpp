@@ -3,7 +3,7 @@
 #include <cstring>
 #include <cstdlib>
 
-#include "Instruction.hpp"
+#include "Parser.hpp"
 #include "SymbolTable.hpp"
 #include "Error.hpp"
 #include "TokenStack.hpp"
@@ -12,13 +12,13 @@
 #define COMMENT_SYMBOL '#'
 
 
-Instruction::Instruction() :
+Parser::Parser() :
     operators_(OperatorManager::get_instance()),
     index_(0)
 {
 }
 
-bool Instruction::tokenize(const std::string& expression)
+bool Parser::tokenize(const std::string& expression)
 {
     // Utility buffer for parsing multi-chars tokens
     static std::string buffer;
@@ -179,20 +179,45 @@ bool Instruction::tokenize(const std::string& expression)
     return tokens_.size() > 0;
 }
 
-Token Instruction::eval(const std::string& input)
+bool Parser::feed(const std::string& input)
 {
     if (tokenize(input)) {
         tokens_.push_back(Token(Token::END));
         index_ = 0;
-        ast_.build(parse(0));
-        return ast_.eval();
+        ast_.append(parse(0));
+        return true;
     }
-    else {
-        return Token(Token::NULL_VALUE);
-    }
+    return false;
 }
 
-AST::Node* Instruction::parse(int rbp)
+void Parser::print_tokens() const
+{
+    std::cout << "lexer: ";
+    for (const auto& token: tokens_) {
+        token.debug(std::cout);
+        std::cout << ' ';
+    }
+    std::cout << std::endl;
+}
+
+void Parser::print_ast() const
+{
+    ast_.print();
+}
+
+Token Parser::eval_ast() const
+{
+    return ast_.eval();
+}
+
+void Parser::reset()
+{
+    tokens_.clear();
+    ast_.clear();
+    index_ = 0;
+}
+
+AST::Node* Parser::parse(int rbp)
 {
     // See Pratt parser algorithm
     Token* t = &tokens_[index_++];
@@ -204,7 +229,7 @@ AST::Node* Instruction::parse(int rbp)
     return left;
 }
 
-AST::Node* Instruction::null_denotation(Token& token)
+AST::Node* Parser::null_denotation(Token& token)
 {
     if (token.is_value() || token.get_type() == Token::IDENTIFIER) {
         return new AST::ValueNode(token);
@@ -221,11 +246,11 @@ AST::Node* Instruction::null_denotation(Token& token)
     throw Error::SyntaxError("missing value");
 }
 
-AST::Node* Instruction::left_denotation(Token& token, AST::Node* left)
+AST::Node* Parser::left_denotation(Token& token, AST::Node* left)
 {
     if (token.get_type() == Token::OPERATOR) {
         if (token.get_operator_type() == Token::OP_FUNC_CALL) {
-            AST::FuncCallNode* node = new AST::FuncCallNode(Token::OP_FUNC_CALL, left);
+            AST::FuncCallNode* node = new AST::FuncCallNode(left);
             // Find arguments until matching right parenthesis
             if (tokens_[index_].get_type() != Token::RIGHT_PARENTHESIS) {
                 while (true) {
@@ -254,7 +279,7 @@ AST::Node* Instruction::left_denotation(Token& token, AST::Node* left)
     }
 }
 
-void Instruction::advance(Token::Type type)
+void Parser::advance(Token::Type type)
 {
     if (tokens_[index_].get_type() != type) {
         throw Error::UnexpectedTokenType(type, tokens_[index_].get_type());
@@ -262,7 +287,7 @@ void Instruction::advance(Token::Type type)
     ++index_;
 }
 
-bool Instruction::is_valid_identifier_char(char c) const
+bool Parser::is_valid_identifier_char(char c) const
 {
     return (c >= 'a' && c <= 'z')
         || (c >= 'A' && c <= 'Z')
@@ -270,7 +295,7 @@ bool Instruction::is_valid_identifier_char(char c) const
         || (c == '_');
 }
 
-bool Instruction::is_valid_operator_char(char c) const
+bool Parser::is_valid_operator_char(char c) const
 {
     const char* ALPHABET = "+-*/%=!<>|&";
     for (const char* p = ALPHABET; *p != '\0'; ++p) {
@@ -279,24 +304,4 @@ bool Instruction::is_valid_operator_char(char c) const
         }
     }
     return false;
-}
-
-void Instruction::print_tokens() const
-{
-    std::cout << "lexer: ";
-    print_tokens(tokens_);
-}
-
-void Instruction::print_ast() const
-{
-    ast_.print();
-}
-
-void Instruction::print_tokens(const TokenList& t) const
-{
-    for (TokenList::const_iterator it = t.begin(); it != t.end(); ++it) {
-        it->debug(std::cout);
-        std::cout << " ";
-    }
-    std::cout << std::endl;
 }

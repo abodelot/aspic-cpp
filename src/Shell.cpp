@@ -3,14 +3,14 @@
 #include <readline/history.h>
 
 #include "Shell.hpp"
-#include "Instruction.hpp"
+#include "Parser.hpp"
 #include "Error.hpp"
 #include "SymbolTable.hpp"
 
 
 void Shell::run()
 {
-    Instruction parser;
+    Parser parser;
     std::cout << "Aspic (" __DATE__ ", " __TIME__ ")" << std::endl;
     std::cout << "Type expressions for the interpreter to evaluate, or one of the following commands:" << std::endl;
     std::cout << " * exit:  exit interpreter" << std::endl;
@@ -42,8 +42,11 @@ void Shell::run()
             parser.print_ast();
         }
         else {
+            parser.reset();
             try {
-                Token token = parser.eval(input);
+                parser.feed(input);
+                Token token = parser.eval_ast();
+                // Print result, if any
                 if (token.get_type() != Token::NULL_VALUE) {
                     std::cout << token << std::endl;
                 }
