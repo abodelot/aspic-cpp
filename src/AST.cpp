@@ -14,14 +14,10 @@ AST::~AST()
     clear();
 }
 
-void AST::append(const Node* node)
+void AST::setRoot(const BodyNode* node)
 {
-    if (root_ == nullptr) {
-        root_ = new AST::BodyNode(node);
-    }
-    else {
-        root_->append(node);
-    }
+    clear();
+    root_ = node;
 }
 
 void AST::clear()
@@ -90,6 +86,44 @@ void AST::BodyNode::repr(int depth) const
     std::cout << ']' << std::endl;
 }
 
+// AST::IfNode
+
+AST::IfNode::IfNode(const Node* test, const Node* body):
+    test_(test),
+    body_(body)
+{
+}
+
+AST::IfNode::~IfNode()
+{
+    delete test_;
+    delete body_;
+}
+
+Token AST::IfNode::eval() const
+{
+    if (test_->eval().as_bool()) {
+        return body_->eval();
+    }
+    return Token(Token::NULL_VALUE);
+}
+
+void AST::IfNode::repr(int depth) const
+{
+    for (int i = 0; i < depth; ++i) {
+        std::cout << "  ";
+    }
+    std::cout << "(if" << std::endl;
+
+    test_->repr(depth + 1);
+    body_->repr(depth + 1);
+
+    for (int i = 0; i < depth; ++i) {
+        std::cout << "  ";
+    }
+    std::cout << ")" << std::endl;
+}
+
 // AST::UnaryOpNode
 
 AST::UnaryOpNode::UnaryOpNode(Token::OperatorType op, const AST::Node* operand):
@@ -120,7 +154,6 @@ void AST::UnaryOpNode::repr(int depth) const
     for (int i = 0; i < depth; ++i) {
         std::cout << "  ";
     }
-
     std::cout << ")" << std::endl;
 }
 

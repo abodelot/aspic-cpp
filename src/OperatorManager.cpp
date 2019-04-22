@@ -211,9 +211,9 @@ const char* OperatorManager::to_str(Token::OperatorType op)
     switch (op)
     {
         case Token::OP_INDEX:
-            return "op[]";
+            return "op[";
         case Token::OP_FUNC_CALL:
-            return "op()";
+            return "op(";
 
         case Token::OP_NOT:
             return "!";

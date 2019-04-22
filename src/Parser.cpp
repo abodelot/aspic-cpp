@@ -14,29 +14,30 @@
 
 Parser::Parser() :
     operators_(OperatorManager::get_instance()),
-    index_(0)
+    index_(0),
+    opened_blocks_(0)
 {
 }
 
-bool Parser::tokenize(const std::string& expression)
+bool Parser::tokenize(const std::string& line)
 {
     // Utility buffer for parsing multi-chars tokens
     static std::string buffer;
 
-    tokens_.clear();
-    for (size_t i = 0; i < expression.size(); ++i) {
-        char current = expression[i];
+    const Token* previous = nullptr;
+    int unmatched_parentheses = 0;
+    for (size_t i = 0; i < line.size(); ++i) {
+        char current = line[i];
 
         // operator?
         if (is_valid_operator_char(current)) {
             size_t start = i++;
-            while (i < expression.size() && is_valid_operator_char(expression[i])) {
+            while (i < line.size() && is_valid_operator_char(line[i])) {
                 ++i;
             }
-            buffer = expression.substr(start, i - start);
+            buffer = line.substr(start, i - start);
             --i;
             Token::OperatorType op_type;
-            const Token* previous = tokens_.empty() ? nullptr : &(tokens_.back());
             if (operators_.eval(buffer, op_type, previous)) {
                 tokens_.push_back(Token::create_operator(op_type));
             }
@@ -47,19 +48,21 @@ bool Parser::tokenize(const std::string& expression)
         // Left parenthesis?
         else if (current == '(') {
             // Can be either grouping or a function call operator, depending on previous token
-            const Token* previous = tokens_.empty() ? nullptr : &(tokens_.back());
             if (previous == nullptr
                 || previous->get_type() == Token::OPERATOR
-                || previous->get_type() == Token::LEFT_PARENTHESIS) {
+                || previous->get_type() == Token::LEFT_PARENTHESIS
+                || previous->get_type() == Token::KEYWORD) {
                 tokens_.push_back(Token(Token::LEFT_PARENTHESIS));
             }
             else {
                 tokens_.push_back(Token::create_operator(Token::OP_FUNC_CALL));
             }
+            ++unmatched_parentheses;
         }
         // Right parenthesis?
         else if (current == ')') {
             tokens_.push_back(Token(Token::RIGHT_PARENTHESIS));
+            --unmatched_parentheses;
         }
         // Left bracket?
         else if (current == '[') {
@@ -78,11 +81,11 @@ bool Parser::tokenize(const std::string& expression)
             size_t start = i++;
             bool dot_found = current == '.';
             // While char is a digit, and no more than one dot '.' has been found
-            while (i < expression.size() && (isdigit(expression[i]) || (!dot_found && expression[i] == '.'))) {
-                dot_found |= expression[i] == '.';
+            while (i < line.size() && (isdigit(line[i]) || (!dot_found && line[i] == '.'))) {
+                dot_found |= line[i] == '.';
                 ++i;
             }
-            buffer = expression.substr(start, i - start);
+            buffer = line.substr(start, i - start);
             // ASCII to int, or to float if we've found a dot
             Token t = dot_found
                 ? Token::create_float(atof(buffer.c_str()))
@@ -97,21 +100,21 @@ bool Parser::tokenize(const std::string& expression)
             bool escape_next_char = false;
             buffer.clear();
             // Swallow chars into buffer until end of string is reached
-            for (++i; i < expression.size(); ++i) {
+            for (++i; i < line.size(); ++i) {
                 if (!escape_next_char) {
-                    if (expression[i] == closure_char) {
+                    if (line[i] == closure_char) {
                         break;
                     }
 
-                    if (expression[i] == '\\') {
+                    if (line[i] == '\\') {
                         escape_next_char = true;
                     }
                     else {
-                        buffer += expression[i];
+                        buffer += line[i];
                     }
                 }
                 else {
-                    switch (expression[i]) {
+                    switch (line[i]) {
                         case '\\': buffer += '\\'; break; // Backslash (\)
                         case '\'': buffer += '\''; break; // Single quote (')
                         case '\"': buffer += '\"'; break; // Double quote (")
@@ -125,7 +128,7 @@ bool Parser::tokenize(const std::string& expression)
                         default:
                             // Not a special character, the previous backslash is kept
                             buffer += '\\';
-                            buffer += expression[i];
+                            buffer += line[i];
                             break;
                     }
                     escape_next_char = false;
@@ -133,7 +136,7 @@ bool Parser::tokenize(const std::string& expression)
             }
 
             // Ensure string is correctly enclosed
-            if (i == expression.size()) {
+            if (i == line.size()) {
                 throw Error::SyntaxError("EOL while scanning string literal");
             }
 
@@ -144,10 +147,10 @@ bool Parser::tokenize(const std::string& expression)
         else if (is_valid_identifier_char(current)) {
             // Increment i until the end of the identifier is reached
             size_t start = i++;
-            while (i < expression.size() && is_valid_identifier_char(expression[i])) {
+            while (i < line.size() && is_valid_identifier_char(line[i])) {
                 ++i;
             }
-            buffer = expression.substr(start, i - start);
+            buffer = line.substr(start, i - start);
             --i;
 
             // Check if identifier is a reserved keyword
@@ -160,6 +163,14 @@ bool Parser::tokenize(const std::string& expression)
             else if (buffer == "null") {
                 tokens_.push_back(Token(Token::NULL_VALUE));
             }
+            else if (buffer == "if") {
+                ++opened_blocks_;
+                tokens_.push_back(Token::create_keyword(Token::KW_IF));
+            }
+            else if (buffer == "end") {
+                --opened_blocks_;
+                tokens_.push_back(Token(Token::END_BLOCK));
+            }
             else {
                 // Not a keyword, create an identifier
                 tokens_.push_back(Token::create_identifier(buffer));
@@ -167,27 +178,28 @@ bool Parser::tokenize(const std::string& expression)
         }
         // Ignore everything after comment symbol
         else if (current == COMMENT_SYMBOL) {
-            i = expression.size();
+            break;
         }
         // Ignore whitespaces
         else if (current != ' ' && current != '\t') {
             throw Error::SyntaxError(std::string("illegal character encountered: ") + current);
         }
+
+        // Imporant: do no use previous after tokens_.push_back!
+        previous = &(tokens_.back());
     }
 
-    // At least one token should be parsed for tokenization to be successfull
-    return tokens_.size() > 0;
+    // Each expression must end with special END token
+    if (tokens_.size() > 0 && tokens_.back().get_type() != Token::END) {
+        tokens_.push_back(Token(Token::END));
+    }
+    return opened_blocks_ == 0;
 }
 
-bool Parser::feed(const std::string& input)
+void Parser::build_ast()
 {
-    if (tokenize(input)) {
-        tokens_.push_back(Token(Token::END));
-        index_ = 0;
-        ast_.append(parse(0));
-        return true;
-    }
-    return false;
+    index_ = 0;
+    ast_.setRoot(parse_block());
 }
 
 void Parser::print_tokens() const
@@ -215,6 +227,7 @@ void Parser::reset()
     tokens_.clear();
     ast_.clear();
     index_ = 0;
+    opened_blocks_ = 0;
 }
 
 AST::Node* Parser::parse(int rbp)
@@ -229,10 +242,35 @@ AST::Node* Parser::parse(int rbp)
     return left;
 }
 
+AST::BodyNode* Parser::parse_block()
+{
+    AST::BodyNode* body = new AST::BodyNode(parse(0));
+    advance(Token::END);
+    while ((index_ + 1) < tokens_.size() && tokens_[index_].get_type() != Token::END_BLOCK) {
+        body->append(parse(0));
+        advance(Token::END);
+    }
+    return body;
+}
+
 AST::Node* Parser::null_denotation(Token& token)
 {
     if (token.is_value() || token.get_type() == Token::IDENTIFIER) {
         return new AST::ValueNode(token);
+    }
+    if (token.get_type() == Token::KEYWORD) {
+        switch (token.get_keyword()) {
+            case Token::KW_IF:
+            {
+                // Parse test expression
+                AST::Node* test = parse(0);
+                advance(Token::END);
+                // Parse if body
+                AST::Node* body = parse_block();
+                advance(Token::END_BLOCK);
+                return new AST::IfNode(test, body);
+            }
+        }
     }
     if (token.get_type() == Token::LEFT_PARENTHESIS) {
         AST::Node* next = parse(0);
@@ -281,6 +319,9 @@ AST::Node* Parser::left_denotation(Token& token, AST::Node* left)
 
 void Parser::advance(Token::Type type)
 {
+    if (index_ >= tokens_.size()) {
+        throw Error::InternalError("unexpected end of input");
+    }
     if (tokens_[index_].get_type() != type) {
         throw Error::UnexpectedTokenType(type, tokens_[index_].get_type());
     }

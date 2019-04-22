@@ -19,21 +19,27 @@ public:
     Parser();
 
     /**
-     * Feed an expresion to the parser. Result will be appended to AST.
-     * @param expresion: expression to be parsed
-     * @return result value as a literal-type token
+     * Feed a line to the parser and generate tokens
+     * @param expresion: line to be scanned into tokens
+     * @return true if no end-of-block keyword is expected after having tokenized
+     *   the line, otherwise false (used for Shell mode)
      */
-    bool feed(const std::string& expression);
+    bool tokenize(const std::string& expression);
 
     /**
-     * Print scanned tokens (debug)
+     * Print scanned tokens to stdout (debug)
      */
     void print_tokens() const;
 
     /**
-     * Print internal AST to stdout
+     * Print internal AST to stdout (debug)
      */
     void print_ast() const;
+
+    /**
+     * Generate AST from tokens.
+     */
+    void build_ast();
 
     /**
      * Evaluate internal AST.
@@ -48,12 +54,6 @@ public:
 
 private:
     /**
-     * Parse input into a token list
-     * @return true if at least one token was parsed
-     */
-    bool tokenize(const std::string& expression);
-
-    /**
      * Test if a character is a valid part of an identifier
      */
     bool is_valid_identifier_char(char c) const;
@@ -63,7 +63,17 @@ private:
      */
     bool is_valid_operator_char(char c) const;
 
+    /**
+     * Parse a single expression
+     * @return AST root node of expression
+     */
     AST::Node* parse(int rbp);
+
+    /**
+     * Parse expressions until end of block is met
+     * @return AST body node containing a list of expressions
+     */
+    AST::BodyNode* parse_block();
 
     void advance(Token::Type type);
 
@@ -84,6 +94,7 @@ private:
     AST ast_;
     OperatorManager& operators_;
     size_t index_;
+    int opened_blocks_;
 };
 
 #endif

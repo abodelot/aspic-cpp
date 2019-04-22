@@ -1,0 +1,52 @@
+a = 10
+if a > 5
+    a += 1
+    a += 2
+end
+assert(a == 13)
+
+if a > 20
+    a *= 1000
+    assert(false)
+end
+assert(a == 13)
+
+test = 0
+if a > 10
+    test = 1
+    if a > 11
+        test = 2
+        if a > 12
+            test = 3
+            if a > 13
+                test = 4
+                assert(false)
+            end
+        end
+    end
+end
+assert(test == 3)
+
+test = 0
+if test += 1
+    assert(test == 1)
+end
+assert(test == 1)
+
+# allow parentheses
+if (test > 0)
+    test = 0
+end
+assert(test == 0)
+
+x = if true
+   "hello ruby"
+end
+assert(x == "hello ruby")
+
+y = if 1
+    "last"
+    "value"
+    "returned"
+end
+assert(y == "returned")

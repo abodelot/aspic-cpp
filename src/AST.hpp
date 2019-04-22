@@ -44,6 +44,21 @@ public:
         NodeVector body_;
     };
 
+    class IfNode: public Node
+    {
+    public:
+        IfNode(const Node* test, const Node* body);
+        ~IfNode();
+
+        Token eval() const override;
+
+        void repr(int depth) const;
+
+    private:
+        const Node* test_;
+        const Node* body_;
+    };
+
     /**
      * Handle one operator, one operand
      */
@@ -130,7 +145,7 @@ public:
     ~AST();
 
     // Add a node at the top-level of the AST
-    void append(const Node* node);
+    void setRoot(const BodyNode* node);
 
     // Deallocate all nodes
     void clear();
@@ -142,7 +157,7 @@ public:
     void print() const;
 
 private:
-    AST::BodyNode* root_;
+    const AST::BodyNode* root_;
 };
 
 #endif

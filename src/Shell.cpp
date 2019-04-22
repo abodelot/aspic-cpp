@@ -22,8 +22,10 @@ void Shell::run()
     rl_bind_key('\t', rl_insert);
 
     bool running = true;
+    bool full_statement = true;
     char* buffer = nullptr;
-    while (running && (buffer = readline(">> ")) != nullptr) {
+    const char* prompt = ">> ";
+    while (running && (buffer = readline(prompt)) != nullptr) {
         std::string input(buffer);
         if (strlen(buffer) > 0) {
             add_history(buffer);
@@ -42,13 +44,19 @@ void Shell::run()
             parser.print_ast();
         }
         else {
-            parser.reset();
+            // Do not reset parser if user if typing a block
+            if (full_statement) {
+                parser.reset();
+            }
             try {
-                parser.feed(input);
-                Token token = parser.eval_ast();
-                // Print result, if any
-                if (token.get_type() != Token::NULL_VALUE) {
-                    std::cout << token << std::endl;
+                full_statement = parser.tokenize(input);
+                if (full_statement) {
+                    parser.build_ast();
+                    Token token = parser.eval_ast();
+                    // Print result, if any
+                    if (token.get_type() != Token::NULL_VALUE) {
+                        std::cout << token << std::endl;
+                    }
                 }
             }
             catch (Error& e) {
@@ -56,5 +64,6 @@ void Shell::run()
             }
         }
         free(buffer);
+        prompt = full_statement ? ">> " : ".. ";
     }
 }

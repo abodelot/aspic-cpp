@@ -15,9 +15,10 @@ bool FileLoader::load_file(const char* filename)
         try {
             size_t line_number = 1;
             while (std::getline(file, line)) {
-                parser.feed(line);
+                parser.tokenize(line);
                 ++line_number;
             }
+            parser.build_ast();
             parser.eval_ast();
         }
         catch (Error& error) {
