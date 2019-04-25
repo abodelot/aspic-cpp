@@ -27,17 +27,13 @@ public:
         LEFT_PARENTHESIS,
         RIGHT_PARENTHESIS,
         RIGHT_BRACKET, // Note: left bracket is OP_INDEX
-        KEYWORD,
-        END_BLOCK,
-        END
+        KW_IF,
+        KW_ELSE,
+        KW_END,
+        END_EXPR,
     };
 
     static const char* type_to_str(Type type);
-
-    enum Keyword
-    {
-        KW_IF,
-    };
 
     /**
      * Operator type for token typed as OPERATOR
@@ -80,9 +76,8 @@ public:
     Token();
     Token(Type);
 
-    Type get_type() const;
 
-    Keyword get_keyword() const;
+    Type get_type() const;
 
     // Factory methods
     // -------------------------------------------------------------------------
@@ -94,8 +89,6 @@ public:
     static Token create_float(double value);
     static Token create_string(const std::string& value);
     static Token create_bool(bool value);
-
-    static Token create_keyword(Keyword keyword);
 
     /**
      * Create an operator token
@@ -199,7 +192,6 @@ private:
         {
         }
 
-        Keyword         keyword;     // KEYWORD
         OperatorType    op_type;     // OPERATOR
         int             int_value;   // INT_LITERAL
         bool            bool_value;  // BOOL_LITERAL

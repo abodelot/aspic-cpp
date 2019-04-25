@@ -51,7 +51,7 @@ bool Parser::tokenize(const std::string& line)
             if (previous == nullptr
                 || previous->get_type() == Token::OPERATOR
                 || previous->get_type() == Token::LEFT_PARENTHESIS
-                || previous->get_type() == Token::KEYWORD) {
+                || previous->get_type() == Token::KW_IF) {
                 tokens_.push_back(Token(Token::LEFT_PARENTHESIS));
             }
             else {
@@ -165,11 +165,14 @@ bool Parser::tokenize(const std::string& line)
             }
             else if (buffer == "if") {
                 ++opened_blocks_;
-                tokens_.push_back(Token::create_keyword(Token::KW_IF));
+                tokens_.push_back(Token(Token::KW_IF));
+            }
+            else if (buffer == "else") {
+                tokens_.push_back(Token(Token::KW_ELSE));
             }
             else if (buffer == "end") {
                 --opened_blocks_;
-                tokens_.push_back(Token(Token::END_BLOCK));
+                tokens_.push_back(Token(Token::KW_END));
             }
             else {
                 // Not a keyword, create an identifier
@@ -189,9 +192,11 @@ bool Parser::tokenize(const std::string& line)
         previous = &(tokens_.back());
     }
 
-    // Each expression must end with special END token
-    if (tokens_.size() > 0 && tokens_.back().get_type() != Token::END) {
-        tokens_.push_back(Token(Token::END));
+    // Each expression must end with special END_EXPR token
+    if (tokens_.size() > 0) {
+        if (tokens_.back().get_type() != Token::END_EXPR && tokens_.back().get_type() != Token::KW_ELSE) {
+            tokens_.push_back(Token::Token::END_EXPR);
+        }
     }
     return opened_blocks_ == 0;
 }
@@ -245,10 +250,13 @@ AST::Node* Parser::parse(int rbp)
 AST::BodyNode* Parser::parse_block()
 {
     AST::BodyNode* body = new AST::BodyNode(parse(0));
-    advance(Token::END);
-    while ((index_ + 1) < tokens_.size() && tokens_[index_].get_type() != Token::END_BLOCK) {
+    advance(Token::END_EXPR);
+    // Parse expressions until an end-of-block token is found
+    while ((index_ + 1) < tokens_.size() &&
+           (tokens_[index_].get_type() != Token::KW_END &&
+            tokens_[index_].get_type() != Token::KW_ELSE)) {
         body->append(parse(0));
-        advance(Token::END);
+        advance(Token::END_EXPR);
     }
     return body;
 }
@@ -258,19 +266,21 @@ AST::Node* Parser::null_denotation(Token& token)
     if (token.is_value() || token.get_type() == Token::IDENTIFIER) {
         return new AST::ValueNode(token);
     }
-    if (token.get_type() == Token::KEYWORD) {
-        switch (token.get_keyword()) {
-            case Token::KW_IF:
-            {
-                // Parse test expression
-                AST::Node* test = parse(0);
-                advance(Token::END);
-                // Parse if body
-                AST::Node* body = parse_block();
-                advance(Token::END_BLOCK);
-                return new AST::IfNode(test, body);
-            }
+    if (token.get_type() == Token::KW_IF) {
+        // Parse test expression
+        const AST::Node* test = parse(0);
+        advance(Token::END_EXPR);
+        // Parse if body
+        const AST::Node* body_true = parse_block();
+        const AST::Node* body_false = nullptr;
+
+        // Check for optional else block
+        if (tokens_[index_].get_type() == Token::KW_ELSE) {
+            ++index_;
+            body_false = parse_block();
         }
+        advance(Token::KW_END);
+        return new AST::IfNode(test, body_true, body_false);
     }
     if (token.get_type() == Token::LEFT_PARENTHESIS) {
         AST::Node* next = parse(0);
@@ -281,7 +291,7 @@ AST::Node* Parser::null_denotation(Token& token)
         AST::Node* right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
         return new AST::UnaryOpNode(token.get_operator_type(), right);
     }
-    throw Error::SyntaxError("missing value");
+    throw Error::UnexpectedToken(token);
 }
 
 AST::Node* Parser::left_denotation(Token& token, AST::Node* left)

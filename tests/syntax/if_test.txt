@@ -11,6 +11,7 @@ if a > 20
 end
 assert(a == 13)
 
+# nested if statements
 test = 0
 if a > 10
     test = 1
@@ -39,14 +40,66 @@ if (test > 0)
 end
 assert(test == 0)
 
+# return result from last expression (ruby-like)
 x = if true
    "hello ruby"
 end
 assert(x == "hello ruby")
 
+x = if false
+    "hello ruby"
+end
+assert(x == null)
+
+# ensure last value is returned
 y = if 1
     "last"
     "value"
     "returned"
 end
 assert(y == "returned")
+
+# if-else statement, test is true
+x = 10
+y = "a"
+if x == 10
+    y = "b"
+else
+    y = "c"
+end
+assert(y == "b")
+
+# if-else statement, test is false
+x = 20
+y = "a"
+if x == 10
+    y = "b"
+else
+    y = "c"
+end
+assert(y == "c")
+
+x = 0
+if 1 == 1
+    x += 10
+    if 2 == 3
+        x += 100
+    else
+        x -= 100
+    end
+else
+    x -= 10
+end
+assert(x == -90)
+
+# nested if in test expression (ruby-like)
+x = if "hello" == if true
+        "hello"
+    else
+        "good bye"
+    end
+  "a"
+else
+  "b"
+end
+assert(x == "a")

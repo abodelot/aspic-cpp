@@ -88,22 +88,29 @@ void AST::BodyNode::repr(int depth) const
 
 // AST::IfNode
 
-AST::IfNode::IfNode(const Node* test, const Node* body):
+AST::IfNode::IfNode(const Node* test, const Node* body_true, const Node* body_false):
     test_(test),
-    body_(body)
+    body_true_(body_true),
+    body_false_(body_false)
 {
 }
 
 AST::IfNode::~IfNode()
 {
     delete test_;
-    delete body_;
+    delete body_true_;
+    if (body_false_ != nullptr) {
+        delete body_false_;
+    }
 }
 
 Token AST::IfNode::eval() const
 {
     if (test_->eval().as_bool()) {
-        return body_->eval();
+        return body_true_->eval();
+    }
+    else if (body_false_) {
+        return body_false_->eval();
     }
     return Token(Token::NULL_VALUE);
 }
@@ -116,7 +123,10 @@ void AST::IfNode::repr(int depth) const
     std::cout << "(if" << std::endl;
 
     test_->repr(depth + 1);
-    body_->repr(depth + 1);
+    body_true_->repr(depth + 1);
+    if (body_false_ != nullptr) {
+        body_false_->repr(depth + 1);
+    }
 
     for (int i = 0; i < depth; ++i) {
         std::cout << "  ";

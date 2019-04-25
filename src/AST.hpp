@@ -44,10 +44,15 @@ public:
         NodeVector body_;
     };
 
+    /**
+     * A node with a test expression, a body if test is true and an
+     * optional body if test is false
+     */
     class IfNode: public Node
     {
     public:
-        IfNode(const Node* test, const Node* body);
+        // Set body_false to nullptr if no else block
+        IfNode(const Node* test, const Node* body_true, const Node* body_false);
         ~IfNode();
 
         Token eval() const override;
@@ -56,7 +61,8 @@ public:
 
     private:
         const Node* test_;
-        const Node* body_;
+        const Node* body_true_;
+        const Node* body_false_;
     };
 
     /**

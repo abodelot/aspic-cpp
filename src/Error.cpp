@@ -16,6 +16,13 @@ Error Error::SyntaxError(const std::string& str)
     return Error(Syntax, str);
 }
 
+Error Error::UnexpectedToken(const Token& token)
+{
+    std::ostringstream oss;
+    oss << "Unexpected token " << token;
+    return Error(Syntax, oss.str());
+}
+
 Error Error::UnknownOperator(const std::string& str)
 {
     return Error(Syntax, "operator '" + str + "' does not exist");

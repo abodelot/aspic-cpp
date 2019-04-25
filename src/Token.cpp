@@ -47,13 +47,15 @@ const char* Token::type_to_str(Type type)
             return ")";
         case RIGHT_BRACKET:
             return "]";
-        case KEYWORD:
-            return "keyword";
         case OPERATOR:
             return "operator";
-        case END_BLOCK:
-            return "<end-block>";
-        case END:
+        case KW_IF:
+            return "<if>";
+        case KW_ELSE:
+            return "<else>";
+        case KW_END:
+            return "<end>";
+        case END_EXPR:
             return "<end-expr>";
     }
     return nullptr;
@@ -62,11 +64,6 @@ const char* Token::type_to_str(Type type)
 Token::Type Token::get_type() const
 {
     return type_;
-}
-
-Token::Keyword Token::get_keyword() const
-{
-    return data_.keyword;
 }
 
 // constructors ----------------------------------------------------------------
@@ -117,13 +114,6 @@ Token Token::create_operator(OperatorType op_type)
     Token self(OPERATOR);
     self.lbp = OperatorManager::get_instance().get_binding_power(op_type);
     self.data_.op_type = op_type;
-    return self;
-}
-
-Token Token::create_keyword(Keyword keyword)
-{
-    Token self(KEYWORD);
-    self.data_.keyword = keyword;
     return self;
 }
 
@@ -603,12 +593,14 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
         case Token::IDENTIFIER:
             os << SymbolTable::get(token.str_);
             break;
-        case Token::KEYWORD:
-            switch (token.data_.keyword) {
-                case Token::KW_IF:
-                    os << "kw:if";
-                    break;
-            }
+        case Token::KW_IF:
+            os << "kw:if";
+            break;
+        case Token::KW_ELSE:
+            os << "kw:else";
+            break;
+        case Token::KW_END:
+            os << "kw:end";
             break;
         case Token::OPERATOR:
             os << OperatorManager::to_str(token.data_.op_type);
@@ -625,13 +617,8 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
         case Token::RIGHT_BRACKET:
             os << ']';
             break;
-        case Token::END_BLOCK:
-            os << "<end-block>";
-            break;
-        case Token::END:
+        case Token::END_EXPR:
             os << "<end-expr>";
-            break;
-        default:
             break;
     }
     return os;

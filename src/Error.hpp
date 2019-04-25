@@ -16,6 +16,7 @@ public:
 
     // Syntax
     static Error SyntaxError(const std::string& str);
+    static Error UnexpectedToken(const Token& token);
     static Error UnknownOperator(const std::string& str);
     static Error UnexpectedTokenType(Token::Type expected, Token::Type got);
 

@@ -59,7 +59,7 @@ Aspic comments start with `#` character outside of a string and all following te
 
 The reserved words are:
 
-    end false if null true
+    else end false if null true
 
 They cannot be used as identifiers.
 
@@ -74,7 +74,7 @@ They cannot be used as identifiers.
 
 ### Operators
 
-Aspic define the following operators:
+Aspic defines the following operators:
 
 | Syntax | Name | Right associative? |
 |--------|------|--------------------|
