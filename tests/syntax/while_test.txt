@@ -1,0 +1,37 @@
+i = 0
+string = ""
+while i < 10
+    string += "a"
+    i += 1
+end
+assert(string == "aaaaaaaaaa")
+
+i = 0
+x = 0
+while i < 10
+    j = 0
+    while j < 10
+        j += 1
+        x += 2
+    end
+    i += 1
+end
+assert(x == 200)
+
+x = 0
+while false
+    x = 1
+end
+assert(x == 0)
+
+# str_count example
+string = "hello, world!"
+i = 0
+count = 0
+while i < str_len(string)
+    if string[i] == "o"
+        count += 1
+    end
+    i += 1
+end
+assert(count == str_count(string, "o"))

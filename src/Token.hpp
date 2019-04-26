@@ -29,6 +29,7 @@ public:
         RIGHT_BRACKET, // Note: left bracket is OP_INDEX
         KW_IF,
         KW_ELSE,
+        KW_WHILE,
         KW_END,
         END_EXPR,
     };

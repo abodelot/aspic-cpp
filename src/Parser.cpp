@@ -170,6 +170,10 @@ bool Parser::tokenize(const std::string& line)
             else if (buffer == "else") {
                 tokens_.push_back(Token(Token::KW_ELSE));
             }
+            else if (buffer == "while") {
+                ++opened_blocks_;
+                tokens_.push_back(Token(Token::KW_WHILE));
+            }
             else if (buffer == "end") {
                 --opened_blocks_;
                 tokens_.push_back(Token(Token::KW_END));
@@ -281,6 +285,15 @@ AST::Node* Parser::null_denotation(Token& token)
         }
         advance(Token::KW_END);
         return new AST::IfNode(test, body_true, body_false);
+    }
+    if (token.get_type() == Token::KW_WHILE) {
+        // Parse test expression
+        const AST::Node* test = parse(0);
+        advance(Token::END_EXPR);
+        // Parse body
+        const AST::Node* body = parse_block();
+        advance(Token::KW_END);
+        return new AST::LoopNode(test, body);
     }
     if (token.get_type() == Token::LEFT_PARENTHESIS) {
         AST::Node* next = parse(0);

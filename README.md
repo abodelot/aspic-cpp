@@ -59,7 +59,7 @@ Aspic comments start with `#` character outside of a string and all following te
 
 The reserved words are:
 
-    else end false if null true
+    else end false if null true while
 
 They cannot be used as identifiers.
 
@@ -68,8 +68,8 @@ They cannot be used as identifiers.
 * int
 * float
 * string
-* boolean
-* null
+* boolean (literals `true` and `false`)
+* null (literal `null`)
 * built-in function
 
 ### Operators
@@ -103,3 +103,45 @@ Aspic defines the following operators:
 | `%=`   | Modulo and assign | ✓ |
 | `+=`   | Add and assign | ✓ |
 | `-=`   | Subtract and assign | ✓ |
+
+### Control structures
+
+Control structures are expressions too.
+
+#### if
+
+Syntax:
+
+    if expr
+        expr
+    [else
+        expr]
+    end
+
+Examples:
+
+    if x > 0
+        print("strictly positive")
+    end
+
+    if foobar == foobaz
+        print("equal")
+    else
+        print("not equal")
+    end
+
+#### while
+
+Syntax:
+
+    while expr
+        expr
+    end
+
+Example:
+
+    i = 0
+    while i < 10
+        print(i)
+        i += 1
+    end

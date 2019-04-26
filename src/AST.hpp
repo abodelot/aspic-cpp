@@ -65,6 +65,22 @@ public:
         const Node* body_false_;
     };
 
+    class LoopNode: public Node
+    {
+    public:
+        LoopNode(const Node* test, const Node* body);
+        ~LoopNode();
+
+        Token eval() const override;
+
+        void repr(int depth) const;
+
+
+    private:
+        const Node* test_;
+        const Node* body_;
+    };
+
     /**
      * Handle one operator, one operand
      */

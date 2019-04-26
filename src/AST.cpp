@@ -71,19 +71,11 @@ Token AST::BodyNode::eval() const
 
 void AST::BodyNode::repr(int depth) const
 {
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
-    }
-    std::cout << '[' << std::endl;
-
+    std::cout << std::string(depth, ' ') << '[' << std::endl;
     for (const auto& node: body_) {
         node->repr(depth + 1);
     }
-
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
-    }
-    std::cout << ']' << std::endl;
+    std::cout << std::string(depth, ' ') << ']' << std::endl;
 }
 
 // AST::IfNode
@@ -117,10 +109,7 @@ Token AST::IfNode::eval() const
 
 void AST::IfNode::repr(int depth) const
 {
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
-    }
-    std::cout << "(if" << std::endl;
+    std::cout << std::string(depth, ' ') << "(if" << std::endl;
 
     test_->repr(depth + 1);
     body_true_->repr(depth + 1);
@@ -128,10 +117,38 @@ void AST::IfNode::repr(int depth) const
         body_false_->repr(depth + 1);
     }
 
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
+    std::cout << std::string(depth, ' ') << ")" << std::endl;
+}
+
+// AST::LoopNode
+
+AST::LoopNode::LoopNode(const Node* test, const Node* body):
+    test_(test),
+    body_(body)
+{
+}
+
+AST::LoopNode::~LoopNode()
+{
+    delete test_;
+    delete body_;
+}
+
+
+Token AST::LoopNode::eval() const
+{
+    while (test_->eval().as_bool()) {
+        body_->eval();
     }
-    std::cout << ")" << std::endl;
+    return Token(Token::NULL_VALUE);
+}
+
+void AST::LoopNode::repr(int depth) const
+{
+    std::cout << std::string(depth, ' ') << "(loop" << std::endl;
+    test_->repr(depth + 1);
+    body_->repr(depth + 1);
+    std::cout << std::string(depth, ' ') << ")" << std::endl;
 }
 
 // AST::UnaryOpNode
@@ -154,17 +171,9 @@ Token AST::UnaryOpNode::eval() const
 
 void AST::UnaryOpNode::repr(int depth) const
 {
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
-    }
-    std::cout << "(" << OperatorManager::to_str(op_) << std::endl;
-
+    std::cout << std::string(depth, ' ') << "(" << OperatorManager::to_str(op_) << std::endl;
     operand_->repr(depth + 1);
-
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
-    }
-    std::cout << ")" << std::endl;
+    std::cout << std::string(depth, ' ') << ")" << std::endl;
 }
 
 // AST::BinaryOpNode
@@ -214,18 +223,10 @@ Token AST::BinaryOpNode::eval() const
 
 void AST::BinaryOpNode::repr(int depth) const
 {
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
-    }
-    std::cout << "(" << OperatorManager::to_str(op_) << std::endl;
-
+    std::cout << std::string(depth, ' ') << "(" << OperatorManager::to_str(op_) << std::endl;
     first_->repr(depth + 1);
     second_->repr(depth + 1);
-
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
-    }
-    std::cout << ")" << std::endl;
+    std::cout << std::string(depth, ' ') << ")" << std::endl;
 }
 
 // AST::FuncCallNode
@@ -255,20 +256,12 @@ Token AST::FuncCallNode::eval() const
 
 void AST::FuncCallNode::repr(int depth) const
 {
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
-    }
-    std::cout << "(func_call" << std::endl;
+    std::cout << std::string(depth, ' ') << "(func_call" << std::endl;
     func_->repr(depth + 1);
-
     for (auto& node: arguments_) {
         node->repr(depth + 1);
     }
-
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
-    }
-    std::cout << ")" << std::endl;
+    std::cout << std::string(depth, ' ') << ")" << std::endl;
 }
 
 void AST::FuncCallNode::push_arg(const Node* node)
@@ -290,10 +283,7 @@ Token AST::ValueNode::eval() const
 
 void AST::ValueNode::repr(int depth) const
 {
-    for (int i = 0; i < depth; ++i) {
-        std::cout << "  ";
-    }
-    std::cout << "(";
+    std::cout << std::string(depth, ' ') << "(";
     token.debug(std::cout);
-    std::cout <<  ")" << std::endl;
+    std::cout << ")" << std::endl;
 }
