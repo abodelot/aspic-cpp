@@ -1,14 +1,16 @@
 #include "LibString.hpp"
+#include "ast/Node.hpp"
+#include "ast/NodeVector.hpp"
 
 /**
  * Compute number of characters
  * @param 0: target string
  * @return string length
  */
-Token str_len(TokenStack& args)
+Token str_len(const ast::NodeVector& args)
 {
     args.check(1);
-    int length = args.pop_string().size();
+    int length = args[0]->eval().as_string().size();
     return Token::create_int(length);
 }
 
@@ -18,11 +20,11 @@ Token str_len(TokenStack& args)
  * @param 1: occurrence
  * @return occurrence count
  */
-Token str_count(TokenStack& args)
+Token str_count(const ast::NodeVector& args)
 {
     args.check(2);
-    std::string look_for = args.pop_string();
-    std::string str =      args.pop_string();
+    std::string str =      args[0]->eval().as_string();
+    std::string look_for = args[1]->eval().as_string();
 
     size_t pos = str.find(look_for);
     int count = 0;
@@ -40,12 +42,12 @@ Token str_count(TokenStack& args)
  * @param 2: sous-chaîne à caser
  * @return chaîne remplacée
  */
-Token str_replace(TokenStack& args)
+Token str_replace(const ast::NodeVector& args)
 {
     args.check(3);
-    std::string replace_by = args.pop_string();
-    std::string look_for =   args.pop_string();
-    std::string target =     args.pop_string();
+    std::string target  =    args[0]->eval().as_string();
+    std::string look_for =   args[1]->eval().as_string();
+    std::string replace_by = args[2]->eval().as_string();
 
     size_t step = replace_by.size();
     size_t offset = look_for.size();
@@ -64,12 +66,12 @@ Token str_replace(TokenStack& args)
  * @param 2: length of the substring
  * @return substr
  */
-Token str_substr(TokenStack& args)
+Token str_substr(const ast::NodeVector& args)
 {
     args.check(3);
-    int size =        args.pop_int();
-    int from =        args.pop_int();
-    std::string str = args.pop_string();
+    std::string str = args[0]->eval().as_string();
+    int from        = args[1]->eval().as_int();
+    int size        = args[2]->eval().as_int();
     return Token::create_string(str.substr(from, size));
 }
 
@@ -78,10 +80,10 @@ Token str_substr(TokenStack& args)
  * @param 0: string
  * @return trimmed string
  */
-Token str_trim(TokenStack& args)
+Token str_trim(const ast::NodeVector& args)
 {
     args.check(1);
-    std::string str = args.pop_string();
+    std::string str = args[0]->eval().as_string();
     const char* WHITESPACES = " \t\n\r\0xb";
     std::string::size_type first = str.find_first_not_of(WHITESPACES);
     if (first != std::string::npos)
@@ -97,10 +99,10 @@ Token str_trim(TokenStack& args)
  * @param 0: string
  * @return lowercase string
  */
-Token str_lower(TokenStack& args)
+Token str_lower(const ast::NodeVector& args)
 {
     args.check(1);
-    std::string str = args.pop_string();
+    std::string str = args[0]->eval().as_string();
     for (size_t i = 0; i < str.length(); ++i)
     {
         str[i] = tolower(str[i]);
@@ -113,10 +115,10 @@ Token str_lower(TokenStack& args)
  * @param 0: string
  * @return uppercase string
  */
-Token str_upper(TokenStack& args)
+Token str_upper(const ast::NodeVector& args)
 {
     args.check(1);
-    std::string str = args.pop_string();
+    std::string str = args[0]->eval().as_string();
     for (size_t i = 0; i < str.length(); ++i)
     {
         str[i] = toupper(str[i]);

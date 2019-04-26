@@ -6,8 +6,8 @@
 #include "Parser.hpp"
 #include "SymbolTable.hpp"
 #include "Error.hpp"
-#include "TokenStack.hpp"
 #include "OperatorManager.hpp"
+#include "ast/Node.hpp"
 
 #define COMMENT_SYMBOL '#'
 
@@ -239,11 +239,11 @@ void Parser::reset()
     opened_blocks_ = 0;
 }
 
-AST::Node* Parser::parse(int rbp)
+ast::Node* Parser::parse(int rbp)
 {
     // See Pratt parser algorithm
     Token* t = &tokens_[index_++];
-    AST::Node* left = null_denotation(*t);
+    ast::Node* left = null_denotation(*t);
     while (rbp < tokens_[index_].lbp) {
         t = &tokens_[index_++];
         left = left_denotation(*t, left);
@@ -251,9 +251,9 @@ AST::Node* Parser::parse(int rbp)
     return left;
 }
 
-AST::BodyNode* Parser::parse_block()
+ast::BodyNode* Parser::parse_block()
 {
-    AST::BodyNode* body = new AST::BodyNode(parse(0));
+    ast::BodyNode* body = new ast::BodyNode(parse(0));
     advance(Token::END_EXPR);
     // Parse expressions until an end-of-block token is found
     while ((index_ + 1) < tokens_.size() &&
@@ -265,18 +265,18 @@ AST::BodyNode* Parser::parse_block()
     return body;
 }
 
-AST::Node* Parser::null_denotation(Token& token)
+ast::Node* Parser::null_denotation(Token& token)
 {
     if (token.is_value() || token.get_type() == Token::IDENTIFIER) {
-        return new AST::ValueNode(token);
+        return new ast::ValueNode(token);
     }
     if (token.get_type() == Token::KW_IF) {
         // Parse test expression
-        const AST::Node* test = parse(0);
+        const ast::Node* test = parse(0);
         advance(Token::END_EXPR);
         // Parse if body
-        const AST::Node* body_true = parse_block();
-        const AST::Node* body_false = nullptr;
+        const ast::Node* body_true = parse_block();
+        const ast::Node* body_false = nullptr;
 
         // Check for optional else block
         if (tokens_[index_].get_type() == Token::KW_ELSE) {
@@ -284,34 +284,34 @@ AST::Node* Parser::null_denotation(Token& token)
             body_false = parse_block();
         }
         advance(Token::KW_END);
-        return new AST::IfNode(test, body_true, body_false);
+        return new ast::IfNode(test, body_true, body_false);
     }
     if (token.get_type() == Token::KW_WHILE) {
         // Parse test expression
-        const AST::Node* test = parse(0);
+        const ast::Node* test = parse(0);
         advance(Token::END_EXPR);
         // Parse body
-        const AST::Node* body = parse_block();
+        const ast::Node* body = parse_block();
         advance(Token::KW_END);
-        return new AST::LoopNode(test, body);
+        return new ast::LoopNode(test, body);
     }
     if (token.get_type() == Token::LEFT_PARENTHESIS) {
-        AST::Node* next = parse(0);
+        ast::Node* next = parse(0);
         advance(Token::RIGHT_PARENTHESIS);
         return next;
     }
     if (token.get_type() == Token::OPERATOR) {
-        AST::Node* right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
-        return new AST::UnaryOpNode(token.get_operator_type(), right);
+        ast::Node* right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
+        return new ast::UnaryOpNode(token.get_operator_type(), right);
     }
     throw Error::UnexpectedToken(token);
 }
 
-AST::Node* Parser::left_denotation(Token& token, AST::Node* left)
+ast::Node* Parser::left_denotation(Token& token, ast::Node* left)
 {
     if (token.get_type() == Token::OPERATOR) {
         if (token.get_operator_type() == Token::OP_FUNC_CALL) {
-            AST::FuncCallNode* node = new AST::FuncCallNode(left);
+            ast::FuncCallNode* node = new ast::FuncCallNode(left);
             // Find arguments until matching right parenthesis
             if (tokens_[index_].get_type() != Token::RIGHT_PARENTHESIS) {
                 while (true) {
@@ -326,13 +326,13 @@ AST::Node* Parser::left_denotation(Token& token, AST::Node* left)
             return node;
         }
         else if (token.get_operator_type() == Token::OP_INDEX) {
-            AST::Node* right = parse(0);
+            ast::Node* right = parse(0);
             advance(Token::RIGHT_BRACKET);
-            return new AST::BinaryOpNode(Token::OP_INDEX, left, right);
+            return new ast::BinaryOpNode(Token::OP_INDEX, left, right);
         }
         else {
-            AST::Node* right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
-            return new AST::BinaryOpNode(token.get_operator_type(), left, right);
+            ast::Node* right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
+            return new ast::BinaryOpNode(token.get_operator_type(), left, right);
         }
     }
     else {

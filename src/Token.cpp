@@ -211,19 +211,6 @@ Token Token::apply_unary_operator(Token::OperatorType op)
 
 Token Token::apply_binary_operator(Token::OperatorType op, const Token& operand)
 {
-    // ==, !=, ||, &&: operator implementation is not type-dependant
-    switch (op) {
-        case OP_EQUAL:
-            return Token::create_bool(get_value().equal(operand.get_value()));
-        case OP_NOT_EQUAL:
-            return Token::create_bool(!get_value().equal(operand.get_value()));
-        case OP_LOGICAL_AND:
-            return as_bool() ? operand : *this;
-        case OP_LOGICAL_OR:
-            return as_bool() ? *this : operand;
-        default: break;
-    }
-
     switch (type_) {
     case INT_LITERAL:
         if (operand.contains(FLOAT_LITERAL)) {

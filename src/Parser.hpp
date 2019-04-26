@@ -5,9 +5,10 @@
 #include <vector>
 
 #include "Token.hpp"
-#include "AST.hpp"
+#include "ast/Tree.hpp"
 
 class OperatorManager;
+namespace ast { class Node; }
 
 /**
  * Evaluation entry-point:
@@ -67,31 +68,31 @@ private:
      * Parse a single expression
      * @return AST root node of expression
      */
-    AST::Node* parse(int rbp);
+    ast::Node* parse(int rbp);
 
     /**
      * Parse expressions until end of block is met
      * @return AST body node containing a list of expressions
      */
-    AST::BodyNode* parse_block();
+    ast::BodyNode* parse_block();
 
     void advance(Token::Type type);
 
     /**
      * Parse method when token appears at the beginning of a language construct
      */
-    AST::Node* null_denotation(Token& current);
+    ast::Node* null_denotation(Token& current);
 
     /**
      * Parse method when token appears inside the construct
      */
-    AST::Node* left_denotation(Token& current, AST::Node* left);
+    ast::Node* left_denotation(Token& current, ast::Node* left);
 
 
     typedef std::vector<Token> TokenVector;
 
     TokenVector tokens_;
-    AST ast_;
+    ast::Tree ast_;
     OperatorManager& operators_;
     size_t index_;
     int opened_blocks_;

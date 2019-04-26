@@ -2,8 +2,11 @@
 #define ASPIC_FUNCTION_WRAPPER_HPP
 
 class Token;
-class TokenStack;
 
-typedef Token (*FunctionWrapper)(TokenStack&);
+namespace ast {
+    class NodeVector;
+}
+
+typedef Token (*FunctionWrapper)(const ast::NodeVector&);
 
 #endif
