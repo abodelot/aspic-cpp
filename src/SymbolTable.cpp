@@ -44,7 +44,6 @@ Token& SymbolTable::get(const std::string& name)
     throw Error::NameError(name);
 }
 
-
 void SymbolTable::set(const std::string& name, const Token& token)
 {
     if (token.is_value()) {
@@ -57,7 +56,7 @@ void SymbolTable::set(const std::string& name, const Token& token)
 
 void SymbolTable::add(const std::string& name, const FunctionWrapper& function)
 {
-    identifiers_[name] = Token::create_function(function);
+    identifiers_.emplace(name, Token::create_function(function));
 }
 
 void SymbolTable::print_all_symbols()

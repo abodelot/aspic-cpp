@@ -2,7 +2,7 @@
 #define ASPIC_SYMBOLTABLE_HPP
 
 #include <string>
-#include <map>
+#include <unordered_map>
 
 #include "FunctionWrapper.hpp"
 #include "Token.hpp"
@@ -51,7 +51,7 @@ private:
      */
     static void add(const std::string& name, const FunctionWrapper& function);
 
-    typedef std::map<std::string, Token> IdentifierMap;
+    typedef std::unordered_map<std::string, Token> IdentifierMap;
     static IdentifierMap identifiers_;
 };
 
