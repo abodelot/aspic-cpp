@@ -1,7 +1,7 @@
 #include <sstream>
 
 #include "Error.hpp"
-#include "OperatorManager.hpp"
+#include "Operators.hpp"
 
 
 Error Error::AssertionError()
@@ -54,7 +54,7 @@ Error Error::UnsupportedUnaryOperator(Token::Type operand, Token::OperatorType o
     e.message_ += ": type '";
     e.message_ += Token::type_to_str(operand);
     e.message_ += "' doesn't support unary operator '";
-    e.message_ += OperatorManager::to_str(op);
+    e.message_ += Operators::to_str(op);
     e.message_ += "'";
     return e;
 }
@@ -63,7 +63,7 @@ Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::Oper
 {
     Error e(Type);
     e.message_ += ": unsupported binary operator '";
-    e.message_ += OperatorManager::to_str(op);
+    e.message_ += Operators::to_str(op);
     e.message_ += "' for operands '";
     e.message_ += Token::type_to_str(a);
     e.message_ += "' and '";

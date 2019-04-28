@@ -4,7 +4,7 @@
 #include "Token.hpp"
 #include "FunctionWrapper.hpp"
 #include "Error.hpp"
-#include "OperatorManager.hpp"
+#include "Operators.hpp"
 #include "SymbolTable.hpp"
 
 Token Token::multiply_string(const std::string& source, int count)
@@ -116,7 +116,7 @@ Token Token::create_bool(bool value)
 Token Token::create_operator(OperatorType op_type)
 {
     Token self(OPERATOR);
-    self.lbp = OperatorManager::get_instance().get_binding_power(op_type);
+    self.lbp = Operators::get_binding_power(op_type);
     self.data_.op_type = op_type;
     return self;
 }
@@ -171,7 +171,7 @@ bool Token::is_right_associative_operator() const
     }
 }
 
-Token Token::apply_unary_operator(Token::OperatorType op)
+Token Token::apply_unary_operator(Token::OperatorType op) const
 {
     switch (type_) {
         case INT_LITERAL:
@@ -211,7 +211,7 @@ Token Token::apply_unary_operator(Token::OperatorType op)
     throw Error::UnsupportedUnaryOperator(type_, op);
 }
 
-Token Token::apply_binary_operator(Token::OperatorType op, const Token& operand)
+Token Token::apply_binary_operator(Token::OperatorType op, const Token& operand) const
 {
     switch (type_) {
     case INT_LITERAL:
@@ -377,33 +377,33 @@ Token Token::apply_binary_operator(Token::OperatorType op, const Token& operand)
             }
             case OP_MULTIPLY_AND_ASSIGN:
             {
-                Token& rvalue = SymbolTable::get(str_);
-                rvalue = rvalue.apply_binary_operator(OP_MULTIPLICATION, operand);
-                return rvalue;
+                Token& value = SymbolTable::get(str_);
+                value = value.apply_binary_operator(OP_MULTIPLICATION, operand);
+                return value;
             }
             case OP_DIVIDE_AND_ASSIGN:
             {
-                Token& rvalue = SymbolTable::get(str_);
-                rvalue = rvalue.apply_binary_operator(OP_DIVISION, operand);
-                return rvalue;
+                Token& value = SymbolTable::get(str_);
+                value = value.apply_binary_operator(OP_DIVISION, operand);
+                return value;
             }
             case OP_MODULO_AND_ASSIGN:
             {
-                Token& rvalue = SymbolTable::get(str_);
-                rvalue = rvalue.apply_binary_operator(OP_MODULO, operand);
-                return rvalue;
+                Token& value = SymbolTable::get(str_);
+                value = value.apply_binary_operator(OP_MODULO, operand);
+                return value;
             }
             case OP_ADD_AND_ASSIGN:
             {
-                Token& rvalue = SymbolTable::get(str_);
-                rvalue = rvalue.apply_binary_operator(OP_ADDITION, operand);
-                return rvalue;
+                Token& value = SymbolTable::get(str_);
+                value = value.apply_binary_operator(OP_ADDITION, operand);
+                return value;
             }
             case OP_SUBTRACT_AND_ASSIGN:
             {
-                Token& rvalue = SymbolTable::get(str_);
-                rvalue = rvalue.apply_binary_operator(OP_SUBTRACTION, operand);
-                return rvalue;
+                Token& value = SymbolTable::get(str_);
+                value = value.apply_binary_operator(OP_SUBTRACTION, operand);
+                return value;
             }
             default:
                 // Variable is not modified, extract value and apply operator on it
@@ -600,7 +600,7 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
             os << "kw:end";
             break;
         case Token::OPERATOR:
-            os << OperatorManager::to_str(token.data_.op_type);
+            os << Operators::to_str(token.data_.op_type);
             break;
         case Token::ARG_SEPARATOR:
             os << ',';

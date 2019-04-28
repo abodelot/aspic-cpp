@@ -1,18 +1,20 @@
 #ifndef ASPIC_PARSER_HPP
 #define ASPIC_PARSER_HPP
 
-#include <string>
-#include <vector>
-
+#include "Scanner.hpp"
 #include "Token.hpp"
 #include "ast/Tree.hpp"
 
-class OperatorManager;
+#include <string>
+#include <vector>
+
 namespace ast { class Node; }
 
 /**
- * Evaluation entry-point:
- * Tokenize input stream and build AST
+ * Aspic entry-point:
+ * 1) tokenize input (see tokenize)
+ * 2) build AST from tokens (see build_ast)
+ * 3) evaluate AST (see eval_ast)
  */
 class Parser
 {
@@ -20,27 +22,19 @@ public:
     Parser();
 
     /**
-     * Feed a line to the parser and generate tokens
-     * @param expresion: line to be scanned into tokens
-     * @return true if no end-of-block keyword is expected after having tokenized
-     *   the line, otherwise false (used for Shell mode)
+     * Tokenize input
      */
-    bool tokenize(const std::string& expression);
-
-    /**
-     * Print scanned tokens to stdout (debug)
-     */
-    void print_tokens() const;
-
-    /**
-     * Print internal AST to stdout (debug)
-     */
-    void print_ast() const;
+    bool tokenize(const std::string& line);
 
     /**
      * Generate AST from tokens.
      */
     void build_ast();
+
+    /**
+     * Print internal AST to stdout (debug)
+     */
+    void print_ast() const;
 
     /**
      * Evaluate internal AST.
@@ -54,16 +48,6 @@ public:
     void reset();
 
 private:
-    /**
-     * Test if a character is a valid part of an identifier
-     */
-    bool is_valid_identifier_char(char c) const;
-
-    /**
-     * Test if a character is a valid part of an operator
-     */
-    bool is_valid_operator_char(char c) const;
-
     /**
      * Parse a single expression
      * @return AST root node of expression
@@ -81,21 +65,17 @@ private:
     /**
      * Parse method when token appears at the beginning of a language construct
      */
-    ast::Node* null_denotation(Token& current);
+    ast::Node* null_denotation(const Token& current);
 
     /**
      * Parse method when token appears inside the construct
      */
-    ast::Node* left_denotation(Token& current, ast::Node* left);
+    ast::Node* left_denotation(const Token& current, const ast::Node* left);
 
-
-    typedef std::vector<Token> TokenVector;
-
-    TokenVector tokens_;
+    Scanner scanner_;
+    const std::vector<Token>& tokens_;
     ast::Tree ast_;
-    OperatorManager& operators_;
     size_t index_;
-    int opened_blocks_;
 };
 
 #endif

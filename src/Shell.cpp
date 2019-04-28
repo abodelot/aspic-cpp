@@ -15,7 +15,6 @@ void Shell::run()
     std::cout << "Type expressions for the interpreter to evaluate, or one of the following commands:" << std::endl;
     std::cout << " * exit:  exit interpreter" << std::endl;
     std::cout << " * pool:  print list of entries in symbol table"  << std::endl;
-    std::cout << " * lexer: print parsed tokens of last expression" << std::endl;
     std::cout << " * ast:   print abstract syntax tree of last expression" << std::endl;
 
     // Configure readline to insert tabs (instead of PATH completion)
@@ -36,9 +35,6 @@ void Shell::run()
         }
         else if (input == "pool") {
             SymbolTable::print_all_symbols();
-        }
-        else if (input == "lexer") {
-            parser.print_tokens();
         }
         else if (input == "ast") {
             parser.print_ast();

@@ -1,5 +1,5 @@
 #include "ast/Node.hpp"
-#include "OperatorManager.hpp"
+#include "Operators.hpp"
 
 namespace ast {
 
@@ -139,7 +139,7 @@ Token UnaryOpNode::eval() const
 
 void UnaryOpNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << "(" << OperatorManager::to_str(op_) << std::endl;
+    std::cout << std::string(depth, ' ') << "(" << Operators::to_str(op_) << std::endl;
     operand_->repr(depth + 1);
     std::cout << std::string(depth, ' ') << ")" << std::endl;
 }
@@ -170,7 +170,7 @@ Token BinaryOpNode::eval() const
             return Token::create_bool(!first_->eval().get_value().equal(second_->eval().get_value()));
         case Token::OP_LOGICAL_AND:
         {
-            Token left = first_->eval();
+            const Token& left = first_->eval();
             if (left.as_bool()) {
                 return second_->eval();
             }
@@ -178,7 +178,7 @@ Token BinaryOpNode::eval() const
         }
         case Token::OP_LOGICAL_OR:
         {
-            Token left = first_->eval();
+            const Token& left = first_->eval();
             if (left.as_bool()) {
                 return left;
             }
@@ -191,7 +191,7 @@ Token BinaryOpNode::eval() const
 
 void BinaryOpNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << "(" << OperatorManager::to_str(op_) << std::endl;
+    std::cout << std::string(depth, ' ') << "(" << Operators::to_str(op_) << std::endl;
     first_->repr(depth + 1);
     second_->repr(depth + 1);
     std::cout << std::string(depth, ' ') << ")" << std::endl;

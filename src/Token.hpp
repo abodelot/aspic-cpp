@@ -71,13 +71,10 @@ public:
         OP_MODULO_AND_ASSIGN,   // %=
         OP_ADD_AND_ASSIGN,      // +=
         OP_SUBTRACT_AND_ASSIGN, // -=
-
-        _OPERATOR_COUNT
     };
 
     Token();
     Token(Type);
-
 
     Type get_type() const;
 
@@ -123,8 +120,8 @@ public:
      * @param operand: second operand (for binary operators)
      * @return operation result, encapsuled in a new token
      */
-    Token apply_unary_operator(Token::OperatorType op);
-    Token apply_binary_operator(Token::OperatorType op, const Token& operand);
+    Token apply_unary_operator(Token::OperatorType op) const;
+    Token apply_binary_operator(Token::OperatorType op, const Token& operand) const;
 
     // Methods for value tokens
     // -------------------------------------------------------------------------
@@ -172,6 +169,7 @@ public:
     void debug(std::ostream& os) const;
 
     int lbp;
+
 private:
     friend std::ostream& operator<<(std::ostream&, const Token& token);
 

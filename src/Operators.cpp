@@ -1,8 +1,5 @@
-#include <cstring>
+#include "Operators.hpp"
 
-#include "OperatorManager.hpp"
-
-#include "Error.hpp"
 /*
 Operator precedence and associativity are the same than C++:
 http://publib.boulder.ibm.com/infocenter/comphelp/v8v101/index.jsp?topic=/com.ibm.xlcpp8a.doc/language/ref/preeval.htm
@@ -84,129 +81,60 @@ Precedence and associativity of binary operators
   16     yes                  bitwise inclusive OR and assign               lvalue |= expr
   17     yes                  C++ throw expression                          throw expr
   18                          comma (sequencing)                            expr , expr
-
 */
 
-
-OperatorManager& OperatorManager::get_instance()
+int Operators::get_binding_power(Token::OperatorType operator_type)
 {
-    static OperatorManager self;
-    return self;
-}
+    switch (operator_type) {
+        case Token::OP_INDEX:
+        case Token::OP_FUNC_CALL:
+            return 100;
 
-OperatorManager::OperatorManager()
-{
-    // init operators
-    operators_["!"] = Token::OP_NOT;
+        case Token::OP_NOT:
+        case Token::OP_UNARY_PLUS:
+        case Token::OP_UNARY_MINUS:
+            return 90;
 
-    operators_["**"] = Token::OP_POW;
-    operators_["*"]  = Token::OP_MULTIPLICATION;
-    operators_["/"]  = Token::OP_DIVISION;
-    operators_["%"]  = Token::OP_MODULO;
-    operators_["+"]  = Token::OP_ADDITION; // see eval for OP_UNARY_PLUS
-    operators_["-"]  = Token::OP_SUBTRACTION; // see eval for OP_UNARY_MINUS
+        case Token::OP_POW:
+            return 80;
 
-    operators_["<"]  = Token::OP_LESS_THAN;
-    operators_["<="] = Token::OP_LESS_THAN_OR_EQUAL;
-    operators_[">"]  = Token::OP_GREATER_THAN;
-    operators_[">="] = Token::OP_GREATER_THAN_OR_EQUAL;
-    operators_["=="] = Token::OP_EQUAL;
-    operators_["!="] = Token::OP_NOT_EQUAL;
-    operators_["&&"] = Token::OP_LOGICAL_AND;
-    operators_["||"] = Token::OP_LOGICAL_OR;
+        case Token::OP_MULTIPLICATION:
+        case Token::OP_DIVISION:
+        case Token::OP_MODULO:
+            return 70;
 
-    operators_["="]  = Token::OP_ASSIGNMENT;
-    operators_["*="] = Token::OP_MULTIPLY_AND_ASSIGN;
-    operators_["/="] = Token::OP_DIVIDE_AND_ASSIGN;
-    operators_["%="] = Token::OP_MODULO_AND_ASSIGN;
-    operators_["+="] = Token::OP_ADD_AND_ASSIGN;
-    operators_["-="] = Token::OP_SUBTRACT_AND_ASSIGN;
-
-    // init precedences
-    // see http://en.cppreference.com/w/cpp/language/operator_precedence for details
-    precedences_[Token::OP_INDEX]          = 100;
-    precedences_[Token::OP_FUNC_CALL]      = 100;
-
-    precedences_[Token::OP_NOT]            = 90;
-    precedences_[Token::OP_UNARY_PLUS]     = 90;
-    precedences_[Token::OP_UNARY_MINUS]    = 90;
-
-    precedences_[Token::OP_POW]            = 80;
-
-    precedences_[Token::OP_MULTIPLICATION] = 70;
-    precedences_[Token::OP_DIVISION]       = 70;
-    precedences_[Token::OP_MODULO]         = 70;
-
-    precedences_[Token::OP_ADDITION]       = 60;
-    precedences_[Token::OP_SUBTRACTION]    = 60;
-
-    precedences_[Token::OP_LESS_THAN]             = 50;
-    precedences_[Token::OP_LESS_THAN_OR_EQUAL]    = 50;
-    precedences_[Token::OP_GREATER_THAN]          = 50;
-    precedences_[Token::OP_GREATER_THAN_OR_EQUAL] = 50;
-
-    precedences_[Token::OP_EQUAL]                 = 40;
-    precedences_[Token::OP_NOT_EQUAL]             = 40;
-
-    precedences_[Token::OP_LOGICAL_AND]           = 30;
-
-    precedences_[Token::OP_LOGICAL_OR]            = 20;
-
-    precedences_[Token::OP_ASSIGNMENT]            = 10;
-    precedences_[Token::OP_MULTIPLY_AND_ASSIGN]   = 10;
-    precedences_[Token::OP_DIVIDE_AND_ASSIGN]     = 10;
-    precedences_[Token::OP_MODULO_AND_ASSIGN]     = 10;
-    precedences_[Token::OP_ADD_AND_ASSIGN]        = 10;
-    precedences_[Token::OP_SUBTRACT_AND_ASSIGN]   = 10;
-}
-
-bool OperatorManager::eval(const std::string& str, Token::OperatorType& op_type, const Token* previous) const
-{
-    OperatorMap::const_iterator it = operators_.find(str);
-    if (it == operators_.end())
-    {
-        return false;
-    }
-    op_type = it->second;
-    // check if op_type is an unary operator
-    if (op_type == Token::OP_ADDITION || op_type == Token::OP_SUBTRACTION)
-    {
-        /* "+" and "-" are unary operator if they are:
-         - preceded by nothing
-         - preceded by another operator
-         - preceded by a left bracket
-         - preceded by an argument separator
-        */
-        if (previous == nullptr
-            || previous->is_operator()
-            || previous->get_type() == Token::LEFT_PARENTHESIS
-            || previous->get_type() == Token::ARG_SEPARATOR)
-        {
-            op_type = to_unary(op_type);
-        }
-    }
-    return true;
-}
-
-int OperatorManager::get_binding_power(Token::OperatorType type) const
-{
-    return precedences_[type];
-}
-
-Token::OperatorType OperatorManager::to_unary(Token::OperatorType op)
-{
-    switch (op)
-    {
         case Token::OP_ADDITION:
-            return Token::OP_UNARY_PLUS;
         case Token::OP_SUBTRACTION:
-            return Token::OP_UNARY_MINUS;
-        default:
-            return op;
+            return 60;
+
+        case Token::OP_LESS_THAN:
+        case Token::OP_LESS_THAN_OR_EQUAL:
+        case Token::OP_GREATER_THAN:
+        case Token::OP_GREATER_THAN_OR_EQUAL:
+            return 50;
+
+        case Token::OP_EQUAL:
+        case Token::OP_NOT_EQUAL:
+            return 40;
+
+        case Token::OP_LOGICAL_AND:
+            return 30;
+
+        case Token::OP_LOGICAL_OR:
+            return 20;
+
+        case Token::OP_ASSIGNMENT:
+        case Token::OP_MULTIPLY_AND_ASSIGN:
+        case Token::OP_DIVIDE_AND_ASSIGN:
+        case Token::OP_MODULO_AND_ASSIGN:
+        case Token::OP_ADD_AND_ASSIGN:
+        case Token::OP_SUBTRACT_AND_ASSIGN:
+            return 10;
     }
+    return 0;
 }
 
-const char* OperatorManager::to_str(Token::OperatorType op)
+const char* Operators::to_str(Token::OperatorType op)
 {
     switch (op)
     {
@@ -264,8 +192,6 @@ const char* OperatorManager::to_str(Token::OperatorType op)
             return "+=";
         case Token::OP_SUBTRACT_AND_ASSIGN:
             return "-=";
-
-        default:
-            return nullptr;
     }
+    return nullptr;
 }
