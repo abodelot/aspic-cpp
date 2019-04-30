@@ -38,24 +38,26 @@ private:
 };
 
 /**
- * A node with a test expression, a body if test is true and an
- * optional body if test is false
+ * A node with a "test" expression, a block if "test" is true and an
+ * optional block if "test" is false
  */
 class IfNode: public Node
 {
 public:
     // Set body_false to nullptr if no else block
-    IfNode(const Node* test, const Node* body_true, const Node* body_false);
+    IfNode(const Node* test, const Node* if_block);
     ~IfNode();
 
     Token eval() const override;
 
     void repr(int depth) const;
 
+    void set_else_block(const Node* node);
+
 private:
     const Node* test_;
-    const Node* body_true_;
-    const Node* body_false_;
+    const Node* if_block_;
+    const Node* else_block_;
 };
 
 class LoopNode: public Node

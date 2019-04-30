@@ -43,29 +43,29 @@ void BodyNode::repr(int depth) const
 
 // IfNode
 
-IfNode::IfNode(const Node* test, const Node* body_true, const Node* body_false):
+IfNode::IfNode(const Node* test, const Node* if_block):
     test_(test),
-    body_true_(body_true),
-    body_false_(body_false)
+    if_block_(if_block),
+    else_block_(nullptr)
 {
 }
 
 IfNode::~IfNode()
 {
     delete test_;
-    delete body_true_;
-    if (body_false_ != nullptr) {
-        delete body_false_;
+    delete if_block_;
+    if (else_block_ != nullptr) {
+        delete else_block_;
     }
 }
 
 Token IfNode::eval() const
 {
     if (test_->eval().as_bool()) {
-        return body_true_->eval();
+        return if_block_->eval();
     }
-    else if (body_false_) {
-        return body_false_->eval();
+    else if (else_block_ != nullptr) {
+        return else_block_->eval();
     }
     return Token(Token::NULL_VALUE);
 }
@@ -75,12 +75,17 @@ void IfNode::repr(int depth) const
     std::cout << std::string(depth, ' ') << "(if" << std::endl;
 
     test_->repr(depth + 1);
-    body_true_->repr(depth + 1);
-    if (body_false_ != nullptr) {
-        body_false_->repr(depth + 1);
+    if_block_->repr(depth + 1);
+    if (else_block_ != nullptr) {
+        else_block_->repr(depth + 1);
     }
 
     std::cout << std::string(depth, ' ') << ")" << std::endl;
+}
+
+void IfNode::set_else_block(const Node* node)
+{
+    else_block_ = node;
 }
 
 // LoopNode

@@ -59,7 +59,7 @@ Aspic comments start with `#` character outside of a string and all following te
 
 The reserved words are:
 
-    else end false if null true while
+    elif else end false if null true while
 
 They cannot be used as identifiers.
 
@@ -113,9 +113,11 @@ Control structures are expressions too.
 Syntax:
 
     if expr
-        expr
+        expr...
+    [elif expr
+        expr...]...
     [else
-        expr]
+        expr...]
     end
 
 Examples:
@@ -125,9 +127,11 @@ Examples:
     end
 
     if foobar == foobaz
-        print("equal")
+        do_a()
+    elif foobar == barbaz
+        do_b()
     else
-        print("not equal")
+        do_c()
     end
 
 #### while
@@ -135,7 +139,7 @@ Examples:
 Syntax:
 
     while expr
-        expr
+        expr...
     end
 
 Example:

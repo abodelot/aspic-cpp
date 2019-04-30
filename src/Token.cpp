@@ -51,6 +51,8 @@ const char* Token::type_to_str(Type type)
             return "operator";
         case KW_IF:
             return "<if>";
+        case KW_ELIF:
+            return "<elif>";
         case KW_ELSE:
             return "<else>";
         case KW_WHILE:
@@ -584,6 +586,9 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
             break;
         case Token::KW_IF:
             os << "kw:if";
+            break;
+        case Token::KW_ELIF:
+            os << "kw:elif";
             break;
         case Token::KW_ELSE:
             os << "kw:else";

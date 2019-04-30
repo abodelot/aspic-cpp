@@ -103,3 +103,85 @@ else
   "b"
 end
 assert(x == "a")
+
+# if-elif statement
+x = 0
+y = 0
+i = 0
+while i < 10
+    if i == 2
+        x += i * 10
+    elif i == 3
+        y += i * 10
+    end
+    i += 1
+end
+assert(x == 20)
+assert(y == 30)
+
+# if-elif-elif statement
+i = 0
+s = "foobar"
+flag_a = false
+flag_b = false
+flag_c = false
+while i < str_len(s)
+    c = s[i]
+    if c == "a"
+        flag_a = true
+    elif c == "b"
+        flag_b = true
+    elif c == "c"
+        flag_c = true
+    end
+    i += 1
+end
+assert(flag_a)
+assert(flag_b)
+assert(!flag_c)
+
+# if-elif-else statement
+i = 0
+s = "foobar"
+flag_a = false
+flag_b = false
+unknown = 0
+while i < str_len(s)
+    c = s[i]
+    if c == "a"
+        flag_a = true
+    elif c == "b"
+        flag_b = true
+    else
+        unknown += 1
+    end
+    i += 1
+end
+assert(flag_a)
+assert(flag_b)
+assert(unknown == 4)
+
+# if-elif-elif-else statement
+i = 0
+s = "Hello, World 9001!"
+nb_digits = 0
+nb_upper_chars = 0
+nb_lower_chars = 0
+nb_other = 0
+while i < str_len(s)
+    c = s[i]
+    if c >= '0' && c <= '9'
+        nb_digits += 1
+    elif c >= 'A' && c <= 'Z'
+        nb_upper_chars += 1
+    elif c >= 'a' && c <= 'z'
+        nb_lower_chars += 1
+    else
+        nb_other += 1
+    end
+    i += 1
+end
+assert(nb_digits == 4)
+assert(nb_upper_chars == 2)
+assert(nb_lower_chars == 8)
+assert(nb_other == 4)

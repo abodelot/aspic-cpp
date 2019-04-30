@@ -28,6 +28,7 @@ public:
         RIGHT_PARENTHESIS,
         RIGHT_BRACKET, // Note: left bracket is OP_INDEX
         KW_IF,
+        KW_ELIF,
         KW_ELSE,
         KW_WHILE,
         KW_END,

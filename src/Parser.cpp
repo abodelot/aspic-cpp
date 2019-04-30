@@ -167,6 +167,9 @@ bool Parser::tokenize(const std::string& line)
                 ++opened_blocks_;
                 tokens_.push_back(Token(Token::KW_IF));
             }
+            else if (buffer == "elif") {
+                tokens_.push_back(Token(Token::KW_ELIF));
+            }
             else if (buffer == "else") {
                 tokens_.push_back(Token(Token::KW_ELSE));
             }
@@ -258,6 +261,7 @@ ast::BodyNode* Parser::parse_block()
     // Parse expressions until an end-of-block token is found
     while ((index_ + 1) < tokens_.size() &&
            (tokens_[index_].get_type() != Token::KW_END &&
+            tokens_[index_].get_type() != Token::KW_ELIF &&
             tokens_[index_].get_type() != Token::KW_ELSE)) {
         body->append(parse(0));
         advance(Token::END_EXPR);
@@ -274,17 +278,31 @@ ast::Node* Parser::null_denotation(Token& token)
         // Parse test expression
         const ast::Node* test = parse(0);
         advance(Token::END_EXPR);
-        // Parse if body
-        const ast::Node* body_true = parse_block();
-        const ast::Node* body_false = nullptr;
+        // Parse "if" block
+        const ast::Node* if_block = parse_block();
+        ast::IfNode* if_node = new ast::IfNode(test, if_block);
+        ast::IfNode* last_if = if_node;
 
-        // Check for optional else block
+        // Parse optional "elif" blocks
+        while (tokens_[index_].get_type() == Token::KW_ELIF) {
+            ++index_;
+            const ast::Node* elif_test = parse(0);
+            advance(Token::END_EXPR);
+            const ast::Node* elif_body = parse_block();
+
+            // Chain new "elif" node to previous "if" or "elif" node
+            ast::IfNode* elif = new ast::IfNode(elif_test, elif_body);
+            last_if->set_else_block(elif);
+            last_if = elif;
+        }
+
+        // Parse optional else block
         if (tokens_[index_].get_type() == Token::KW_ELSE) {
             ++index_;
-            body_false = parse_block();
+            last_if->set_else_block(parse_block());
         }
         advance(Token::KW_END);
-        return new ast::IfNode(test, body_true, body_false);
+        return if_node;
     }
     if (token.get_type() == Token::KW_WHILE) {
         // Parse test expression
