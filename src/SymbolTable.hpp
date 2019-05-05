@@ -1,38 +1,54 @@
 #ifndef ASPIC_SYMBOLTABLE_HPP
 #define ASPIC_SYMBOLTABLE_HPP
 
-#include <string>
-#include <unordered_map>
-
 #include "FunctionWrapper.hpp"
 #include "Token.hpp"
 
+#include <string>
+#include <unordered_map>
+
 /**
- * Interpreter symbol table
- * Store each declared identifier (variables or functions)
+ * The symbol table stores all declared identifiers, such as variables and
+ * built-in functions.
+ *
+ * Variable names must be hashed first (with hash_identifier_name function),
+ * then the returned hash can be used as the variable ID for getting/setting
+ * the associated value (see get/set).
+ *
+ * Built-in functions are automatically loaded in the symbol table when the
+ * interpreter is started (see register_stdlib)
  */
 class SymbolTable
 {
 public:
     /**
-     * Check if a given identifier exists in the symbol table
-     * @return true if there is such an identifier, otherwise false
+     * Declare an identifier name
+     * @return hash ID for the given name
      */
-    static bool contains(const std::string& name);
+    static size_t hash_identifier_name(const std::string& name);
 
     /**
-     * Get value of given identifier. Raise NameError exception if identifier is not declared.
-     * @param name: identifier name
+     * Find an identifier name from its hash. Name must be have been registered first.
      */
-    static Token& get(const std::string& name);
+    static const std::string& get_name(size_t hash);
+
+    /**
+     * Get value of given identifier.
+     * A NameError exception is raised is no value has been set first.
+     * @param id_hash: hash of the identifier name
+     * @return associated value
+     */
+    static Token& get(size_t id_hash);
 
     /**
      * Set value for a given identifier
+     * @param id_hash: hash of the identifier name
+     * @param token: the value to be set
      */
-    static void set(const std::string& name, const Token& token);
+    static void set(size_t id_hash, const Token& token);
 
     /**
-     * Initialize the symbol table with the functions from the standard library
+     * Load the built-in functions from the standard library into the  symbol table
      */
     static void register_stdlib();
 
@@ -42,17 +58,20 @@ public:
     static void print_all_symbols();
 
 private:
-    SymbolTable();
+    SymbolTable() = delete;
 
    /**
-     * Declare a C++ function
-     * @param name: function public identifier
+     * Register a built-in C++ function
+     * @param name: function public identifier name
      * @param function: wrapper with the C++ function to store
      */
     static void add(const std::string& name, const FunctionWrapper& function);
 
-    typedef std::unordered_map<std::string, Token> IdentifierMap;
-    static IdentifierMap identifiers_;
+    typedef std::unordered_map<size_t, Token> IdentifierTable;
+    static IdentifierTable identifiers_;
+
+    typedef std::unordered_map<size_t, std::string> NameTable;
+    static NameTable names_;
 };
 
 #endif

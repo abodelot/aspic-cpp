@@ -1,13 +1,28 @@
-#include <iostream>
-#include <iomanip>
-
 #include "SymbolTable.hpp"
 #include "Error.hpp"
 #include "functions/LibCore.hpp"
 #include "functions/LibString.hpp"
 
-// Init static attribute (singleton)
-SymbolTable::IdentifierMap SymbolTable::identifiers_;
+#include <iostream>
+#include <iomanip>
+#include <functional>
+
+// Init static attributes
+SymbolTable::IdentifierTable SymbolTable::identifiers_;
+SymbolTable::NameTable       SymbolTable::names_;
+
+
+size_t SymbolTable::hash_identifier_name(const std::string& name)
+{
+    size_t hash = std::hash<std::string>{}(name);
+    names_.emplace(hash, name);
+    return hash;
+}
+
+const std::string& SymbolTable::get_name(size_t hash)
+{
+    return names_.at(hash);
+}
 
 void SymbolTable::register_stdlib()
 {
@@ -30,24 +45,19 @@ void SymbolTable::register_stdlib()
     add("str_upper", str_upper);
 }
 
-bool SymbolTable::contains(const std::string& name)
+Token& SymbolTable::get(size_t hash)
 {
-    return identifiers_.find(name) != identifiers_.end();
-}
-
-Token& SymbolTable::get(const std::string& name)
-{
-    IdentifierMap::iterator it(identifiers_.find(name));
-    if (it != identifiers_.end()) {
-        return it->second;
+    IdentifierTable::iterator it = identifiers_.find(hash);
+    if (it == identifiers_.end()) {
+        throw Error::NameError(names_.at(hash));
     }
-    throw Error::NameError(name);
+    return it->second;
 }
 
-void SymbolTable::set(const std::string& name, const Token& token)
+void SymbolTable::set(size_t hash, const Token& token)
 {
     if (token.is_value()) {
-        identifiers_[name] = token;
+        identifiers_[hash] = token;
     }
     else {
         throw Error::InternalError("symbol table can only store literals");
@@ -56,21 +66,22 @@ void SymbolTable::set(const std::string& name, const Token& token)
 
 void SymbolTable::add(const std::string& name, const FunctionWrapper& function)
 {
-    identifiers_.emplace(name, Token::create_function(function));
+    size_t hash = hash_identifier_name(name);
+    set(hash, Token::create_function(function));
 }
 
 void SymbolTable::print_all_symbols()
 {
     // Get max identifier length
     size_t max_length = 0;
-    for (const auto& kv: identifiers_) {
-        if (kv.first.size() > max_length) {
-            max_length = kv.first.size();
+    for (const auto& kv: names_) {
+        if (kv.second.size() > max_length) {
+            max_length = kv.second.size();
         }
     }
 
     for (const auto& kv: identifiers_) {
-        std::cout << std::setw(max_length) << std::left << kv.first << " | ";
+        std::cout << std::setw(max_length) << std::left << names_.at(kv.first) << " | ";
         kv.second.debug(std::cout);
         std::cout << std::endl;
     }

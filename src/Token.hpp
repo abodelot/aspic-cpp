@@ -187,20 +187,17 @@ private:
      */
     union TokenData
     {
-        // Define empty ctor to allow non-POD union members
-        TokenData()
-        {
-        }
-
         OperatorType    op_type;     // OPERATOR
         int             int_value;   // INT_LITERAL
         bool            bool_value;  // BOOL_LITERAL
         double          float_value; // FOAT_LITERAL
         FunctionWrapper function;    // FUNCTION
+        size_t          id_hash;     // IDENTIFIER
     };
+
+
     // Cannot store it into TokenData union because std::string is an object
     std::string str_;              // STRING_LITERAL
-
     TokenData  data_;
     Type       type_;
 };
