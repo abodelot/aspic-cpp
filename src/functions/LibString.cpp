@@ -7,11 +7,11 @@
  * @param 0: target string
  * @return string length
  */
-Token str_len(const ast::NodeVector& args)
+Object str_len(const ast::NodeVector& args)
 {
     args.check(1);
-    int length = args[0]->eval().as_string().size();
-    return Token::create_int(length);
+    int length = args[0]->eval().get_string().size();
+    return Object::create_int(length);
 }
 
 /**
@@ -20,11 +20,11 @@ Token str_len(const ast::NodeVector& args)
  * @param 1: occurrence
  * @return occurrence count
  */
-Token str_count(const ast::NodeVector& args)
+Object str_count(const ast::NodeVector& args)
 {
     args.check(2);
-    std::string str =      args[0]->eval().as_string();
-    std::string look_for = args[1]->eval().as_string();
+    std::string str =      args[0]->eval().get_string();
+    std::string look_for = args[1]->eval().get_string();
 
     size_t pos = str.find(look_for);
     int count = 0;
@@ -33,7 +33,7 @@ Token str_count(const ast::NodeVector& args)
         pos = str.find(look_for, pos + 1);
         ++count;
     }
-    return Token::create_int(count);
+    return Object::create_int(count);
 }
 
 /**
@@ -42,12 +42,12 @@ Token str_count(const ast::NodeVector& args)
  * @param 2: sous-chaîne à caser
  * @return chaîne remplacée
  */
-Token str_replace(const ast::NodeVector& args)
+Object str_replace(const ast::NodeVector& args)
 {
     args.check(3);
-    std::string target  =    args[0]->eval().as_string();
-    std::string look_for =   args[1]->eval().as_string();
-    std::string replace_by = args[2]->eval().as_string();
+    std::string target  =    args[0]->eval().get_string();
+    std::string look_for =   args[1]->eval().get_string();
+    std::string replace_by = args[2]->eval().get_string();
 
     size_t step = replace_by.size();
     size_t offset = look_for.size();
@@ -57,7 +57,7 @@ Token str_replace(const ast::NodeVector& args)
         target.replace(pos, offset, replace_by);
         pos = target.find(look_for, pos + step);
     }
-    return Token::create_string(target);
+    return Object::create_string(target);
 }
 
 /**
@@ -66,13 +66,13 @@ Token str_replace(const ast::NodeVector& args)
  * @param 2: length of the substring
  * @return substr
  */
-Token str_substr(const ast::NodeVector& args)
+Object str_substr(const ast::NodeVector& args)
 {
     args.check(3);
-    std::string str = args[0]->eval().as_string();
-    int from        = args[1]->eval().as_int();
-    int size        = args[2]->eval().as_int();
-    return Token::create_string(str.substr(from, size));
+    std::string str = args[0]->eval().get_string();
+    int from        = args[1]->eval().get_int();
+    int size        = args[2]->eval().get_int();
+    return Object::create_string(str.substr(from, size));
 }
 
 /**
@@ -80,18 +80,18 @@ Token str_substr(const ast::NodeVector& args)
  * @param 0: string
  * @return trimmed string
  */
-Token str_trim(const ast::NodeVector& args)
+Object str_trim(const ast::NodeVector& args)
 {
     args.check(1);
-    std::string str = args[0]->eval().as_string();
+    std::string str = args[0]->eval().get_string();
     const char* WHITESPACES = " \t\n\r\0xb";
     std::string::size_type first = str.find_first_not_of(WHITESPACES);
     if (first != std::string::npos)
     {
         std::string::size_type last = str.find_last_not_of(WHITESPACES);
-        return Token::create_string(str.substr(first, last - first + 1));
+        return Object::create_string(str.substr(first, last - first + 1));
     }
-    return Token::create_string(str);
+    return Object::create_string(str);
 }
 
 /**
@@ -99,15 +99,15 @@ Token str_trim(const ast::NodeVector& args)
  * @param 0: string
  * @return lowercase string
  */
-Token str_lower(const ast::NodeVector& args)
+Object str_lower(const ast::NodeVector& args)
 {
     args.check(1);
-    std::string str = args[0]->eval().as_string();
+    std::string str = args[0]->eval().get_string();
     for (size_t i = 0; i < str.length(); ++i)
     {
         str[i] = tolower(str[i]);
     }
-    return Token::create_string(str);
+    return Object::create_string(str);
 }
 
 /**
@@ -115,13 +115,13 @@ Token str_lower(const ast::NodeVector& args)
  * @param 0: string
  * @return uppercase string
  */
-Token str_upper(const ast::NodeVector& args)
+Object str_upper(const ast::NodeVector& args)
 {
     args.check(1);
-    std::string str = args[0]->eval().as_string();
+    std::string str = args[0]->eval().get_string();
     for (size_t i = 0; i < str.length(); ++i)
     {
         str[i] = toupper(str[i]);
     }
-    return Token::create_string(str);
+    return Object::create_string(str);
 }

@@ -1,6 +1,7 @@
 #ifndef ASPIC_ERROR_HPP
 #define ASPIC_ERROR_HPP
 
+#include "Operators.hpp"
 #include "Token.hpp"
 
 #include <exception>
@@ -16,7 +17,7 @@ public:
 
     // Syntax
     static Error SyntaxError(const std::string& str);
-    static Error UnexpectedToken(const Token& token);
+    static Error UnexpectedToken(Token::Type token_type);
     static Error UnknownOperator(const std::string& str);
     static Error UnexpectedTokenType(Token::Type expected, Token::Type got);
 
@@ -25,8 +26,8 @@ public:
 
     // Type
     static Error TypeError(const std::string& str);
-    static Error UnsupportedUnaryOperator(Token::Type operand, Token::OperatorType op);
-    static Error UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::OperatorType op);
+    static Error UnsupportedUnaryOperator(Object::Type operand, Operator op);
+    static Error UnsupportedBinaryOperator(Object::Type a, Object::Type b, Operator op);
 
     // IndexError: bad index for operator []
     static Error IndexError(int index);

@@ -21,7 +21,9 @@ bool Parser::tokenize(const std::string& line)
 void Parser::build_ast()
 {
     index_ = 0;
-    ast_.setRoot(parse_block());
+    if (tokens_.size() > 0) {
+        ast_.setRoot(parse_block());
+    }
 }
 
 void Parser::print_ast() const
@@ -29,7 +31,7 @@ void Parser::print_ast() const
     ast_.print();
 }
 
-Token Parser::eval_ast() const
+Object Parser::eval_ast() const
 {
     return ast_.eval();
 }
@@ -43,7 +45,6 @@ void Parser::reset()
 
 ast::Node* Parser::parse(int rbp)
 {
-    // See Pratt parser algorithm
     const Token* t = &tokens_[index_++];
     ast::Node* left = null_denotation(*t);
     while (rbp < tokens_[index_].lbp) {
@@ -70,64 +71,78 @@ ast::BodyNode* Parser::parse_block()
 
 ast::Node* Parser::null_denotation(const Token& token)
 {
-    if (token.is_value() || token.get_type() == Token::IDENTIFIER) {
-        return new ast::ValueNode(token);
-    }
-    if (token.get_type() == Token::KW_IF) {
-        // Parse test expression
-        const ast::Node* test = parse(0);
-        advance(Token::END_EXPR);
-        // Parse "if" block
-        const ast::Node* if_block = parse_block();
-        ast::IfNode* if_node = new ast::IfNode(test, if_block);
-        ast::IfNode* last_if = if_node;
+    switch (token.get_type()) {
+        case Token::VALUE:
+            return new ast::ValueNode(token.get_object());
 
-        // Parse optional "elif" blocks
-        while (tokens_[index_].get_type() == Token::KW_ELIF) {
-            ++index_;
-            const ast::Node* elif_test = parse(0);
+        case Token::IDENTIFIER:
+            return new ast::ValueNode(Object::create_reference(token.get_id_hash()));
+
+        case Token::KW_IF:
+        {
+            // Parse test expression
+            const ast::Node* test = parse(0);
             advance(Token::END_EXPR);
-            const ast::Node* elif_body = parse_block();
+            // Parse "if" block
+            const ast::Node* if_block = parse_block();
+            ast::IfNode* if_node = new ast::IfNode(test, if_block);
+            ast::IfNode* last_if = if_node;
 
-            // Chain new "elif" node to previous "if" or "elif" node
-            ast::IfNode* elif = new ast::IfNode(elif_test, elif_body);
-            last_if->set_else_block(elif);
-            last_if = elif;
-        }
+            // Parse optional "elif" blocks
+            while (tokens_[index_].get_type() == Token::KW_ELIF) {
+                ++index_;
+                const ast::Node* elif_test = parse(0);
+                advance(Token::END_EXPR);
+                const ast::Node* elif_body = parse_block();
 
-        // Parse optional else block
-        if (tokens_[index_].get_type() == Token::KW_ELSE) {
-            ++index_;
-            last_if->set_else_block(parse_block());
+                // Chain new "elif" node to previous "if" or "elif" node
+                ast::IfNode* elif = new ast::IfNode(elif_test, elif_body);
+                last_if->set_else_block(elif);
+                last_if = elif;
+            }
+
+            // Parse optional else block
+            if (tokens_[index_].get_type() == Token::KW_ELSE) {
+                ++index_;
+                last_if->set_else_block(parse_block());
+            }
+            advance(Token::KW_END);
+            return if_node;
         }
-        advance(Token::KW_END);
-        return if_node;
+        case Token::KW_WHILE:
+        {
+            // Parse test expression
+            const ast::Node* test = parse(0);
+            advance(Token::END_EXPR);
+            // Parse body
+            const ast::Node* body = parse_block();
+            advance(Token::KW_END);
+            return new ast::LoopNode(test, body);
+        }
+        case Token::LEFT_PARENTHESIS:
+        {
+            ast::Node* next = parse(0);
+            advance(Token::RIGHT_PARENTHESIS);
+            return next;
+        }
+        case Token::OPERATOR:
+        {
+            Operator op = token.get_operator_type();
+            ast::Node* right = parse(Operators::is_right_associative(op) ? token.lbp - 1 : token.lbp);
+            return new ast::UnaryOpNode(op, right);
+        }
+        default:
+            break;
     }
-    if (token.get_type() == Token::KW_WHILE) {
-        // Parse test expression
-        const ast::Node* test = parse(0);
-        advance(Token::END_EXPR);
-        // Parse body
-        const ast::Node* body = parse_block();
-        advance(Token::KW_END);
-        return new ast::LoopNode(test, body);
-    }
-    if (token.get_type() == Token::LEFT_PARENTHESIS) {
-        ast::Node* next = parse(0);
-        advance(Token::RIGHT_PARENTHESIS);
-        return next;
-    }
-    if (token.get_type() == Token::OPERATOR) {
-        ast::Node* right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
-        return new ast::UnaryOpNode(token.get_operator_type(), right);
-    }
-    throw Error::UnexpectedToken(token);
+    throw Error::UnexpectedToken(token.get_type());
 }
 
 ast::Node* Parser::left_denotation(const Token& token, const ast::Node* left)
 {
+    // Current token MUST be an operator
     if (token.get_type() == Token::OPERATOR) {
-        if (token.get_operator_type() == Token::OP_FUNC_CALL) {
+        Operator op = token.get_operator_type();
+        if (op == Operator::OP_FUNC_CALL) {
             ast::FuncCallNode* node = new ast::FuncCallNode(left);
             // Find arguments until matching right parenthesis
             if (tokens_[index_].get_type() != Token::RIGHT_PARENTHESIS) {
@@ -142,14 +157,14 @@ ast::Node* Parser::left_denotation(const Token& token, const ast::Node* left)
             advance(Token::RIGHT_PARENTHESIS);
             return node;
         }
-        else if (token.get_operator_type() == Token::OP_INDEX) {
+        else if (op == Operator::OP_INDEX) {
             ast::Node* right = parse(0);
             advance(Token::RIGHT_BRACKET);
-            return new ast::BinaryOpNode(Token::OP_INDEX, left, right);
+            return new ast::BinaryOpNode(Operator::OP_INDEX, left, right);
         }
         else {
-            ast::Node* right = parse(token.is_right_associative_operator() ? token.lbp - 1 : token.lbp);
-            return new ast::BinaryOpNode(token.get_operator_type(), left, right);
+            ast::Node* right = parse(Operators::is_right_associative(op) ? token.lbp - 1 : token.lbp);
+            return new ast::BinaryOpNode(op, left, right);
         }
     }
     else {

@@ -83,114 +83,138 @@ Precedence and associativity of binary operators
   18                          comma (sequencing)                            expr , expr
 */
 
-int Operators::get_binding_power(Token::OperatorType operator_type)
+
+bool Operators::is_right_associative(Operator op)
+{
+    // Right associative operators are
+    // - unary operators
+    // - assignment operators
+    // - pow
+    switch (op) {
+        case Operator::OP_NOT:
+        case Operator::OP_UNARY_PLUS:
+        case Operator::OP_UNARY_MINUS:
+        case Operator::OP_POW:
+        case Operator::OP_ASSIGNMENT:
+        case Operator::OP_MULTIPLY_AND_ASSIGN:
+        case Operator::OP_DIVIDE_AND_ASSIGN:
+        case Operator::OP_MODULO_AND_ASSIGN:
+        case Operator::OP_ADD_AND_ASSIGN:
+        case Operator::OP_SUBTRACT_AND_ASSIGN:
+            return true;
+        default:
+            return false;
+    }
+}
+
+int Operators::get_binding_power(Operator operator_type)
 {
     switch (operator_type) {
-        case Token::OP_INDEX:
-        case Token::OP_FUNC_CALL:
+        case Operator::OP_INDEX:
+        case Operator::OP_FUNC_CALL:
             return 100;
 
-        case Token::OP_NOT:
-        case Token::OP_UNARY_PLUS:
-        case Token::OP_UNARY_MINUS:
+        case Operator::OP_NOT:
+        case Operator::OP_UNARY_PLUS:
+        case Operator::OP_UNARY_MINUS:
             return 90;
 
-        case Token::OP_POW:
+        case Operator::OP_POW:
             return 80;
 
-        case Token::OP_MULTIPLICATION:
-        case Token::OP_DIVISION:
-        case Token::OP_MODULO:
+        case Operator::OP_MULTIPLICATION:
+        case Operator::OP_DIVISION:
+        case Operator::OP_MODULO:
             return 70;
 
-        case Token::OP_ADDITION:
-        case Token::OP_SUBTRACTION:
+        case Operator::OP_ADDITION:
+        case Operator::OP_SUBTRACTION:
             return 60;
 
-        case Token::OP_LESS_THAN:
-        case Token::OP_LESS_THAN_OR_EQUAL:
-        case Token::OP_GREATER_THAN:
-        case Token::OP_GREATER_THAN_OR_EQUAL:
+        case Operator::OP_LESS_THAN:
+        case Operator::OP_LESS_THAN_OR_EQUAL:
+        case Operator::OP_GREATER_THAN:
+        case Operator::OP_GREATER_THAN_OR_EQUAL:
             return 50;
 
-        case Token::OP_EQUAL:
-        case Token::OP_NOT_EQUAL:
+        case Operator::OP_EQUAL:
+        case Operator::OP_NOT_EQUAL:
             return 40;
 
-        case Token::OP_LOGICAL_AND:
+        case Operator::OP_LOGICAL_AND:
             return 30;
 
-        case Token::OP_LOGICAL_OR:
+        case Operator::OP_LOGICAL_OR:
             return 20;
 
-        case Token::OP_ASSIGNMENT:
-        case Token::OP_MULTIPLY_AND_ASSIGN:
-        case Token::OP_DIVIDE_AND_ASSIGN:
-        case Token::OP_MODULO_AND_ASSIGN:
-        case Token::OP_ADD_AND_ASSIGN:
-        case Token::OP_SUBTRACT_AND_ASSIGN:
+        case Operator::OP_ASSIGNMENT:
+        case Operator::OP_MULTIPLY_AND_ASSIGN:
+        case Operator::OP_DIVIDE_AND_ASSIGN:
+        case Operator::OP_MODULO_AND_ASSIGN:
+        case Operator::OP_ADD_AND_ASSIGN:
+        case Operator::OP_SUBTRACT_AND_ASSIGN:
             return 10;
     }
     return 0;
 }
 
-const char* Operators::to_str(Token::OperatorType op)
+const char* Operators::to_str(Operator op)
 {
     switch (op)
     {
-        case Token::OP_INDEX:
+        case Operator::OP_INDEX:
             return "op[";
-        case Token::OP_FUNC_CALL:
+        case Operator::OP_FUNC_CALL:
             return "op(";
 
-        case Token::OP_NOT:
+        case Operator::OP_NOT:
             return "!";
-        case Token::OP_UNARY_PLUS:
+        case Operator::OP_UNARY_PLUS:
             return "unary+";
-        case Token::OP_UNARY_MINUS:
+        case Operator::OP_UNARY_MINUS:
             return "unary-";
 
-        case Token::OP_POW:
+        case Operator::OP_POW:
             return "**";
-        case Token::OP_ADDITION:
+        case Operator::OP_ADDITION:
             return "+";
-        case Token::OP_SUBTRACTION:
+        case Operator::OP_SUBTRACTION:
             return "-";
-        case Token::OP_MULTIPLICATION:
+        case Operator::OP_MULTIPLICATION:
             return "*";
-        case Token::OP_DIVISION:
+        case Operator::OP_DIVISION:
             return "/";
-        case Token::OP_MODULO:
+        case Operator::OP_MODULO:
             return "%";
 
-        case Token::OP_LESS_THAN:
+        case Operator::OP_LESS_THAN:
             return "<";
-        case Token::OP_LESS_THAN_OR_EQUAL:
+        case Operator::OP_LESS_THAN_OR_EQUAL:
             return "<=";
-        case Token::OP_GREATER_THAN:
+        case Operator::OP_GREATER_THAN:
             return ">";
-        case Token::OP_GREATER_THAN_OR_EQUAL:
+        case Operator::OP_GREATER_THAN_OR_EQUAL:
             return ">=";
-        case Token::OP_EQUAL:
+        case Operator::OP_EQUAL:
             return "==";
-        case Token::OP_NOT_EQUAL:
+        case Operator::OP_NOT_EQUAL:
             return "!=";
-        case Token::OP_LOGICAL_AND:
+        case Operator::OP_LOGICAL_AND:
             return "&&";
-        case Token::OP_LOGICAL_OR:
+        case Operator::OP_LOGICAL_OR:
             return "||";
 
-        case Token::OP_ASSIGNMENT:
+        case Operator::OP_ASSIGNMENT:
             return "=";
-        case Token::OP_MULTIPLY_AND_ASSIGN:
+        case Operator::OP_MULTIPLY_AND_ASSIGN:
             return "*=";
-        case Token::OP_DIVIDE_AND_ASSIGN:
+        case Operator::OP_DIVIDE_AND_ASSIGN:
             return "/=";
-        case Token::OP_MODULO_AND_ASSIGN:
+        case Operator::OP_MODULO_AND_ASSIGN:
             return "%=";
-        case Token::OP_ADD_AND_ASSIGN:
+        case Operator::OP_ADD_AND_ASSIGN:
             return "+=";
-        case Token::OP_SUBTRACT_AND_ASSIGN:
+        case Operator::OP_SUBTRACT_AND_ASSIGN:
             return "-=";
     }
     return nullptr;

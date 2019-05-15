@@ -1,7 +1,7 @@
 #ifndef ASPIC_AST_TREE_HPP
 #define ASPIC_AST_TREE_HPP
 
-#include "Token.hpp"
+#include "Object.hpp"
 
 namespace ast {
 
@@ -25,7 +25,7 @@ public:
     void clear();
 
     // Evaluate the AST recursively
-    Token eval() const;
+    Object eval() const;
 
     // Print a representation of the AST to stdout
     void print() const;

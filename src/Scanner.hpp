@@ -1,6 +1,7 @@
 #ifndef ASPIC_SCANNER_HPP
 #define ASPIC_SCANNER_HPP
 
+#include "Operators.hpp"
 #include "Token.hpp"
 
 #include <unordered_map>
@@ -51,7 +52,7 @@ private:
      * @param previous: token preceding the operator in the expression (or nullptr if operator is the first token)
      * @return true if a token was parsed
      */
-    bool parse_operator(const std::string& str, Token::OperatorType& op_type, const Token* previous) const;
+    bool parse_operator(const std::string& str, Operator& op_type, const Token* previous) const;
 
     /**
      * Test if given token precedes a unary operator
@@ -60,7 +61,7 @@ private:
     bool precedes_unary_operator(const Token* previous) const;
 
     // Map operator representation
-    typedef std::unordered_map<std::string, Token::OperatorType> OperatorTable;
+    typedef std::unordered_map<std::string, Operator> OperatorTable;
     OperatorTable operators_;
     std::vector<Token> tokens_;
     int opened_blocks_;

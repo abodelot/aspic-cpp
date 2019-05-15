@@ -2,7 +2,7 @@
 #define ASPIC_SYMBOLTABLE_HPP
 
 #include "FunctionWrapper.hpp"
-#include "Token.hpp"
+#include "Object.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -12,8 +12,8 @@
  * built-in functions.
  *
  * Variable names must be hashed first (with hash_identifier_name function),
- * then the returned hash can be used as the variable ID for getting/setting
- * the associated value (see get/set).
+ * then the returned hash can be used as the variable ID to read and update
+ * the associated Object value (see get function).
  *
  * Built-in functions are automatically loaded in the symbol table when the
  * interpreter is started (see register_stdlib)
@@ -38,14 +38,10 @@ public:
      * @param id_hash: hash of the identifier name
      * @return associated value
      */
-    static Token& get(size_t id_hash);
+    static Object& get(size_t id_hash);
 
-    /**
-     * Set value for a given identifier
-     * @param id_hash: hash of the identifier name
-     * @param token: the value to be set
-     */
-    static void set(size_t id_hash, const Token& token);
+    static void set(size_t hash, const Object& object);
+
 
     /**
      * Load the built-in functions from the standard library into the  symbol table
@@ -67,7 +63,7 @@ private:
      */
     static void add(const std::string& name, const FunctionWrapper& function);
 
-    typedef std::unordered_map<size_t, Token> IdentifierTable;
+    typedef std::unordered_map<size_t, Object> IdentifierTable;
     static IdentifierTable identifiers_;
 
     typedef std::unordered_map<size_t, std::string> NameTable;

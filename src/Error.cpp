@@ -16,10 +16,10 @@ Error Error::SyntaxError(const std::string& str)
     return Error(Syntax, str);
 }
 
-Error Error::UnexpectedToken(const Token& token)
+Error Error::UnexpectedToken(Token::Type type)
 {
     std::ostringstream oss;
-    oss << "Unexpected token " << token;
+    oss << "Unexpected token " << Token::type_to_str(type);
     return Error(Syntax, oss.str());
 }
 
@@ -48,26 +48,26 @@ Error Error::TypeError(const std::string& str)
     return Error(Type, str);
 }
 
-Error Error::UnsupportedUnaryOperator(Token::Type operand, Token::OperatorType op)
+Error Error::UnsupportedUnaryOperator(Object::Type operand, Operator op)
 {
     Error e(Type);
     e.message_ += ": type '";
-    e.message_ += Token::type_to_str(operand);
+    e.message_ += Object::type_to_str(operand);
     e.message_ += "' doesn't support unary operator '";
     e.message_ += Operators::to_str(op);
     e.message_ += "'";
     return e;
 }
 
-Error Error::UnsupportedBinaryOperator(Token::Type a, Token::Type b, Token::OperatorType op)
+Error Error::UnsupportedBinaryOperator(Object::Type a, Object::Type b, Operator op)
 {
     Error e(Type);
     e.message_ += ": unsupported binary operator '";
     e.message_ += Operators::to_str(op);
     e.message_ += "' for operands '";
-    e.message_ += Token::type_to_str(a);
+    e.message_ += Object::type_to_str(a);
     e.message_ += "' and '";
-    e.message_ += Token::type_to_str(b);
+    e.message_ += Object::type_to_str(b);
     e.message_ += "'";
     return e;
 }

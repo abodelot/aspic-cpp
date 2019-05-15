@@ -11,30 +11,30 @@ Scanner::Scanner():
 {
     // Define mapping for operator symbols
     // Multi-part operators () and [] are scanned separately in the tokenize method
-    operators_["!"] = Token::OP_NOT;
+    operators_["!"]  = Operator::OP_NOT;
 
-    operators_["**"] = Token::OP_POW;
-    operators_["*"]  = Token::OP_MULTIPLICATION;
-    operators_["/"]  = Token::OP_DIVISION;
-    operators_["%"]  = Token::OP_MODULO;
-    operators_["+"]  = Token::OP_ADDITION; // see parse_operator for OP_UNARY_PLUS
-    operators_["-"]  = Token::OP_SUBTRACTION; // see parse_operator for OP_UNARY_MINUS
+    operators_["**"] = Operator::OP_POW;
+    operators_["*"]  = Operator::OP_MULTIPLICATION;
+    operators_["/"]  = Operator::OP_DIVISION;
+    operators_["%"]  = Operator::OP_MODULO;
+    operators_["+"]  = Operator::OP_ADDITION; // see parse_operator for OP_UNARY_PLUS
+    operators_["-"]  = Operator::OP_SUBTRACTION; // see parse_operator for OP_UNARY_MINUS
 
-    operators_["<"]  = Token::OP_LESS_THAN;
-    operators_["<="] = Token::OP_LESS_THAN_OR_EQUAL;
-    operators_[">"]  = Token::OP_GREATER_THAN;
-    operators_[">="] = Token::OP_GREATER_THAN_OR_EQUAL;
-    operators_["=="] = Token::OP_EQUAL;
-    operators_["!="] = Token::OP_NOT_EQUAL;
-    operators_["&&"] = Token::OP_LOGICAL_AND;
-    operators_["||"] = Token::OP_LOGICAL_OR;
+    operators_["<"]  = Operator::OP_LESS_THAN;
+    operators_["<="] = Operator::OP_LESS_THAN_OR_EQUAL;
+    operators_[">"]  = Operator::OP_GREATER_THAN;
+    operators_[">="] = Operator::OP_GREATER_THAN_OR_EQUAL;
+    operators_["=="] = Operator::OP_EQUAL;
+    operators_["!="] = Operator::OP_NOT_EQUAL;
+    operators_["&&"] = Operator::OP_LOGICAL_AND;
+    operators_["||"] = Operator::OP_LOGICAL_OR;
 
-    operators_["="]  = Token::OP_ASSIGNMENT;
-    operators_["*="] = Token::OP_MULTIPLY_AND_ASSIGN;
-    operators_["/="] = Token::OP_DIVIDE_AND_ASSIGN;
-    operators_["%="] = Token::OP_MODULO_AND_ASSIGN;
-    operators_["+="] = Token::OP_ADD_AND_ASSIGN;
-    operators_["-="] = Token::OP_SUBTRACT_AND_ASSIGN;
+    operators_["="]  = Operator::OP_ASSIGNMENT;
+    operators_["*="] = Operator::OP_MULTIPLY_AND_ASSIGN;
+    operators_["/="] = Operator::OP_DIVIDE_AND_ASSIGN;
+    operators_["%="] = Operator::OP_MODULO_AND_ASSIGN;
+    operators_["+="] = Operator::OP_ADD_AND_ASSIGN;
+    operators_["-="] = Operator::OP_SUBTRACT_AND_ASSIGN;
 }
 
 bool Scanner::tokenize(const std::string& line)
@@ -55,7 +55,7 @@ bool Scanner::tokenize(const std::string& line)
             }
             buffer = line.substr(start, i - start);
             --i;
-            Token::OperatorType op_type;
+            Operator op_type;
             if (parse_operator(buffer, op_type, previous)) {
                 tokens_.push_back(Token::create_operator(op_type));
             }
@@ -73,7 +73,7 @@ bool Scanner::tokenize(const std::string& line)
                 tokens_.push_back(Token(Token::LEFT_PARENTHESIS));
             }
             else {
-                tokens_.push_back(Token::create_operator(Token::OP_FUNC_CALL));
+                tokens_.push_back(Token::create_operator(Operator::OP_FUNC_CALL));
             }
             ++unmatched_parentheses;
         }
@@ -84,7 +84,7 @@ bool Scanner::tokenize(const std::string& line)
         }
         // Left bracket?
         else if (current == '[') {
-            tokens_.push_back(Token::create_operator(Token::OP_INDEX));
+            tokens_.push_back(Token::create_operator(Operator::OP_INDEX));
         }
         // Right bracket?
         else if (current == ']') {
@@ -179,7 +179,7 @@ bool Scanner::tokenize(const std::string& line)
                 tokens_.push_back(Token::create_bool(false));
             }
             else if (buffer == "null") {
-                tokens_.push_back(Token(Token::NULL_VALUE));
+                tokens_.push_back(Token::create_null());
             }
             else if (buffer == "if") {
                 ++opened_blocks_;
@@ -256,7 +256,7 @@ bool Scanner::is_valid_operator_char(char c) const
     return false;
 }
 
-bool Scanner::parse_operator(const std::string& str, Token::OperatorType& op_type, const Token* previous) const
+bool Scanner::parse_operator(const std::string& str, Operator& op_type, const Token* previous) const
 {
     OperatorTable::const_iterator it = operators_.find(str);
     if (it == operators_.end()) {
@@ -264,11 +264,11 @@ bool Scanner::parse_operator(const std::string& str, Token::OperatorType& op_typ
     }
     op_type = it->second;
     // Handle special cases for +/- operators and their unary counterparts
-    if (op_type == Token::OP_ADDITION && precedes_unary_operator(previous)) {
-        op_type = Token::OP_UNARY_PLUS;
+    if (op_type == Operator::OP_ADDITION && precedes_unary_operator(previous)) {
+        op_type = Operator::OP_UNARY_PLUS;
     }
-    else if (op_type == Token::OP_SUBTRACTION && precedes_unary_operator(previous)) {
-        op_type = Token::OP_UNARY_MINUS;
+    else if (op_type == Operator::OP_SUBTRACTION && precedes_unary_operator(previous)) {
+        op_type = Operator::OP_UNARY_MINUS;
     }
     return true;
 }

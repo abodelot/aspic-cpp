@@ -48,10 +48,10 @@ void Shell::run()
                 full_statement = parser.tokenize(input);
                 if (full_statement) {
                     parser.build_ast();
-                    Token token = parser.eval_ast();
+                    Object result = parser.eval_ast();
                     // Print result, if any
-                    if (token.get_type() != Token::NULL_VALUE) {
-                        std::cout << token << std::endl;
+                    if (result.get_type() != Object::NULL_VALUE) {
+                        std::cout << result << std::endl;
                     }
                 }
             }

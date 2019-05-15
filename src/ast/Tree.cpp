@@ -27,9 +27,12 @@ void Tree::clear()
     root_ = nullptr;
 }
 
-Token Tree::eval() const
+Object Tree::eval() const
 {
-    return root_->eval();
+    if (root_ != nullptr) {
+        return root_->eval();
+    }
+    return Object::create_null();
 }
 
 void Tree::print() const

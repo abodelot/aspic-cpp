@@ -1,6 +1,8 @@
 #ifndef ASPIC_AST_NODE_HPP
 #define ASPIC_AST_NODE_HPP
 
+#include "Operators.hpp"
+#include "Object.hpp"
 #include "ast/NodeVector.hpp"
 
 namespace ast {
@@ -12,7 +14,7 @@ class Node
 {
 public:
     virtual ~Node() {};
-    virtual Token eval() const = 0;
+    virtual Object eval() const = 0;
     virtual void repr(int depth) const = 0;
 };
 
@@ -29,7 +31,7 @@ public:
     void append(const Node* node);
 
     // Return last expression result
-    Token eval() const override;
+    Object eval() const override;
 
     void repr(int depth) const;
 
@@ -48,7 +50,7 @@ public:
     IfNode(const Node* test, const Node* if_block);
     ~IfNode();
 
-    Token eval() const override;
+    Object eval() const override;
 
     void repr(int depth) const;
 
@@ -66,7 +68,7 @@ public:
     LoopNode(const Node* test, const Node* body);
     ~LoopNode();
 
-    Token eval() const override;
+    Object eval() const override;
 
     void repr(int depth) const;
 
@@ -82,17 +84,17 @@ private:
 class UnaryOpNode: public Node
 {
 public:
-    UnaryOpNode(Token::OperatorType op, const Node* operand_);
+    UnaryOpNode(Operator op, const Node* operand_);
 
     ~UnaryOpNode();
 
     // Return operation result
-    Token eval() const override;
+    Object eval() const override;
 
     void repr(int depth) const override;
 
 private:
-    Token::OperatorType op_;
+    Operator op_;
     const Node* operand_;
 };
 
@@ -102,17 +104,17 @@ private:
 class BinaryOpNode: public Node
 {
 public:
-    BinaryOpNode(Token::OperatorType op, const Node* first, const Node* second);
+    BinaryOpNode(Operator op, const Node* first, const Node* second);
 
     ~BinaryOpNode();
 
     // Return operation result
-    Token eval() const override;
+    Object eval() const override;
 
     void repr(int depth) const override;
 
 private:
-    Token::OperatorType op_;
+    Operator op_;
     const Node* first_;
     const Node* second_;
 };
@@ -123,15 +125,15 @@ private:
 class ValueNode: public Node
 {
 public:
-    ValueNode(const Token& t);
+    ValueNode(const Object& object);
 
     // Return value
-    Token eval() const override;
+    Object eval() const override;
 
     void repr(int depth) const override;
 
 private:
-    Token token;
+    Object object_;
 };
 
 /**
@@ -146,7 +148,7 @@ public:
     ~FuncCallNode();
 
     // Return function call result
-    Token eval() const override;
+    Object eval() const override;
 
     void repr(int depth) const override;
 

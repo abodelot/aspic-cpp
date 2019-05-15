@@ -1,5 +1,6 @@
 #include "ast/Node.hpp"
 #include "Operators.hpp"
+#include "SymbolTable.hpp"
 
 namespace ast {
 
@@ -22,7 +23,7 @@ void BodyNode::append(const Node* node)
     body_.push_back(node);
 }
 
-Token BodyNode::eval() const
+Object BodyNode::eval() const
 {
     // Return value from the last expression in body (ruby-like)
     size_t loop_length = body_.size() - 1;
@@ -59,15 +60,15 @@ IfNode::~IfNode()
     }
 }
 
-Token IfNode::eval() const
+Object IfNode::eval() const
 {
-    if (test_->eval().as_bool()) {
+    if (test_->eval().truthy()) {
         return if_block_->eval();
     }
     else if (else_block_ != nullptr) {
         return else_block_->eval();
     }
-    return Token(Token::NULL_VALUE);
+    return Object::create_null();
 }
 
 void IfNode::repr(int depth) const
@@ -103,12 +104,12 @@ LoopNode::~LoopNode()
 }
 
 
-Token LoopNode::eval() const
+Object LoopNode::eval() const
 {
-    while (test_->eval().as_bool()) {
+    while (test_->eval().truthy()) {
         body_->eval();
     }
-    return Token(Token::NULL_VALUE);
+    return Object::create_null();
 }
 
 void LoopNode::repr(int depth) const
@@ -121,7 +122,7 @@ void LoopNode::repr(int depth) const
 
 // UnaryOpNode
 
-UnaryOpNode::UnaryOpNode(Token::OperatorType op, const Node* operand):
+UnaryOpNode::UnaryOpNode(Operator op, const Node* operand):
     op_(op),
     operand_(operand)
 {
@@ -132,7 +133,7 @@ UnaryOpNode::~UnaryOpNode()
     delete operand_;
 }
 
-Token UnaryOpNode::eval() const
+Object UnaryOpNode::eval() const
 {
     return operand_->eval().apply_unary_operator(op_);
 }
@@ -146,7 +147,7 @@ void UnaryOpNode::repr(int depth) const
 
 // BinaryOpNode
 
-BinaryOpNode::BinaryOpNode(Token::OperatorType op, const Node* first, const Node* second):
+BinaryOpNode::BinaryOpNode(Operator op, const Node* first, const Node* second):
     op_(op),
     first_(first),
     second_(second)
@@ -159,27 +160,27 @@ BinaryOpNode::~BinaryOpNode()
     delete second_;
 }
 
-Token BinaryOpNode::eval() const
+Object BinaryOpNode::eval() const
 {
     // ==, !=, ||, &&: operator implementation is not type-dependant
     // eval() is called as late as possible to implement lazy evaluation
     switch (op_) {
-        case Token::OP_EQUAL:
-            return Token::create_bool(first_->eval().get_value().equal(second_->eval().get_value()));
-        case Token::OP_NOT_EQUAL:
-            return Token::create_bool(!first_->eval().get_value().equal(second_->eval().get_value()));
-        case Token::OP_LOGICAL_AND:
+        case Operator::OP_EQUAL:
+            return Object::create_bool(first_->eval().get_value().equal(second_->eval().get_value()));
+        case Operator::OP_NOT_EQUAL:
+            return Object::create_bool(!first_->eval().get_value().equal(second_->eval().get_value()));
+        case Operator::OP_LOGICAL_AND:
         {
-            const Token& left = first_->eval();
-            if (left.as_bool()) {
+            const Object& left = first_->eval();
+            if (left.truthy()) {
                 return second_->eval();
             }
             return left;
         }
-        case Token::OP_LOGICAL_OR:
+        case Operator::OP_LOGICAL_OR:
         {
-            const Token& left = first_->eval();
-            if (left.as_bool()) {
+            const Object& left = first_->eval();
+            if (left.truthy()) {
                 return left;
             }
             return second_->eval();
@@ -212,9 +213,9 @@ FuncCallNode::~FuncCallNode()
     }
 }
 
-Token FuncCallNode::eval() const
+Object FuncCallNode::eval() const
 {
-    // Fetch function token, then invoke built-in function with arguments vector
+    // Fetch function object, then invoke built-in function with arguments vector
     return func_->eval().get_function()(arguments_);
 }
 
@@ -235,21 +236,19 @@ void FuncCallNode::push_arg(const Node* node)
 
 // ValueNode
 
-ValueNode::ValueNode(const Token& t):
-    token(t)
+ValueNode::ValueNode(const Object& object):
+    object_(object)
 {
 }
 
-Token ValueNode::eval() const
+Object ValueNode::eval() const
 {
-    return token;
+    return object_;
 }
 
 void ValueNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << "(";
-    token.debug(std::cout);
-    std::cout << ")" << std::endl;
+    std::cout << std::string(depth, ' ') << "(" << object_ << ")" << std::endl;
 }
 
 }

@@ -45,7 +45,7 @@ void SymbolTable::register_stdlib()
     add("str_upper", str_upper);
 }
 
-Token& SymbolTable::get(size_t hash)
+Object& SymbolTable::get(size_t hash)
 {
     IdentifierTable::iterator it = identifiers_.find(hash);
     if (it == identifiers_.end()) {
@@ -54,20 +54,15 @@ Token& SymbolTable::get(size_t hash)
     return it->second;
 }
 
-void SymbolTable::set(size_t hash, const Token& token)
+void SymbolTable::set(size_t hash, const Object& object)
 {
-    if (token.is_value()) {
-        identifiers_[hash] = token;
-    }
-    else {
-        throw Error::InternalError("symbol table can only store literals");
-    }
+    identifiers_[hash] = object;
 }
 
 void SymbolTable::add(const std::string& name, const FunctionWrapper& function)
 {
     size_t hash = hash_identifier_name(name);
-    set(hash, Token::create_function(function));
+    identifiers_.emplace(hash, Object::create_function(function));
 }
 
 void SymbolTable::print_all_symbols()
@@ -81,9 +76,9 @@ void SymbolTable::print_all_symbols()
     }
 
     for (const auto& kv: identifiers_) {
-        std::cout << std::setw(max_length) << std::left << names_.at(kv.first) << " | ";
-        kv.second.debug(std::cout);
-        std::cout << std::endl;
+        std::cout
+            << std::setw(max_length) << std::left << names_.at(kv.first)
+            << " | " << kv.second << std::endl;
     }
     std::cout << "Symbol table size: " << identifiers_.size() << std::endl;
 }

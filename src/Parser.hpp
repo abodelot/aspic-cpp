@@ -3,6 +3,7 @@
 
 #include "Scanner.hpp"
 #include "Token.hpp"
+#include "Object.hpp"
 #include "ast/Tree.hpp"
 
 #include <string>
@@ -38,9 +39,9 @@ public:
 
     /**
      * Evaluate internal AST.
-     * @return result value, wrapped in a token
+     * @return result value, wrapped in an aspic Object
      */
-    Token eval_ast() const;
+    Object eval_ast() const;
 
     /**
      * Clear parsed tokens and AST.

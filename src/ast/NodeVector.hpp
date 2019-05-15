@@ -2,7 +2,6 @@
 #define ASPIC_NODEVECTOR_HPP
 
 #include <vector>
-#include "Token.hpp"
 
 namespace ast
 {
