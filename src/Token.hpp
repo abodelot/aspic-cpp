@@ -84,6 +84,7 @@ public:
     int lbp;
 
 private:
+    Token(const Object& object);
     Token() = delete;
 
     /**

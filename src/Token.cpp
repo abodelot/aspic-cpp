@@ -50,39 +50,36 @@ Token::Token(Type type):
 {
 }
 
+Token::Token(const Object& object):
+    lbp(0),
+    object_(object),
+    type_(VALUE)
+{
+}
+
 Token Token::create_int(int value)
 {
-    Token self(VALUE);
-    self.object_ = Object::create_int(value);
-    return self;
+    return Token(Object::create_int(value));
 }
 
 Token Token::create_string(const std::string& value)
 {
-    Token self(VALUE);
-    self.object_ = Object::create_string(value);
-    return self;
+    return Token(Object::create_string(value));
 }
 
 Token Token::create_float(double value)
 {
-    Token self(VALUE);
-    self.object_ = Object::create_float(value);
-    return self;
+    return Token(Object::create_float(value));
 }
 
 Token Token::create_bool(bool value)
 {
-    Token self(VALUE);
-    self.object_ = Object::create_bool(value);
-    return self;
+    return Token(Object::create_bool(value));
 }
 
 Token Token::create_null()
 {
-    Token self(VALUE);
-    self.object_ = Object::create_null();
-    return self;
+    return Token(Object::create_null());
 }
 
 Token Token::create_operator(Operator op_type)

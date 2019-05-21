@@ -56,7 +56,7 @@ Object& SymbolTable::get(size_t hash)
 
 void SymbolTable::set(size_t hash, const Object& object)
 {
-    identifiers_[hash] = object;
+    identifiers_[hash].assign(object);
 }
 
 void SymbolTable::add(const std::string& name, const FunctionWrapper& function)

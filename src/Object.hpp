@@ -34,6 +34,8 @@ public:
 
     // Types
 
+    void assign(const Object& object);
+
     static const char* type_to_str(Type type);
 
     Type get_type() const;
@@ -68,6 +70,8 @@ public:
 
 private:
     friend std::ostream& operator<<(std::ostream&, const Object& object);
+
+    Object& operator=(const Object& object) = delete;
 
     /**
      * Check if token is typed with given type, or if token is an identifier

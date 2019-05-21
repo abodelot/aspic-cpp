@@ -63,6 +63,17 @@ Object Object::create_null()
     return Object(NULL_VALUE);
 }
 
+void Object::assign(const Object& object)
+{
+    type_ = object.type_;
+    if (type_ == STRING) {
+        string_ = object.string_;
+    }
+    else {
+        data_ = object.data_;
+    }
+}
+
 // types
 // -----------------------------------------------------------------------------
 
@@ -415,31 +426,31 @@ Object Object::apply_binary_operator(Operator op, const Object& operand) const
             case Operator::OP_MULTIPLY_AND_ASSIGN:
             {
                 Object& value = SymbolTable::get(data_.id_hash_);
-                value = value.apply_binary_operator(Operator::OP_MULTIPLICATION, operand);
+                value.assign(value.apply_binary_operator(Operator::OP_MULTIPLICATION, operand));
                 return value;
             }
             case Operator::OP_DIVIDE_AND_ASSIGN:
             {
                 Object& value = SymbolTable::get(data_.id_hash_);
-                value = value.apply_binary_operator(Operator::OP_DIVISION, operand);
+                value.assign(value.apply_binary_operator(Operator::OP_DIVISION, operand));
                 return value;
             }
             case Operator::OP_MODULO_AND_ASSIGN:
             {
                 Object& value = SymbolTable::get(data_.id_hash_);
-                value = value.apply_binary_operator(Operator::OP_MODULO, operand);
+                value.assign(value.apply_binary_operator(Operator::OP_MODULO, operand));
                 return value;
             }
             case Operator::OP_ADD_AND_ASSIGN:
             {
                 Object& value = SymbolTable::get(data_.id_hash_);
-                value = value.apply_binary_operator(Operator::OP_ADDITION, operand);
+                value.assign(value.apply_binary_operator(Operator::OP_ADDITION, operand));
                 return value;
             }
             case Operator::OP_SUBTRACT_AND_ASSIGN:
             {
                 Object& value = SymbolTable::get(data_.id_hash_);
-                value = value.apply_binary_operator(Operator::OP_SUBTRACTION, operand);
+                value.assign(value.apply_binary_operator(Operator::OP_SUBTRACTION, operand));
                 return value;
             }
             default:
