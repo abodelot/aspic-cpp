@@ -1,14 +1,33 @@
 #include "Object.hpp"
 #include "SymbolTable.hpp"
 #include "Error.hpp"
+#include "ArrayObject.hpp"
 
 #include <cmath>
+
+
+/**
+ * Check range limits and convert negative indexes
+ */
+int absolute_index(int index, int length)
+{
+    if (index < -length || index >= length) {
+        throw Error::IndexError(index);
+    }
+    return index < 0 ? length + index : index;
+}
 
 // constructors
 
 Object::Object():
     type_(NULL_VALUE)
 {
+}
+
+Object& Object::operator=(const Object& object)
+{
+    assign(object);
+    return *this;
 }
 
 Object::Object(Type type):
@@ -63,6 +82,20 @@ Object Object::create_null()
     return Object(NULL_VALUE);
 }
 
+Object Object::create_array(ArrayObject* array_object)
+{
+    Object self(ARRAY);
+    self.data_.array_ptr_ = array_object;
+    return self;
+}
+
+void Object::gc_visit()
+{
+    if (type_ == ARRAY) {
+        data_.array_ptr_->mark();
+    }
+}
+
 void Object::assign(const Object& object)
 {
     type_ = object.type_;
@@ -94,6 +127,8 @@ const char* Object::type_to_str(Type type)
             return "reference";
         case NULL_VALUE:
             return "null";
+        case ARRAY:
+            return "array";
     }
     return nullptr;
 }
@@ -165,6 +200,17 @@ FunctionWrapper Object::get_function() const
     throw Error::TypeError("a function is required");
 }
 
+ArrayObject* Object::get_array() const
+{
+    if (type_ == ARRAY) {
+        return data_.array_ptr_;
+    }
+    if (type_ == REFERENCE) {
+        return SymbolTable::get(data_.id_hash_).data_.array_ptr_;
+    }
+    throw Error::TypeError("an array is required");
+}
+
 bool Object::truthy() const
 {
     switch (type_) {
@@ -184,6 +230,8 @@ bool Object::truthy() const
             return true;
         case REFERENCE:
             return SymbolTable::get(data_.id_hash_).truthy();
+        case ARRAY:
+            return true;
     }
     return false; // Unreachable, fix -Wreturn-type
 }
@@ -214,6 +262,12 @@ bool Object::equal(const Object& object) const
             return true; // null == null
         case BUILTIN_FUNCTION:
             return data_.function_ptr_ == object.data_.function_ptr_;
+        case ARRAY:
+            // Forward the operation to Array object
+            return data_.array_ptr_->eq(*object.data_.array_ptr_);
+        case REFERENCE:
+            // Object::get_value() must have been called first
+            throw Error::InternalError("Object::equal called with REFERENCE object");
         default:
             return false;
     }
@@ -258,6 +312,7 @@ Object Object::apply_unary_operator(Operator op) const
     }
     throw Error::UnsupportedUnaryOperator(type_, op);
 }
+
 
 Object Object::apply_binary_operator(Operator op, const Object& operand) const
 {
@@ -367,14 +422,8 @@ Object Object::apply_binary_operator(Operator op, const Object& operand) const
         switch (op) {
             case Operator::OP_INDEX:
                 if (operand.contains(INT)) {
-                    int index = operand.get_int();
-                    int length = string_.size();
-                    if (index < -length || index >= length) {
-                        throw Error::IndexError(index);
-                    }
-                    if (index < 0) {
-                        index = string_.size() + index;
-                    }
+                    int index = absolute_index(operand.get_int(), string_.size());
+
                     // Return char located at index as a new string token
                     return Object::create_string(std::string(1, string_[index]));
                 }
@@ -409,12 +458,37 @@ Object Object::apply_binary_operator(Operator op, const Object& operand) const
         }
         break;
 
+    case ARRAY:
+        switch (op) {
+        case Operator::OP_INDEX:
+            if (operand.contains(INT)) {
+                int index = absolute_index(operand.get_int(), data_.array_ptr_->size());
+
+                // Return value located at index
+                return data_.array_ptr_->at(index);
+            }
+            else {
+                throw Error::UnsupportedBinaryOperator(type_, operand.get_value_type(), op);
+            }
+            break;
+
+        case Operator::OP_ADDITION:
+            return Object::create_array(ArrayObject::concat(
+                *data_.array_ptr_,
+                *operand.get_array()
+            ));
+
+        default:
+            break;
+        }
+        break;
+
     case REFERENCE:
         switch (op) {
             // Handle operators which update the variable value, operand is the assigned lvalue
             case Operator::OP_ASSIGNMENT:
             {
-                //  copy by value, otherwise copying the operand name will create a reference
+                // Copy by value, otherwise copying the operand name will create a reference
                 if (operand.type_ == REFERENCE) {
                     const Object& value = SymbolTable::get(operand.data_.id_hash_);
                     SymbolTable::set(data_.id_hash_, value);
@@ -478,31 +552,52 @@ Object Object::multiply_string(const std::string& source, int count)
     return result;
 }
 
-std::ostream& operator<<(std::ostream& os, const Object& object)
+
+std::ostream& Object::print(std::ostream& os, size_t recursion_depth) const
 {
-    switch (object.type_) {
+    if (recursion_depth > 10) {
+        os << "...";
+        return os;
+    }
+    switch (type_) {
         case Object::INT:
-            os << object.data_.int_;
+            os << data_.int_;
             break;
         case Object::FLOAT:
-            os << object.data_.float_;
+            os << data_.float_;
             break;
         case Object::STRING:
-            os << object.string_;
+            os << string_;
             break;
         case Object::BOOL:
-            os << (object.data_.bool_ ? "true" : "false");
+            os << (data_.bool_ ? "true" : "false");
             break;
         case Object::NULL_VALUE:
             os << "null";
             break;
         case Object::BUILTIN_FUNCTION:
             // Function pointer needs to be casted to void* to be displayed on std::cout
-            os << "<function at " << reinterpret_cast<void *>(object.data_.function_ptr_) << ">";
+            os << "<function at " << reinterpret_cast<void *>(data_.function_ptr_) << ">";
             break;
         case Object::REFERENCE:
-            os << SymbolTable::get(object.data_.id_hash_);
+            SymbolTable::get(data_.id_hash_).print(os, recursion_depth);
+            break;
+        case Object::ARRAY:
+            os << '[';
+            for (size_t i = 0; i < data_.array_ptr_->size(); ++i) {
+                if (i > 0) {
+                    os << ", ";
+                }
+                data_.array_ptr_->at(i).print(os, recursion_depth + 1);
+            }
+            os << ']';
             break;
     }
     return os;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const Object& object)
+{
+    return object.print(os, 0);
 }

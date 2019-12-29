@@ -11,6 +11,8 @@ const char* Token::type_to_str(Type type)
     switch (type) {
         case VALUE:
             return "value";
+        case ARRAY_LITERAL:
+            return "array[";
         case IDENTIFIER:
             return "identifier";
         case ARG_SEPARATOR:

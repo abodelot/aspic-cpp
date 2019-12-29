@@ -2,10 +2,44 @@
 #include "ast/NodeVector.hpp"
 #include "ast/Node.hpp"
 #include "Error.hpp"
+#include "ArrayObject.hpp"
 
 #include <iostream>
 #include <cmath>
 
+
+Object array_push(const ast::NodeVector& args)
+{
+    args.check(2);
+    ArrayObject* array = args[0]->eval().get_array();
+    array->push(args[1]->eval());
+    return Object::create_null();
+}
+
+
+Object core_len(const ast::NodeVector& args)
+{
+    args.check(1);
+    return Object::create_int(
+        args[0]->eval().get_array()->size()
+    );
+}
+
+Object array_count(const ast::NodeVector& args)
+{
+    args.check(2);
+    return Object::create_int(
+        args[0]->eval().get_array()->count(args[1]->eval())
+    );
+}
+
+Object array_find(const ast::NodeVector& args)
+{
+    args.check(2);
+    return Object::create_int(
+        args[0]->eval().get_array()->find(args[1]->eval())
+    );
+}
 
 Object core_assert(const ast::NodeVector& args)
 {

@@ -6,12 +6,12 @@
 
 #include <iostream>
 
+
 Parser::Parser():
     tokens_(scanner_.get_tokens()),
     index_(0)
 {
 }
-
 
 bool Parser::tokenize(const std::string& line)
 {
@@ -74,6 +74,22 @@ ast::Node* Parser::null_denotation(const Token& token)
     switch (token.get_type()) {
         case Token::VALUE:
             return new ast::ValueNode(token.get_object());
+
+        case Token::ARRAY_LITERAL:
+        {
+            ast::ArrayLiteralNode* node = new ast::ArrayLiteralNode();
+            if (tokens_[index_].get_type() != Token::RIGHT_BRACKET) {
+                while (true) {
+                    node->add_value(parse(0));
+                    if (tokens_[index_].get_type() != Token::ARG_SEPARATOR) {
+                        break;
+                    }
+                    advance(Token::ARG_SEPARATOR);
+                }
+            }
+            advance(Token::RIGHT_BRACKET);
+            return node;
+        }
 
         case Token::IDENTIFIER:
             return new ast::ValueNode(Object::create_reference(token.get_id_hash()));
@@ -147,7 +163,7 @@ ast::Node* Parser::left_denotation(const Token& token, const ast::Node* left)
             // Find arguments until matching right parenthesis
             if (tokens_[index_].get_type() != Token::RIGHT_PARENTHESIS) {
                 while (true) {
-                    node->push_arg(parse(0));
+                    node->add_arg(parse(0));
                     if (tokens_[index_].get_type() != Token::ARG_SEPARATOR) {
                         break;
                     }

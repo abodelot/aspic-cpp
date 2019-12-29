@@ -6,6 +6,9 @@
 
 #include <string>
 #include <unordered_map>
+#include <list>
+
+class BaseObject;
 
 /**
  * The symbol table stores all declared identifiers, such as variables and
@@ -17,6 +20,11 @@
  *
  * Built-in functions are automatically loaded in the symbol table when the
  * interpreter is started (see register_stdlib)
+ *
+ * The symbol table also stores shared objects which are passed by reference,
+ * such as ArrayObject. A shared object is defined by:
+ *   1. at least one identifier entry (identifiers_)
+ *   2. a pointer to the allocated object (shared_objects_)
  */
 class SymbolTable
 {
@@ -40,8 +48,10 @@ public:
      */
     static Object& get(size_t id_hash);
 
+    /**
+     * Associate the given object to the given identifier hash
+     */
     static void set(size_t hash, const Object& object);
-
 
     /**
      * Load the built-in functions from the standard library into the  symbol table
@@ -51,7 +61,25 @@ public:
     /**
      * Print symbol table content to stdout (for debugging purpose)
      */
-    static void print_all_symbols();
+    static void inspect_symbols();
+
+    /**
+     * Print allocated object list to stdout (for debugging purpose)
+     */
+    static void inspect_gc();
+
+    /**
+     * Add object to the list of allocated objects
+     */
+    static void track_object(BaseObject* ptr);
+
+    /**
+     * Mark and sweep garbage collection: visit all objects and delete the
+     * unreachable ones
+     */
+    static void mark_and_sweep();
+
+    static void destroy();
 
 private:
     SymbolTable() = delete;
@@ -68,6 +96,9 @@ private:
 
     typedef std::unordered_map<size_t, std::string> NameTable;
     static NameTable names_;
+
+    typedef std::list<BaseObject*> ObjectList;
+    static ObjectList shared_objects_;
 };
 
 #endif

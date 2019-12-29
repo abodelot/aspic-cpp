@@ -1,0 +1,119 @@
+array = [10, 20, 30]
+push(array, 40)
+
+assert(array[0] == 10)
+assert(array[1] == 20)
+assert(array[2] == 30)
+assert(array[3] == 40)
+assert(len(array) == 4)
+
+i = 0
+while i < len(array)
+    i += 1
+end
+
+x = []
+str = "azerty"
+i = 0
+while i < str_len(str)
+    push(x, str[i] * 2)
+    i += 1
+end
+assert(x[0] == "aa")
+assert(x[1] == "zz")
+assert(x[-1] == "yy")
+
+# Count
+array = [10, 20, "abc", "cba", "30", 20, "20"]
+assert(count(array, 20) == 2)
+assert(count(array, "20") == 1)
+assert(count(array, "x") == 0)
+assert(count([[1], [1, 2], [1, 2, 3]], [1, 2]) == 1)
+
+# Find
+assert(find(array, 10) == 0)
+assert(find(array, "abc") == 2)
+assert(find(array, 30) == -1)
+
+# Operator ==/!=
+assert([] == [])
+assert([1] == [1])
+assert([10, 20] == [10, 20])
+assert([10, 20] != [10, "20"])
+assert([20, 10] != [10, 20])
+assert([10, 20, 30] != [10, 20])
+assert([null] != [0])
+assert([null] != [])
+assert([null] != [null, null])
+assert([] != [[]])
+assert([[], []] != [[]])
+assert([[], []] == [[], []])
+
+a = [4, 5, 6]
+assert(a == [4, 5, 6])
+assert([4, 5, 6] == a)
+assert(a == a)
+
+# Recursive comparison
+a = [["a", "b"], ["c", "d"]]
+assert(a == [["a", "b"], ["c", "d"]])
+a1 = ["a", "b"]
+a2 = ["c", "d"]
+assert(a == [a1, a2])
+b = [["a", "b"]]
+assert(a != b)
+push(b, ["c", "d"])
+assert(a == b)
+
+x = ["abc", "def", "ghi"]
+y = []
+i = 0
+while i < len(x)
+    push(y, str_upper(x[i]))
+    i += 1
+end
+assert(y[0] == "ABC")
+assert(y[1] == "DEF")
+assert(y[2] == "GHI")
+
+# References
+a = [1, 2, 3, ["foo"], 4, 5]
+b = a[3]
+push(b, "bar")
+assert(b == ["foo", "bar"])
+# Sub array in a must be also updated
+assert(a[3] == ["foo", "bar"])
+
+seq = [1, 2, 3]
+x = [seq, seq, seq]
+push(seq, 4)
+assert(len(x[0]) == 4)
+assert(len(x[1]) == 4)
+assert(len(x[2]) == 4)
+assert(x[0] == [1, 2, 3, 4])
+
+push(x[0], 5)
+assert(seq[-1] == 5)
+assert(x[1][-1] == 5)
+
+# Self-containing array
+a = []
+push(a, a)
+assert(a == a)
+assert(a[0] == a)
+assert(a == a[0][0][0][0])
+
+# Operator +
+a = []
+assert(a + [] == [])
+assert(a + a == a)
+
+a = [1, 2]
+assert(a + [3, 4] == [1, 2, 3, 4])
+assert(a == [1, 2])
+
+a += [3, 4]
+assert(a == [1, 2, 3, 4])
+
+a += []
+assert(a == [1, 2, 3, 4])

@@ -69,6 +69,7 @@ bool Scanner::tokenize(const std::string& line)
             if (previous == nullptr
                 || previous->get_type() == Token::OPERATOR
                 || previous->get_type() == Token::LEFT_PARENTHESIS
+                || previous->get_type() == Token::ARG_SEPARATOR
                 || previous->get_type() == Token::KW_IF) {
                 tokens_.push_back(Token(Token::LEFT_PARENTHESIS));
             }
@@ -84,7 +85,17 @@ bool Scanner::tokenize(const std::string& line)
         }
         // Left bracket?
         else if (current == '[') {
-            tokens_.push_back(Token::create_operator(Operator::OP_INDEX));
+            if (previous == nullptr
+                || previous->get_type() == Token::OPERATOR
+                || previous->get_type() == Token::ARRAY_LITERAL
+                || previous->get_type() == Token::LEFT_PARENTHESIS
+                || previous->get_type() == Token::ARG_SEPARATOR
+                || previous->get_type() == Token::KW_IF) {
+                tokens_.push_back(Token(Token::ARRAY_LITERAL));
+            }
+            else {
+                tokens_.push_back(Token::create_operator(Operator::OP_INDEX));
+            }
         }
         // Right bracket?
         else if (current == ']') {
@@ -105,10 +116,10 @@ bool Scanner::tokenize(const std::string& line)
             }
             buffer = line.substr(start, i - start);
             // ASCII to int, or to float if we've found a dot
-            Token t = dot_found
+            tokens_.push_back(dot_found
                 ? Token::create_float(atof(buffer.c_str()))
-                : Token::create_int(atoi(buffer.c_str()));
-            tokens_.push_back(t);
+                : Token::create_int(atoi(buffer.c_str()))
+            );
             --i;
         }
         // Scanning string literal

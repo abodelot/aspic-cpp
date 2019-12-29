@@ -1,6 +1,7 @@
 #include "ast/Node.hpp"
 #include "Operators.hpp"
 #include "SymbolTable.hpp"
+#include "ArrayObject.hpp"
 
 namespace ast {
 
@@ -102,7 +103,6 @@ LoopNode::~LoopNode()
     delete test_;
     delete body_;
 }
-
 
 Object LoopNode::eval() const
 {
@@ -229,7 +229,7 @@ void FuncCallNode::repr(int depth) const
     std::cout << std::string(depth, ' ') << ")" << std::endl;
 }
 
-void FuncCallNode::push_arg(const Node* node)
+void FuncCallNode::add_arg(const Node* node)
 {
     arguments_.push_back(node);
 }
@@ -249,6 +249,44 @@ Object ValueNode::eval() const
 void ValueNode::repr(int depth) const
 {
     std::cout << std::string(depth, ' ') << "(" << object_ << ")" << std::endl;
+}
+
+// ArrayLiteralNode
+
+ArrayLiteralNode::ArrayLiteralNode()
+{
+}
+
+ArrayLiteralNode::~ArrayLiteralNode()
+{
+    for (auto& node: values_) {
+        delete node;
+    }
+}
+
+Object ArrayLiteralNode::eval() const
+{
+    ArrayObject* array = new ArrayObject(values_.size());
+    for (auto& node: values_) {
+        array->push(node->eval().get_value());
+    }
+    return Object::create_array(array);
+}
+
+void ArrayLiteralNode::repr(int depth) const
+{
+    std::cout << std::string(depth, ' ') << '[';
+    for (size_t i = 0; i < values_.size(); ++i) {
+        std::cout << std::string(depth + 1, ' ') << i << ": ";
+        values_[i]->repr(depth + 1);
+        std::cout << ", ";
+    }
+    std::cout << std::string(depth, ' ') << ']';
+}
+
+void ArrayLiteralNode::add_value(const Node* node)
+{
+    values_.push_back(node);
 }
 
 }

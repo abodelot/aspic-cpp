@@ -22,5 +22,6 @@ int main(int argc, char* argv[])
             return 1;
         }
     }
+    SymbolTable::destroy();
     return 0;
 }

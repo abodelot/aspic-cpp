@@ -71,6 +71,7 @@ They cannot be used as identifiers.
 * boolean (literals `true` and `false`)
 * null (literal `null`)
 * built-in function
+* array
 
 ### Operators
 
@@ -104,11 +105,27 @@ Aspic defines the following operators:
 | `+=`   | Add and assign | ✓ |
 | `-=`   | Subtract and assign | ✓ |
 
+### Array expression
+
+Syntax:
+
+	`[' expr, ...`]'
+
+Examples:
+
+    []
+	[1, 2, 3]
+    ["abc", [3.14, 4.93]]
+
+Returns an array, which contains result of each expressions.
+
 ### Control structures
 
-Control structures are expressions too.
+Control structures in Aspic are expressions too, and have some value.
 
 #### if
+
+`if` expressions are used for conditional execution.
 
 Syntax:
 
@@ -134,7 +151,15 @@ Examples:
         do_c()
     end
 
+    x = if test
+        do_a()
+    else
+        do_b()
+    end
+
 #### while
+
+Executes body while condition expression returns true.
 
 Syntax:
 

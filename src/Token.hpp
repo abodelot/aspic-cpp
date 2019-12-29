@@ -14,6 +14,7 @@ public:
     enum Type
     {
         VALUE,
+        ARRAY_LITERAL,
         OPERATOR,
         IDENTIFIER,
         ARG_SEPARATOR,
@@ -72,15 +73,6 @@ public:
     size_t get_id_hash() const;
     const Object& get_object() const;
 
-    // Methods for value tokens
-    // -------------------------------------------------------------------------
-
-    /**
-     * If token is a value, return reference to self.
-     * If token is an identifier, return reference to token in the symbol table
-     */
-    const Token& get_value() const;
-
     int lbp;
 
 private:
@@ -97,9 +89,9 @@ private:
 
     };
 
+    // Cannot store it into TokenData union
     Object          object_;
 
-    // Cannot store it into TokenData union because std::string is an object
     TokenData  data_;
     Type       type_;
 };

@@ -152,11 +152,30 @@ public:
 
     void repr(int depth) const override;
 
-    void push_arg(const Node* node);
+    void add_arg(const Node* node);
 
 private:
     const Node* func_;
     NodeVector arguments_;
+};
+
+/**
+ * Handle an array literal
+ */
+class ArrayLiteralNode: public Node
+{
+public:
+    ArrayLiteralNode();
+    ~ArrayLiteralNode();
+
+    Object eval() const override;
+
+    void repr(int depth) const override;
+
+    void add_value(const Node* node);
+
+private:
+    NodeVector values_;
 };
 
 }

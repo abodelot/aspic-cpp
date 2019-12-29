@@ -34,10 +34,16 @@ void Shell::run()
             running = false;
         }
         else if (input == "pool") {
-            SymbolTable::print_all_symbols();
+            SymbolTable::inspect_symbols();
         }
         else if (input == "ast") {
             parser.print_ast();
+        }
+        else if (input == "gc") {
+            SymbolTable::inspect_gc();
+        }
+        else if (input == "clear") {
+            SymbolTable::mark_and_sweep();
         }
         else {
             // Do not reset parser if user if typing a block
@@ -48,7 +54,7 @@ void Shell::run()
                 full_statement = parser.tokenize(input);
                 if (full_statement) {
                     parser.build_ast();
-                    Object result = parser.eval_ast();
+                    const Object& result = parser.eval_ast();
                     // Print result, if any
                     if (result.get_type() != Object::NULL_VALUE) {
                         std::cout << result << std::endl;

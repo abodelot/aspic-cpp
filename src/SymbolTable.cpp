@@ -1,5 +1,6 @@
 #include "SymbolTable.hpp"
 #include "Error.hpp"
+#include "BaseObject.hpp"
 #include "functions/LibCore.hpp"
 #include "functions/LibString.hpp"
 
@@ -10,6 +11,7 @@
 // Init static attributes
 SymbolTable::IdentifierTable SymbolTable::identifiers_;
 SymbolTable::NameTable       SymbolTable::names_;
+SymbolTable::ObjectList      SymbolTable::shared_objects_;
 
 
 size_t SymbolTable::hash_identifier_name(const std::string& name)
@@ -34,6 +36,10 @@ void SymbolTable::register_stdlib()
     add("round", core_round);
     add("min", core_min);
     add("max", core_max);
+    add("count", array_count);
+    add("find", array_find);
+    add("push", array_push);
+    add("len", core_len);
 
     // Load string library
     add("str_len", str_len);
@@ -65,7 +71,7 @@ void SymbolTable::add(const std::string& name, const FunctionWrapper& function)
     identifiers_.emplace(hash, Object::create_function(function));
 }
 
-void SymbolTable::print_all_symbols()
+void SymbolTable::inspect_symbols()
 {
     // Get max identifier length
     size_t max_length = 0;
@@ -81,4 +87,46 @@ void SymbolTable::print_all_symbols()
             << " | " << kv.second << std::endl;
     }
     std::cout << "Symbol table size: " << identifiers_.size() << std::endl;
+}
+
+void SymbolTable::inspect_gc()
+{
+    for (ObjectList::const_iterator it = shared_objects_.begin(); it != shared_objects_.end(); ++it) {
+        std::cout << (**it).class_name() << "@" <<  *it << std::endl;
+    }
+}
+
+void SymbolTable::track_object(BaseObject* ptr)
+{
+    shared_objects_.push_back(ptr);
+}
+
+void SymbolTable::mark_and_sweep()
+{
+    // Visit all objects associated to an identifier
+    for (auto& kv: identifiers_) {
+        kv.second.gc_visit();
+    }
+
+    ObjectList::iterator it = shared_objects_.begin();
+    while (it != shared_objects_.end())  {
+        // Unmark visited objects, remove the other ones
+        if ((**it).is_marked()) {
+            (**it).clear_mark();
+        }
+        else {
+            delete *it;
+            it = shared_objects_.erase(it);
+        }
+    }
+}
+
+void SymbolTable::destroy()
+{
+    names_.clear();
+    // Clear all identifiers first, so the mark_and_sweep method won't
+    // mark any objects. This ensures all allocated objects will be deleted.
+    identifiers_.clear();
+    mark_and_sweep();
+    shared_objects_.clear();
 }

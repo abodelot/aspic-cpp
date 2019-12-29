@@ -69,6 +69,13 @@ else
 end
 assert(y == "b")
 
+y = if x == 20
+    "b2"
+else
+    "c2"
+end
+assert(y == "c2")
+
 # if-else statement, test is false
 x = 20
 y = "a"

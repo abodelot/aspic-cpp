@@ -11,6 +11,12 @@ namespace ast {
  * Core library: essential and utility functions
  */
 
+Object array_push(const ast::NodeVector& args);
+Object array_find(const ast::NodeVector& args);
+Object array_count(const ast::NodeVector& args);
+
+Object core_len(const ast::NodeVector& args);
+
 // raise AssertionError if argument != true
 Object core_assert(const ast::NodeVector& args);
 

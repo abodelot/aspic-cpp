@@ -7,6 +7,8 @@
 #include <string>
 #include <iostream>
 
+class ArrayObject;
+
 class Object
 {
 public:
@@ -18,12 +20,15 @@ public:
         STRING,
         BUILTIN_FUNCTION,
         REFERENCE,
-        NULL_VALUE
+        NULL_VALUE,
+        ARRAY
     };
 
     // Constructors
 
     Object();
+    Object& operator=(const Object& object);
+
     static Object create_int(int value);
     static Object create_float(double value);
     static Object create_bool(bool value);
@@ -31,6 +36,9 @@ public:
     static Object create_function(FunctionWrapper function_ptr);
     static Object create_reference(size_t id_hash);
     static Object create_null();
+    static Object create_array(ArrayObject* array);
+
+    void gc_visit();
 
     // Types
 
@@ -52,6 +60,7 @@ public:
     double get_float() const;
     const std::string& get_string() const;
     FunctionWrapper get_function() const;
+    ArrayObject* get_array() const;
     bool truthy() const;
 
     // Operations
@@ -68,10 +77,10 @@ public:
 
     Object apply_binary_operator(Operator op, const Object& operand) const;
 
+    std::ostream& print(std::ostream& os, size_t recursion_depth) const;
+
 private:
     friend std::ostream& operator<<(std::ostream&, const Object& object);
-
-    Object& operator=(const Object& object) = delete;
 
     /**
      * Check if token is typed with given type, or if token is an identifier
@@ -98,9 +107,11 @@ private:
         bool bool_;
         FunctionWrapper function_ptr_;
         size_t id_hash_;
+        ArrayObject* array_ptr_;
     };
 
     Data data_;
+    // Cannot store string_ in Data union
     std::string string_;
 };
 
