@@ -160,13 +160,14 @@ private:
 };
 
 /**
- * Handle an array literal
+ * Array expression: store a list of values
+ * Return an Array object on eval
  */
-class ArrayLiteralNode: public Node
+class ArrayExprNode: public Node
 {
 public:
-    ArrayLiteralNode();
-    ~ArrayLiteralNode();
+    ArrayExprNode();
+    ~ArrayExprNode();
 
     Object eval() const override;
 
@@ -176,6 +177,26 @@ public:
 
 private:
     NodeVector values_;
+};
+
+/**
+ * Hashmap expression: stores a list of key-value pairs
+ * Return an Hashmap object on eval
+ */
+class HashmapExprNode: public Node
+{
+public:
+    HashmapExprNode();
+    ~HashmapExprNode();
+
+    Object eval() const override;
+
+    void repr(int depth) const override;
+
+    void add_pair(const Node* key, const Node* value);
+
+private:
+    std::vector<std::pair<const Node*, const Node*>> values_;
 };
 
 }

@@ -77,7 +77,7 @@ ast::Node* Parser::null_denotation(const Token& token)
 
         case Token::ARRAY_LITERAL:
         {
-            ast::ArrayLiteralNode* node = new ast::ArrayLiteralNode();
+            ast::ArrayExprNode* node = new ast::ArrayExprNode();
             if (tokens_[index_].get_type() != Token::RIGHT_BRACKET) {
                 while (true) {
                     node->add_value(parse(0));
@@ -88,6 +88,25 @@ ast::Node* Parser::null_denotation(const Token& token)
                 }
             }
             advance(Token::RIGHT_BRACKET);
+            return node;
+        }
+
+        case Token::MAP_LITERAL:
+        {
+            ast::HashmapExprNode* node = new ast::HashmapExprNode();
+            if (tokens_[index_].get_type() != Token::RIGHT_BRACE) {
+                while (true) {
+                    const ast::Node* key = parse(0);
+                    advance(Token::COLON);
+                    const ast::Node* value = parse(0);
+                    node->add_pair(key, value);
+                    if (tokens_[index_].get_type() != Token::ARG_SEPARATOR) {
+                        break;
+                    }
+                    advance(Token::ARG_SEPARATOR);
+                }
+            }
+            advance(Token::RIGHT_BRACE);
             return node;
         }
 
@@ -135,10 +154,10 @@ ast::Node* Parser::null_denotation(const Token& token)
             advance(Token::KW_END);
             return new ast::LoopNode(test, body);
         }
-        case Token::LEFT_PARENTHESIS:
+        case Token::LEFT_PAREN:
         {
             ast::Node* next = parse(0);
-            advance(Token::RIGHT_PARENTHESIS);
+            advance(Token::RIGHT_PAREN);
             return next;
         }
         case Token::OPERATOR:
@@ -161,7 +180,7 @@ ast::Node* Parser::left_denotation(const Token& token, const ast::Node* left)
         if (op == Operator::OP_FUNC_CALL) {
             ast::FuncCallNode* node = new ast::FuncCallNode(left);
             // Find arguments until matching right parenthesis
-            if (tokens_[index_].get_type() != Token::RIGHT_PARENTHESIS) {
+            if (tokens_[index_].get_type() != Token::RIGHT_PAREN) {
                 while (true) {
                     node->add_arg(parse(0));
                     if (tokens_[index_].get_type() != Token::ARG_SEPARATOR) {
@@ -170,7 +189,7 @@ ast::Node* Parser::left_denotation(const Token& token, const ast::Node* left)
                     advance(Token::ARG_SEPARATOR);
                 }
             }
-            advance(Token::RIGHT_PARENTHESIS);
+            advance(Token::RIGHT_PAREN);
             return node;
         }
         else if (op == Operator::OP_INDEX) {

@@ -1,0 +1,16 @@
+# Convert strings
+assert(str("hello") == "hello")
+
+# Convert ints
+assert(str(1024) == "1024")
+x = 2048
+assert("2048" == str(x))
+
+# Convert floats
+y = 3.141592
+assert(str(y) == "3.141592")
+
+# Convert bools
+assert(str(true) == "true")
+assert(str(false) == "false")
+assert(str(1 == 1) == "true")

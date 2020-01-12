@@ -14,13 +14,16 @@ public:
     enum Type
     {
         VALUE,
+        MAP_LITERAL,
         ARRAY_LITERAL,
         OPERATOR,
         IDENTIFIER,
         ARG_SEPARATOR,
-        LEFT_PARENTHESIS,
-        RIGHT_PARENTHESIS,
-        RIGHT_BRACKET, // Note: left bracket is OP_INDEX
+        LEFT_PAREN,
+        RIGHT_PAREN,
+        RIGHT_BRACKET, // Note: left bracket is OP_INDEX or ARRAY_LITERAL
+        RIGHT_BRACE, // Note: right brace is MAP_LITERAL
+        COLON,
         KW_IF,
         KW_ELIF,
         KW_ELSE,
@@ -30,7 +33,6 @@ public:
     };
 
     static const char* type_to_str(Type type);
-
 
     Token(Type);
 
@@ -57,14 +59,6 @@ public:
      * Create a token bound to a symbol
      */
     static Token create_identifier(const std::string& identifier_name);
-
-    // Methods for operator tokens
-    // -------------------------------------------------------------------------
-
-    /**
-     * Operator helpers
-     */
-    bool is_operator() const;
 
     /**
      * Getters, according to type

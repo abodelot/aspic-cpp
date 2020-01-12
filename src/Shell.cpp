@@ -39,10 +39,10 @@ void Shell::run()
         else if (input == "ast") {
             parser.print_ast();
         }
-        else if (input == "gc") {
-            SymbolTable::inspect_gc();
+        else if (input == "mem") {
+            SymbolTable::inspec_memory();
         }
-        else if (input == "clear") {
+        else if (input == "gc") {
             SymbolTable::mark_and_sweep();
         }
         else {

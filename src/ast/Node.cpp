@@ -2,6 +2,7 @@
 #include "Operators.hpp"
 #include "SymbolTable.hpp"
 #include "ArrayObject.hpp"
+#include "HashObject.hpp"
 
 namespace ast {
 
@@ -251,20 +252,20 @@ void ValueNode::repr(int depth) const
     std::cout << std::string(depth, ' ') << "(" << object_ << ")" << std::endl;
 }
 
-// ArrayLiteralNode
+// ArrayExprNode
 
-ArrayLiteralNode::ArrayLiteralNode()
+ArrayExprNode::ArrayExprNode()
 {
 }
 
-ArrayLiteralNode::~ArrayLiteralNode()
+ArrayExprNode::~ArrayExprNode()
 {
     for (auto& node: values_) {
         delete node;
     }
 }
 
-Object ArrayLiteralNode::eval() const
+Object ArrayExprNode::eval() const
 {
     ArrayObject* array = new ArrayObject(values_.size());
     for (auto& node: values_) {
@@ -273,7 +274,7 @@ Object ArrayLiteralNode::eval() const
     return Object::create_array(array);
 }
 
-void ArrayLiteralNode::repr(int depth) const
+void ArrayExprNode::repr(int depth) const
 {
     std::cout << std::string(depth, ' ') << '[';
     for (size_t i = 0; i < values_.size(); ++i) {
@@ -284,9 +285,49 @@ void ArrayLiteralNode::repr(int depth) const
     std::cout << std::string(depth, ' ') << ']';
 }
 
-void ArrayLiteralNode::add_value(const Node* node)
+void ArrayExprNode::add_value(const Node* node)
 {
     values_.push_back(node);
+}
+
+// HashmapExprNode
+
+HashmapExprNode::HashmapExprNode()
+{
+}
+
+HashmapExprNode::~HashmapExprNode()
+{
+    for (auto& node_pair: values_) {
+        delete node_pair.first;
+        delete node_pair.second;
+    }
+}
+
+Object HashmapExprNode::eval() const
+{
+    HashObject* hash = new HashObject();
+    for (auto& kv: values_) {
+        hash->push(kv.first->eval().get_value(), kv.second->eval().get_value());
+    }
+    return Object::create_hash(hash);
+}
+
+void HashmapExprNode::repr(int depth) const
+{
+    std::cout << std::string(depth, ' ') << '{';
+    for (size_t i = 0; i < values_.size(); ++i) {
+        std::cout << std::string(depth + 1, ' ') << "k: ";
+        values_[i].first->repr(depth + 1);
+        std::cout << ", ";
+        std::cout << std::string(depth + 1, ' ') << "v: ";
+        values_[i].second->repr(depth + 1);
+    }
+}
+
+void HashmapExprNode::add_pair(const Node* key, const Node* value)
+{
+    values_.push_back(std::make_pair(key, value));
 }
 
 }

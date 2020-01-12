@@ -1,7 +1,7 @@
-#include <sstream>
-
 #include "Error.hpp"
 #include "Operators.hpp"
+
+#include <sstream>
 
 
 Error Error::AssertionError()
@@ -30,12 +30,10 @@ Error Error::UnknownOperator(const std::string& str)
 
 Error Error::UnexpectedTokenType(Token::Type expected, Token::Type got)
 {
-    Error e(Syntax);
-    e.message_ += ": expected ";
-    e.message_ += Token::type_to_str(expected);
-    e.message_ += ", got ";
-    e.message_ += Token::type_to_str(got);
-    return e;
+    std::ostringstream oss;
+    oss << "unexpected '" << Token::type_to_str(got) << "', expecting '"
+        << Token::type_to_str(expected) << "'";
+    return Error(Syntax, oss.str());
 }
 
 Error Error::NameError(const std::string& identifier)
@@ -43,9 +41,19 @@ Error Error::NameError(const std::string& identifier)
     return Error(Name, "name '" + identifier + "' is not defined");
 }
 
+// Type Error
+
 Error Error::TypeError(const std::string& str)
 {
     return Error(Type, str);
+}
+
+Error Error::TypeConvertError(Object::Type from, Object::Type to)
+{
+    std::ostringstream oss;
+    oss << "Cannot convert '" << Object::type_to_str(from)
+        << "' to '" << Object::type_to_str(to) << "'";
+    return Error(Type, oss.str());
 }
 
 Error Error::UnsupportedUnaryOperator(Object::Type operand, Operator op)
@@ -77,8 +85,13 @@ Error Error::IndexError(int index)
     std::ostringstream oss;
     oss << "index " << index << " is out of range";
     return Error(Index, oss.str());
-
 }
+
+Error Error::KeyError(const std::string& str)
+{
+    return Error(Key, str);
+}
+
 Error Error::InternalError(const std::string& str)
 {
     return Error(Internal, str);
@@ -102,6 +115,7 @@ Error::Error(ID id, const std::string& message)
         case Name:      message_ = "NameError";      break;
         case Type:      message_ = "TypeError";      break;
         case Index:     message_ = "IndexError";     break;
+        case Key:       message_ = "KeyError";       break;
         case Internal:  message_ = "InternalError";  break;
         case Value:     message_ = "ValueError";     break;
     }

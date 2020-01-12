@@ -13,16 +13,22 @@ const char* Token::type_to_str(Type type)
             return "value";
         case ARRAY_LITERAL:
             return "array[";
+        case MAP_LITERAL:
+            return "map{";
         case IDENTIFIER:
             return "identifier";
         case ARG_SEPARATOR:
             return ",";
-        case LEFT_PARENTHESIS:
+        case LEFT_PAREN:
             return "(";
-        case RIGHT_PARENTHESIS:
+        case RIGHT_PAREN:
             return ")";
         case RIGHT_BRACKET:
             return "]";
+        case RIGHT_BRACE:
+            return "}";
+        case COLON:
+            return ":";
         case OPERATOR:
             return "operator";
         case KW_IF:
@@ -97,11 +103,6 @@ Token Token::create_identifier(const std::string& identifier_name)
     Token self(IDENTIFIER);
     self.data_.id_hash = SymbolTable::hash_identifier_name(identifier_name);
     return self;
-}
-
-bool Token::is_operator() const
-{
-    return type_ == OPERATOR;
 }
 
 Operator Token::get_operator_type() const

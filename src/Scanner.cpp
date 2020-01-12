@@ -63,33 +63,35 @@ bool Scanner::tokenize(const std::string& line)
                 throw Error::UnknownOperator(buffer);
             }
         }
-        // Left parenthesis?
+        // Left paren?
         else if (current == '(') {
             // Can be either grouping or a function call operator, depending on previous token
             if (previous == nullptr
                 || previous->get_type() == Token::OPERATOR
-                || previous->get_type() == Token::LEFT_PARENTHESIS
+                || previous->get_type() == Token::LEFT_PAREN
                 || previous->get_type() == Token::ARG_SEPARATOR
                 || previous->get_type() == Token::KW_IF) {
-                tokens_.push_back(Token(Token::LEFT_PARENTHESIS));
+                tokens_.push_back(Token(Token::LEFT_PAREN));
             }
             else {
                 tokens_.push_back(Token::create_operator(Operator::OP_FUNC_CALL));
             }
             ++unmatched_parentheses;
         }
-        // Right parenthesis?
+        // Right paren?
         else if (current == ')') {
-            tokens_.push_back(Token(Token::RIGHT_PARENTHESIS));
+            tokens_.push_back(Token(Token::RIGHT_PAREN));
             --unmatched_parentheses;
         }
         // Left bracket?
         else if (current == '[') {
             if (previous == nullptr
                 || previous->get_type() == Token::OPERATOR
+                || previous->get_type() == Token::LEFT_PAREN
                 || previous->get_type() == Token::ARRAY_LITERAL
-                || previous->get_type() == Token::LEFT_PARENTHESIS
+                || previous->get_type() == Token::MAP_LITERAL
                 || previous->get_type() == Token::ARG_SEPARATOR
+                || previous->get_type() == Token::COLON
                 || previous->get_type() == Token::KW_IF) {
                 tokens_.push_back(Token(Token::ARRAY_LITERAL));
             }
@@ -101,9 +103,21 @@ bool Scanner::tokenize(const std::string& line)
         else if (current == ']') {
             tokens_.push_back(Token(Token::RIGHT_BRACKET));
         }
+        // Left brace?
+        else if (current == '{') {
+            tokens_.push_back(Token(Token::MAP_LITERAL));
+        }
+        // Right brace?
+        else if (current == '}') {
+            tokens_.push_back(Token(Token::RIGHT_BRACE));
+        }
         // Arg separator?
         else if (current == ',') {
             tokens_.push_back(Token(Token::ARG_SEPARATOR));
+        }
+        // Colon?
+        else if (current == ':') {
+            tokens_.push_back(Token(Token::COLON));
         }
         // Scanning int or float literal
         else if (isdigit(current) || current == '.') {
@@ -293,7 +307,7 @@ bool Scanner::precedes_unary_operator(const Token* previous) const
         - preceded by an argument separator
     */
     return previous == nullptr
-        || previous->is_operator()
-        || previous->get_type() == Token::LEFT_PARENTHESIS
+        || previous->get_type() == Token::OPERATOR
+        || previous->get_type() == Token::LEFT_PAREN
         || previous->get_type() == Token::ARG_SEPARATOR;
 }

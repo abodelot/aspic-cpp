@@ -3,8 +3,10 @@
 #include "ast/Node.hpp"
 #include "Error.hpp"
 #include "ArrayObject.hpp"
+#include "HashObject.hpp"
 
 #include <iostream>
+#include <random>
 #include <cmath>
 
 
@@ -16,13 +18,31 @@ Object array_push(const ast::NodeVector& args)
     return Object::create_null();
 }
 
+Object hash_push(const ast::NodeVector& args)
+{
+    args.check(3);
+    HashObject* hash = args[0]->eval().get_hashmap();
+    hash->push(args[1]->eval(), args[2]->eval());
+    return Object::create_null();
+}
 
 Object core_len(const ast::NodeVector& args)
 {
     args.check(1);
     return Object::create_int(
-        args[0]->eval().get_array()->size()
+        args[0]->eval().size()
     );
+}
+
+Object core_rand(const ast::NodeVector& args)
+{
+    static std::random_device rd;
+    static std::mt19937 generator(rd());
+    args.check(2);
+    std::uniform_int_distribution<int> distribution(
+        args[0]->eval().get_int(), args[1]->eval().get_int()
+    );
+    return Object::create_int(distribution(generator));
 }
 
 Object array_count(const ast::NodeVector& args)
@@ -101,4 +121,11 @@ Object core_max(const ast::NodeVector& args)
     Object arg1 = args[0]->eval();
     Object arg2 = args[1]->eval();
     return arg1.apply_binary_operator(Operator::OP_GREATER_THAN, arg2).truthy() ? arg1 : arg2;
+}
+
+Object hash_keys(const ast::NodeVector& args)
+{
+    args.check(1);
+    HashObject* hash = args[0]->eval().get_hashmap();
+    return Object::create_array(hash->get_keys());
 }

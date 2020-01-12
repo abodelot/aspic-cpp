@@ -26,11 +26,15 @@ public:
 
     // Type
     static Error TypeError(const std::string& str);
+    static Error TypeConvertError(Object::Type from, Object::Type to);
     static Error UnsupportedUnaryOperator(Object::Type operand, Operator op);
     static Error UnsupportedBinaryOperator(Object::Type a, Object::Type b, Operator op);
 
-    // IndexError: bad index for operator []
+    // Invalid array index
     static Error IndexError(int index);
+
+    // Invalid hashmap key
+    static Error KeyError(const std::string& index);
 
     // Internal
     static Error InternalError(const std::string& str);
@@ -49,6 +53,7 @@ private:
         Name,
         Type,
         Index,
+        Key,
         Internal,
         Value,
     };

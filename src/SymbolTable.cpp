@@ -3,6 +3,7 @@
 #include "BaseObject.hpp"
 #include "functions/LibCore.hpp"
 #include "functions/LibString.hpp"
+#include "functions/LibTypes.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -39,7 +40,10 @@ void SymbolTable::register_stdlib()
     add("count", array_count);
     add("find", array_find);
     add("push", array_push);
+    add("hpush", hash_push);
+    add("keys", hash_keys);
     add("len", core_len);
+    add("rand", core_rand);
 
     // Load string library
     add("str_len", str_len);
@@ -49,6 +53,10 @@ void SymbolTable::register_stdlib()
     add("str_trim", str_trim);
     add("str_lower", str_lower);
     add("str_upper", str_upper);
+
+    // Types library
+    add("int", core_int);
+    add("str", core_str);
 }
 
 Object& SymbolTable::get(size_t hash)
@@ -89,7 +97,7 @@ void SymbolTable::inspect_symbols()
     std::cout << "Symbol table size: " << identifiers_.size() << std::endl;
 }
 
-void SymbolTable::inspect_gc()
+void SymbolTable::inspec_memory()
 {
     for (ObjectList::const_iterator it = shared_objects_.begin(); it != shared_objects_.end(); ++it) {
         std::cout << (**it).class_name() << "@" <<  *it << std::endl;
@@ -113,6 +121,7 @@ void SymbolTable::mark_and_sweep()
         // Unmark visited objects, remove the other ones
         if ((**it).is_marked()) {
             (**it).clear_mark();
+            ++it;
         }
         else {
             delete *it;

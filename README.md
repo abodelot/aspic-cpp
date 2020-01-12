@@ -72,6 +72,7 @@ They cannot be used as identifiers.
 * null (literal `null`)
 * built-in function
 * array
+* hashmap
 
 ### Operators
 
@@ -117,7 +118,21 @@ Examples:
 	[1, 2, 3]
     ["abc", [3.14, 4.93]]
 
-Returns an array, which contains result of each expressions.
+Returns a new array, which contains result of each expressions.
+
+### HashMap expression
+
+Syntax:
+
+    { expr: expr, ... }
+
+Examples:
+
+    {}
+    {"a": 1, "b": 2}
+    {123: ["hello", "world"]}
+
+Returns a new hashmap object, which maps each key to corresponding value.
 
 ### Control structures
 

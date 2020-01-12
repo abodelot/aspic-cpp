@@ -2,6 +2,7 @@
 #include "SymbolTable.hpp"
 #include "Error.hpp"
 #include "ArrayObject.hpp"
+#include "HashObject.hpp"
 
 #include <cmath>
 
@@ -89,10 +90,20 @@ Object Object::create_array(ArrayObject* array_object)
     return self;
 }
 
-void Object::gc_visit()
+Object Object::create_hash(HashObject* map_object)
+{
+    Object self(HASHMAP);
+    self.data_.hashmap_ptr_ = map_object;
+    return self;
+}
+
+void Object::gc_visit() const
 {
     if (type_ == ARRAY) {
         data_.array_ptr_->mark();
+    }
+    else if (type_ == HASHMAP) {
+        data_.hashmap_ptr_->mark();
     }
 }
 
@@ -129,6 +140,8 @@ const char* Object::type_to_str(Type type)
             return "null";
         case ARRAY:
             return "array";
+        case HASHMAP:
+            return "hashmap";
     }
     return nullptr;
 }
@@ -211,6 +224,17 @@ ArrayObject* Object::get_array() const
     throw Error::TypeError("an array is required");
 }
 
+HashObject* Object::get_hashmap() const
+{
+    if (type_ == HASHMAP) {
+        return data_.hashmap_ptr_;
+    }
+    if (type_ == REFERENCE) {
+        return SymbolTable::get(data_.id_hash_).data_.hashmap_ptr_;
+    }
+    throw Error::TypeError("a hashmap is required");
+}
+
 bool Object::truthy() const
 {
     switch (type_) {
@@ -232,8 +256,29 @@ bool Object::truthy() const
             return SymbolTable::get(data_.id_hash_).truthy();
         case ARRAY:
             return true;
+        case HASHMAP:
+            return true;
     }
     return false; // Unreachable, fix -Wreturn-type
+}
+
+std::string Object::to_string() const
+{
+    switch (type_) {
+    case STRING:
+        return string_;
+    case INT:
+        return std::to_string(data_.int_);
+    case FLOAT:
+        // FIXME: 3.14 => "3.140000"
+        return std::to_string(data_.float_);
+    case BOOL:
+        return data_.bool_ ? "true" : "false";
+    case REFERENCE:
+        return get_value().to_string();
+    default:
+        throw Error::TypeConvertError(type_, STRING);
+    }
 }
 
 // Operations
@@ -261,15 +306,35 @@ bool Object::equal(const Object& object) const
         case NULL_VALUE:
             return true; // null == null
         case BUILTIN_FUNCTION:
+            // Functions can only be compared by memory address
             return data_.function_ptr_ == object.data_.function_ptr_;
         case ARRAY:
-            // Forward the operation to Array object
+            // Forward the operation to ArrayObject
             return data_.array_ptr_->eq(*object.data_.array_ptr_);
+        case HASHMAP:
+            // Forward the operation to HashObject
+            return data_.hashmap_ptr_->eq(*object.data_.hashmap_ptr_);
         case REFERENCE:
             // Object::get_value() must have been called first
             throw Error::InternalError("Object::equal called with REFERENCE object");
         default:
             return false;
+    }
+}
+
+size_t Object::size() const
+{
+    switch (type_) {
+    case STRING:
+        return string_.size();
+    case ARRAY:
+        return data_.array_ptr_->size();
+    case HASHMAP:
+        return data_.hashmap_ptr_->size();
+    case REFERENCE:
+        return get_value().size();
+    default:
+        throw Error::TypeError(type_to_str(type_) + std::string(" has no length"));
     }
 }
 
@@ -483,6 +548,15 @@ Object Object::apply_binary_operator(Operator op, const Object& operand) const
         }
         break;
 
+    case HASHMAP:
+        switch (op) {
+        case Operator::OP_INDEX:
+            return data_.hashmap_ptr_->at(operand);
+        default:
+            break;
+        }
+        break;
+
     case REFERENCE:
         switch (op) {
             // Handle operators which update the variable value, operand is the assigned lvalue
@@ -592,6 +666,21 @@ std::ostream& Object::print(std::ostream& os, size_t recursion_depth) const
             }
             os << ']';
             break;
+        case Object::HASHMAP:
+            os << '{';
+            int n = 0;
+            for (HashObject::InternalHash::const_iterator it = data_.hashmap_ptr_->begin();
+                it != data_.hashmap_ptr_->end(); ++it) {
+                if (n > 0) {
+                    os << ", ";
+                }
+                it->first.print(os, recursion_depth + 1);
+                os << ": ";
+                it->second.print(os, recursion_depth + 1);
+                ++n;
+            }
+            os << '}';
+            break;
     }
     return os;
 }
@@ -600,4 +689,31 @@ std::ostream& Object::print(std::ostream& os, size_t recursion_depth) const
 std::ostream& operator<<(std::ostream& os, const Object& object)
 {
     return object.print(os, 0);
+}
+
+
+bool Object::operator==(const Object& object) const
+{
+    return equal(object);
+}
+
+namespace std {
+size_t hash<Object>::operator()(const Object& object) const
+{
+    switch (object.type_) {
+    case Object::INT:
+        return std::hash<int>{}(object.data_.int_);
+    case Object::FLOAT:
+        return std::hash<float>{}(object.data_.float_);
+    case Object::BOOL:
+        return std::hash<bool>{}(object.data_.bool_);
+    case Object::STRING:
+        return std::hash<std::string>{}(object.string_);
+    default:
+        break;
+    }
+    throw Error::TypeError(
+        Object::type_to_str(object.type_) + std::string(" is not hashable type")
+    );
+}
 }

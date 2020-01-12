@@ -15,7 +15,12 @@ Object array_push(const ast::NodeVector& args);
 Object array_find(const ast::NodeVector& args);
 Object array_count(const ast::NodeVector& args);
 
+Object hash_push(const ast::NodeVector& args);
+Object hash_keys(const ast::NodeVector& args);
+
 Object core_len(const ast::NodeVector& args);
+
+Object core_rand(const ast::NodeVector& args);
 
 // raise AssertionError if argument != true
 Object core_assert(const ast::NodeVector& args);

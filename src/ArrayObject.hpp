@@ -1,7 +1,8 @@
-#ifndef ARRAY_OBJECT_HPP
-#define ARRAY_OBJECT_HPP
+#ifndef ASPIC_ARRAY_OBJECT_HPP
+#define ASPIC_ARRAY_OBJECT_HPP
 
 #include "BaseObject.hpp"
+
 #include <vector>
 
 class Object;
