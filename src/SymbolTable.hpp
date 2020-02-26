@@ -66,7 +66,7 @@ public:
     /**
      * Print allocated object list to stdout (for debugging purpose)
      */
-    static void inspec_memory();
+    static void inspect_memory();
 
     /**
      * Add object to the list of allocated objects

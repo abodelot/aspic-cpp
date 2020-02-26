@@ -2,10 +2,12 @@
 #define ASPIC_ERROR_HPP
 
 #include "Operators.hpp"
-#include "Token.hpp"
+#include "Object.hpp"
 
 #include <exception>
 #include <string>
+
+class Token;
 
 /**
  * Error management
@@ -17,9 +19,9 @@ public:
 
     // Syntax
     static Error SyntaxError(const std::string& str);
-    static Error UnexpectedToken(Token::Type token_type);
     static Error UnknownOperator(const std::string& str);
-    static Error UnexpectedTokenType(Token::Type expected, Token::Type got);
+    static Error UnexpectedToken(const Token& unexpected);
+    static Error UnexpectedToken(const Token& expected, const Token& got);
 
     // Name
     static Error NameError(const std::string& var_name);

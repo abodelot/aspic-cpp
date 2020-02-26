@@ -4,6 +4,8 @@
 #include "ArrayObject.hpp"
 #include "HashObject.hpp"
 
+#define SPACES(X) std::string((X) * 4, ' ')
+
 namespace ast {
 
 // BodyNode
@@ -37,11 +39,11 @@ Object BodyNode::eval() const
 
 void BodyNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << '[' << std::endl;
+    std::cout << SPACES(depth) << "[[" << std::endl;
     for (const auto& node: body_) {
         node->repr(depth + 1);
     }
-    std::cout << std::string(depth, ' ') << ']' << std::endl;
+    std::cout << SPACES(depth) << "]]" << std::endl;
 }
 
 // IfNode
@@ -75,7 +77,7 @@ Object IfNode::eval() const
 
 void IfNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << "(if" << std::endl;
+    std::cout << SPACES(depth) << "(if" << std::endl;
 
     test_->repr(depth + 1);
     if_block_->repr(depth + 1);
@@ -83,7 +85,7 @@ void IfNode::repr(int depth) const
         else_block_->repr(depth + 1);
     }
 
-    std::cout << std::string(depth, ' ') << ")" << std::endl;
+    std::cout << SPACES(depth) << ")" << std::endl;
 }
 
 void IfNode::set_else_block(const Node* node)
@@ -115,10 +117,10 @@ Object LoopNode::eval() const
 
 void LoopNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << "(loop" << std::endl;
+    std::cout << SPACES(depth) << "(loop" << std::endl;
     test_->repr(depth + 1);
     body_->repr(depth + 1);
-    std::cout << std::string(depth, ' ') << ")" << std::endl;
+    std::cout << SPACES(depth) << ")" << std::endl;
 }
 
 // UnaryOpNode
@@ -141,9 +143,9 @@ Object UnaryOpNode::eval() const
 
 void UnaryOpNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << "(" << Operators::to_str(op_) << std::endl;
+    std::cout << SPACES(depth) << "(unary_op " << Operators::to_str(op_) << std::endl;
     operand_->repr(depth + 1);
-    std::cout << std::string(depth, ' ') << ")" << std::endl;
+    std::cout << SPACES(depth) << ")" << std::endl;
 }
 
 // BinaryOpNode
@@ -193,10 +195,10 @@ Object BinaryOpNode::eval() const
 
 void BinaryOpNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << "(" << Operators::to_str(op_) << std::endl;
+    std::cout << SPACES(depth) << "(binary_op " << Operators::to_str(op_) << std::endl;
     first_->repr(depth + 1);
     second_->repr(depth + 1);
-    std::cout << std::string(depth, ' ') << ")" << std::endl;
+    std::cout << SPACES(depth) << ")" << std::endl;
 }
 
 // FuncCallNode
@@ -222,12 +224,12 @@ Object FuncCallNode::eval() const
 
 void FuncCallNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << "(func_call" << std::endl;
+    std::cout << SPACES(depth) << "(func_call" << std::endl;
     func_->repr(depth + 1);
     for (auto& node: arguments_) {
         node->repr(depth + 1);
     }
-    std::cout << std::string(depth, ' ') << ")" << std::endl;
+    std::cout << SPACES(depth) << ")" << std::endl;
 }
 
 void FuncCallNode::add_arg(const Node* node)
@@ -249,7 +251,7 @@ Object ValueNode::eval() const
 
 void ValueNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << "(" << object_ << ")" << std::endl;
+    std::cout << SPACES(depth) << object_ << std::endl;
 }
 
 // ArrayExprNode
@@ -276,13 +278,12 @@ Object ArrayExprNode::eval() const
 
 void ArrayExprNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << '[';
+    std::cout << SPACES(depth) << "(array_expr" << std::endl;
     for (size_t i = 0; i < values_.size(); ++i) {
-        std::cout << std::string(depth + 1, ' ') << i << ": ";
-        values_[i]->repr(depth + 1);
-        std::cout << ", ";
+        std::cout << SPACES(depth + 1) << "[" << i << "] ->" << std::endl;
+        values_[i]->repr(depth + 2);
     }
-    std::cout << std::string(depth, ' ') << ']';
+    std::cout << SPACES(depth) << ')' << std::endl;
 }
 
 void ArrayExprNode::add_value(const Node* node)
@@ -315,14 +316,12 @@ Object HashmapExprNode::eval() const
 
 void HashmapExprNode::repr(int depth) const
 {
-    std::cout << std::string(depth, ' ') << '{';
+    std::cout << SPACES(depth) << "(hash_expr" << std::endl;
     for (size_t i = 0; i < values_.size(); ++i) {
-        std::cout << std::string(depth + 1, ' ') << "k: ";
         values_[i].first->repr(depth + 1);
-        std::cout << ", ";
-        std::cout << std::string(depth + 1, ' ') << "v: ";
-        values_[i].second->repr(depth + 1);
+        values_[i].second->repr(depth + 2);
     }
+    std::cout << SPACES(depth) << ')' << std::endl;
 }
 
 void HashmapExprNode::add_pair(const Node* key, const Node* value)

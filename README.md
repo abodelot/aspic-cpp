@@ -36,6 +36,30 @@ Aspic is tested with its own `assert` function. Tests can be run with:
 
 ## Aspic Syntax
 
+Aspic syntax is close to Ruby and Python.
+
+All syntactic constructs may be separated by an arbitrary number of whitespace characters and comments.
+
+The whitespace characters are space and tab. Newlines work as whitespace only when expressions obviously continues to the next line:
+
+    a = 10 +
+        20
+
+    b = len(
+        "hello world!"
+    )
+
+    c = [
+        10,
+        20,
+        30
+    ]
+
+Aspic treats newlines as a significant end-of-expression only if the following conditions are met:
+
+- Last token of the line is a literal value, an identifier, or a closing pair character (`)`, `]`, or `}`).
+- Newline is not inside a pair of brackets (`()`, `[]`, or `{}`).
+
 ### Identifiers
 
 Examples:
@@ -106,7 +130,11 @@ Aspic defines the following operators:
 | `+=`   | Add and assign | ✓ |
 | `-=`   | Subtract and assign | ✓ |
 
-### Array expression
+### Expressions
+
+Aspic programs are sequence of expressions. Each expression are delimited by newlines.
+
+#### Array expression
 
 Syntax:
 
@@ -120,7 +148,7 @@ Examples:
 
 Returns a new array, which contains result of each expressions.
 
-### HashMap expression
+#### HashMap expression
 
 Syntax:
 

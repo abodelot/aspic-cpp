@@ -64,6 +64,7 @@ private:
     typedef std::unordered_map<std::string, Operator> OperatorTable;
     OperatorTable operators_;
     std::vector<Token> tokens_;
+    int opened_pairs_;
     int opened_blocks_;
 };
 

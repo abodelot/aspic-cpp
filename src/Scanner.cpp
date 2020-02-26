@@ -7,6 +7,7 @@
 #define COMMENT_SYMBOL '#'
 
 Scanner::Scanner():
+    opened_pairs_(0),
     opened_blocks_(0)
 {
     // Define mapping for operator symbols
@@ -43,7 +44,6 @@ bool Scanner::tokenize(const std::string& line)
     static std::string buffer;
 
     const Token* previous = nullptr;
-    int unmatched_parentheses = 0;
     for (size_t i = 0; i < line.size(); ++i) {
         char current = line[i];
 
@@ -65,6 +65,7 @@ bool Scanner::tokenize(const std::string& line)
         }
         // Left paren?
         else if (current == '(') {
+            ++opened_pairs_;
             // Can be either grouping or a function call operator, depending on previous token
             if (previous == nullptr
                 || previous->get_type() == Token::OPERATOR
@@ -76,15 +77,15 @@ bool Scanner::tokenize(const std::string& line)
             else {
                 tokens_.push_back(Token::create_operator(Operator::OP_FUNC_CALL));
             }
-            ++unmatched_parentheses;
         }
         // Right paren?
         else if (current == ')') {
+            --opened_pairs_;
             tokens_.push_back(Token(Token::RIGHT_PAREN));
-            --unmatched_parentheses;
         }
         // Left bracket?
         else if (current == '[') {
+            ++opened_pairs_;
             if (previous == nullptr
                 || previous->get_type() == Token::OPERATOR
                 || previous->get_type() == Token::LEFT_PAREN
@@ -101,14 +102,17 @@ bool Scanner::tokenize(const std::string& line)
         }
         // Right bracket?
         else if (current == ']') {
+            --opened_pairs_;
             tokens_.push_back(Token(Token::RIGHT_BRACKET));
         }
         // Left brace?
         else if (current == '{') {
+            ++opened_pairs_;
             tokens_.push_back(Token(Token::MAP_LITERAL));
         }
         // Right brace?
         else if (current == '}') {
+            --opened_pairs_;
             tokens_.push_back(Token(Token::RIGHT_BRACE));
         }
         // Arg separator?
@@ -244,16 +248,18 @@ bool Scanner::tokenize(const std::string& line)
 
     // Each expression must end with special END_EXPR token
     if (tokens_.size() > 0) {
-        if (tokens_.back().get_type() != Token::END_EXPR && tokens_.back().get_type() != Token::KW_ELSE) {
-            tokens_.push_back(Token::Token::END_EXPR);
+        if (opened_pairs_ == 0 && tokens_.back().end_of_expression()) {
+            tokens_.push_back(Token(Token::END_EXPR));
+            return opened_blocks_ == 0;
         }
     }
-    return opened_blocks_ == 0;
+    return false;
 }
 
 void Scanner::clear()
 {
     tokens_.clear();
+    opened_pairs_ = 0;
     opened_blocks_ = 0;
 }
 

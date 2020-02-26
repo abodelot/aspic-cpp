@@ -13,9 +13,10 @@ void Shell::run()
     Parser parser;
     std::cout << "Aspic (" __DATE__ ", " __TIME__ ")" << std::endl;
     std::cout << "Type expressions for the interpreter to evaluate, or one of the following commands:" << std::endl;
-    std::cout << " * exit:  exit interpreter" << std::endl;
-    std::cout << " * pool:  print list of entries in symbol table"  << std::endl;
-    std::cout << " * ast:   print abstract syntax tree of last expression" << std::endl;
+    std::cout << " * exit:    exit interpreter" << std::endl;
+    std::cout << " * scanner: print list of scanned tokens" << std::endl;
+    std::cout << " * pool:    print list of entries in symbol table"  << std::endl;
+    std::cout << " * ast:     print abstract syntax tree of last expression" << std::endl;
 
     // Configure readline to insert tabs (instead of PATH completion)
     rl_bind_key('\t', rl_insert);
@@ -33,6 +34,9 @@ void Shell::run()
         if (input == "exit") {
             running = false;
         }
+        else if (input == "scanner") {
+            parser.print_tokens();
+        }
         else if (input == "pool") {
             SymbolTable::inspect_symbols();
         }
@@ -40,7 +44,7 @@ void Shell::run()
             parser.print_ast();
         }
         else if (input == "mem") {
-            SymbolTable::inspec_memory();
+            SymbolTable::inspect_memory();
         }
         else if (input == "gc") {
             SymbolTable::mark_and_sweep();

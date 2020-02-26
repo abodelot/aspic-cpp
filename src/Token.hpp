@@ -63,15 +63,23 @@ public:
     /**
      * Getters, according to type
      */
-    Operator get_operator_type() const;
+    Operator get_operator() const;
     size_t get_id_hash() const;
     const Object& get_object() const;
+
+    /**
+     * Return true if token is an allowed end of expression
+     */
+    bool end_of_expression() const;
 
     int lbp;
 
 private:
     Token(const Object& object);
     Token() = delete;
+
+
+    friend std::ostream& operator<<(std::ostream&, const Token& token);
 
     /**
      * Holds the token value, according to Token::Type
@@ -89,7 +97,5 @@ private:
     TokenData  data_;
     Type       type_;
 };
-
-std::ostream& operator<<(std::ostream&, const Token& token);
 
 #endif

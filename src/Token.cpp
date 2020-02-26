@@ -6,47 +6,6 @@
 #include <iostream>
 
 
-const char* Token::type_to_str(Type type)
-{
-    switch (type) {
-        case VALUE:
-            return "value";
-        case ARRAY_LITERAL:
-            return "array[";
-        case MAP_LITERAL:
-            return "map{";
-        case IDENTIFIER:
-            return "identifier";
-        case ARG_SEPARATOR:
-            return ",";
-        case LEFT_PAREN:
-            return "(";
-        case RIGHT_PAREN:
-            return ")";
-        case RIGHT_BRACKET:
-            return "]";
-        case RIGHT_BRACE:
-            return "}";
-        case COLON:
-            return ":";
-        case OPERATOR:
-            return "operator";
-        case KW_IF:
-            return "<if>";
-        case KW_ELIF:
-            return "<elif>";
-        case KW_ELSE:
-            return "<else>";
-        case KW_WHILE:
-            return "<while>";
-        case KW_END:
-            return "<end>";
-        case END_EXPR:
-            return "<end-expr>";
-    }
-    return nullptr;
-}
-
 Token::Type Token::get_type() const
 {
     return type_;
@@ -105,7 +64,7 @@ Token Token::create_identifier(const std::string& identifier_name)
     return self;
 }
 
-Operator Token::get_operator_type() const
+Operator Token::get_operator() const
 {
     return data_.op_type;
 }
@@ -118,4 +77,78 @@ size_t Token::get_id_hash() const
 const Object& Token::get_object() const
 {
     return object_;
+}
+
+bool Token::end_of_expression() const
+{
+    switch (type_)
+    {
+    case VALUE:
+    case IDENTIFIER:
+    case RIGHT_PAREN:
+    case RIGHT_BRACKET:
+    case RIGHT_BRACE:
+    case KW_END:
+        return true;
+    default:
+        return false;
+    }
+}
+
+std::ostream& operator<<(std::ostream& os, const Token& token)
+{
+    switch (token.type_) {
+    case Token::VALUE:
+        os << token.object_;
+        break;
+    case Token::ARRAY_LITERAL:
+        os << "[";
+        break;
+    case Token::MAP_LITERAL:
+        os << "{";
+        break;
+    case Token::IDENTIFIER:
+        os << SymbolTable::get_name(token.data_.id_hash);
+        break;
+    case Token::ARG_SEPARATOR:
+        os << ",";
+        break;
+    case Token::LEFT_PAREN:
+        os << "(";
+        break;
+    case Token::RIGHT_PAREN:
+        os << ")";
+        break;
+    case Token::RIGHT_BRACKET:
+        os << "]";
+        break;
+    case Token::RIGHT_BRACE:
+        os << "}";
+        break;
+    case Token::COLON:
+        os << ":";
+        break;
+    case Token::OPERATOR:
+        os << Operators::to_str(token.data_.op_type);
+        break;
+    case Token::KW_IF:
+        os << "kw:if";
+        break;
+    case Token::KW_ELIF:
+        os << "kw:elif";
+        break;
+    case Token::KW_ELSE:
+        os << "kw:else";
+        break;
+    case Token::KW_WHILE:
+        os << "kw:while";
+        break;
+    case Token::KW_END:
+        os << "kw:end";
+        break;
+    case Token::END_EXPR:
+        os << "<end-expr>";
+        break;
+    }
+    return os;
 }

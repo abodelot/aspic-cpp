@@ -1,4 +1,5 @@
 #include "Error.hpp"
+#include "Token.hpp"
 #include "Operators.hpp"
 
 #include <sstream>
@@ -16,23 +17,22 @@ Error Error::SyntaxError(const std::string& str)
     return Error(Syntax, str);
 }
 
-Error Error::UnexpectedToken(Token::Type type)
-{
-    std::ostringstream oss;
-    oss << "Unexpected token " << Token::type_to_str(type);
-    return Error(Syntax, oss.str());
-}
-
 Error Error::UnknownOperator(const std::string& str)
 {
     return Error(Syntax, "operator '" + str + "' does not exist");
 }
 
-Error Error::UnexpectedTokenType(Token::Type expected, Token::Type got)
+Error Error::UnexpectedToken(const Token& unexpected)
 {
     std::ostringstream oss;
-    oss << "unexpected '" << Token::type_to_str(got) << "', expecting '"
-        << Token::type_to_str(expected) << "'";
+    oss << "Unexpected token '" << unexpected << "'";
+    return Error(Syntax, oss.str());
+}
+
+Error Error::UnexpectedToken(const Token& expected, const Token& got)
+{
+    std::ostringstream oss;
+    oss << "unexpected token '" << got << "', expecting '" << expected << "'";
     return Error(Syntax, oss.str());
 }
 

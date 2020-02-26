@@ -5,12 +5,20 @@
 #include "ast/Node.hpp"
 
 #include <iostream>
+#include <iomanip>
 
 
 Parser::Parser():
     tokens_(scanner_.get_tokens()),
     index_(0)
 {
+}
+
+void Parser::print_tokens() const
+{
+    for (size_t i = 0; i < tokens_.size(); ++i) {
+        std::cout << std::setw(3) << i << " | " << tokens_[i] << std::endl;
+    }
 }
 
 bool Parser::tokenize(const std::string& line)
@@ -162,7 +170,7 @@ ast::Node* Parser::null_denotation(const Token& token)
         }
         case Token::OPERATOR:
         {
-            Operator op = token.get_operator_type();
+            Operator op = token.get_operator();
             ast::Node* right = parse(Operators::is_right_associative(op) ? token.lbp - 1 : token.lbp);
             return new ast::UnaryOpNode(op, right);
         }
@@ -176,7 +184,7 @@ ast::Node* Parser::left_denotation(const Token& token, const ast::Node* left)
 {
     // Current token MUST be an operator
     if (token.get_type() == Token::OPERATOR) {
-        Operator op = token.get_operator_type();
+        Operator op = token.get_operator();
         if (op == Operator::OP_FUNC_CALL) {
             ast::FuncCallNode* node = new ast::FuncCallNode(left);
             // Find arguments until matching right parenthesis
@@ -213,7 +221,7 @@ void Parser::advance(Token::Type type)
         throw Error::InternalError("unexpected end of input");
     }
     if (tokens_[index_].get_type() != type) {
-        throw Error::UnexpectedTokenType(type, tokens_[index_].get_type());
+        throw Error::UnexpectedToken(Token(type), tokens_[index_]);
     }
     ++index_;
 }

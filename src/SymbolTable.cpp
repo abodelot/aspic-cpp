@@ -97,7 +97,7 @@ void SymbolTable::inspect_symbols()
     std::cout << "Symbol table size: " << identifiers_.size() << std::endl;
 }
 
-void SymbolTable::inspec_memory()
+void SymbolTable::inspect_memory()
 {
     for (ObjectList::const_iterator it = shared_objects_.begin(); it != shared_objects_.end(); ++it) {
         std::cout << (**it).class_name() << "@" <<  *it << std::endl;

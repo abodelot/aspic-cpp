@@ -48,6 +48,8 @@ public:
      */
     void reset();
 
+    void print_tokens() const;
+
 private:
     /**
      * Parse a single expression
